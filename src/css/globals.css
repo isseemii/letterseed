@@ -148,8 +148,8 @@
   @media (max-width: 768px) {
     .본문폰트 {
       font-weight: 400;
-      font-size: 14.5px;
-      line-height: 1.7em;
+      font-size: 17px;
+      line-height: 1.62em;
     }
   }
 
@@ -163,7 +163,7 @@
   @media (max-width: 768px) {
     .본문폰트-볼드 {
       font-weight: 700;
-      font-size: 19px;
+      font-size: 16.5px;
       line-height: 1.88em;
     }
   }
@@ -179,7 +179,6 @@
   @media (max-width: 768px) {
     .본문폰트-민부리 {
       font-family: var(--font-ko-sans);
-
       font-size: 16px;
       line-height: 1.88em;
       letter-spacing: 0.03em;

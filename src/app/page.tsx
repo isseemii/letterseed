@@ -113,10 +113,17 @@ export default function HomePage() {
             <Link href="/">
               <img src="/img/logo2.gif" alt="글짜씨" className="w-20 cursor-pointer" />
             </Link>
+
+            {/* 다크모드 버튼 */}
+            <button className="text-sm text-gray-500 mt-4 ">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            </button>
           </div>
 
           {/* 상단 소개글 */}
-          <div className="space-y-4 본문폰트 leading-relaxed pb-4 md:pb-8">
+          <div className="space-y-4 본문폰트 pb-4 md:pb-8">
             <p>
               2024년 임기를 시작한 제8대 한국타이포그래피학회는 디지털 환경에서의 타이포그래피를 둘러싼 현상과 실천 등을 살펴보며 디지털 타이포그래피의 정체성을 탐구한다. 이에 대한 연장선으로 제8대 한국타이포그래피학회는 {'글짜씨'}를 통해 디지털 환경 속의 타이포그래피를 실험하고 이를 웹을 통해 공유하는 프로젝트를 진행한다.
             </p>
@@ -207,7 +214,7 @@ export default function HomePage() {
             {/* 왼쪽 로고 */}
             <div className="grid grid-cols-1 col-span-1 pt-12 sticky top-0 self-start">
               <Link href="/">
-                <img src="/img/logo2.gif" alt="글짜씨" className="w-36 lg:w-40 cursor-pointer" />
+                <img src="/img/logo2.gif" alt="글짜씨" className="w-36 pr-4 lg:w-40 cursor-pointer" />
               </Link>
             </div>
             <div className="col-span-3 pt-12">
