@@ -25,7 +25,7 @@ export default defineType({
       name: 'author',
       title: '글쓴이',
       type: 'string',
-      validation: (Rule) => Rule.required(),
+      // validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'authorBio',
@@ -56,6 +56,7 @@ export default defineType({
               {title: '밑줄', value: 'underline'},
               {title: '위첨자', value: 'sup'},
               {title: '아래첨자', value: 'sub'},
+              {title: '들여쓰기', value: 'indent'}, // ✨ 추가!
             ],
             annotations: [
               {
@@ -87,8 +88,10 @@ export default defineType({
             ],
           },
         },
+        // 단일 이미지
         {
           type: 'image',
+          title: '이미지',
           options: {hotspot: true},
           fields: [
             {
@@ -101,7 +104,145 @@ export default defineType({
               type: 'string',
               title: '대체 텍스트',
             },
+            {
+              name: 'width',
+              type: 'string',
+              title: '너비',
+              options: {
+                list: [
+                  {title: '기본', value: 'default'},
+                  {title: '전체 너비', value: 'full'},
+                  {title: '작게', value: 'small'},
+                ],
+              },
+              initialValue: 'default',
+            },
           ],
+        },
+        // 이미지 그리드
+        {
+          type: 'object',
+          name: 'imageGrid',
+          title: '이미지 그리드',
+          fields: [
+            {
+              name: 'images',
+              type: 'array',
+              title: '이미지들',
+              validation: (Rule) => Rule.required().min(2).max(4),
+              of: [
+                {
+                  type: 'image',
+                  options: {hotspot: true},
+                  fields: [
+                    {
+                      name: 'caption',
+                      type: 'string',
+                      title: '캡션',
+                    },
+                    {
+                      name: 'alt',
+                      type: 'string',
+                      title: '대체 텍스트',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              name: 'columns',
+              type: 'number',
+              title: '열 개수',
+              options: {
+                list: [
+                  {title: '2열', value: 2},
+                  {title: '3열', value: 3},
+                  {title: '4열', value: 4},
+                ],
+              },
+              initialValue: 2,
+            },
+            {
+              name: 'gridCaption',
+              type: 'string',
+              title: '그리드 전체 캡션',
+            },
+          ],
+          preview: {
+            select: {
+              images: 'images',
+              columns: 'columns',
+            },
+            prepare(selection) {
+              const {images, columns} = selection
+              return {
+                title: `이미지 그리드 (${images?.length || 0}개, ${columns}열)`,
+                media: images?.[0],
+              }
+            },
+          },
+        },
+        // 이미지 슬라이더
+        {
+          type: 'object',
+          name: 'imageSlider',
+          title: '이미지 슬라이더',
+          fields: [
+            {
+              name: 'images',
+              type: 'array',
+              title: '이미지들',
+              validation: (Rule) => Rule.required().min(2),
+              of: [
+                {
+                  type: 'image',
+                  options: {hotspot: true},
+                  fields: [
+                    {
+                      name: 'caption',
+                      type: 'string',
+                      title: '캡션',
+                    },
+                    {
+                      name: 'alt',
+                      type: 'string',
+                      title: '대체 텍스트',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              name: 'sliderCaption',
+              type: 'string',
+              title: '슬라이더 전체 캡션',
+            },
+            {
+              name: 'autoplay',
+              type: 'boolean',
+              title: '자동 재생',
+              initialValue: false,
+            },
+            {
+              name: 'showThumbnails',
+              type: 'boolean',
+              title: '썸네일 표시',
+              initialValue: true,
+            },
+          ],
+          preview: {
+            select: {
+              images: 'images',
+              autoplay: 'autoplay',
+            },
+            prepare(selection) {
+              const {images, autoplay} = selection
+              return {
+                title: `이미지 슬라이더 (${images?.length || 0}개)${autoplay ? ' 🔄' : ''}`,
+                media: images?.[0],
+              }
+            },
+          },
         },
       ],
     }),
@@ -200,13 +341,21 @@ export default defineType({
     select: {
       title: 'title',
       author: 'author',
-      issue: 'issue.number',
+      slug: 'slug.current',
+      issueNumber: 'issue.number',
+      sectionSlug: 'section.slug.current',
+      parentSectionSlug: 'section.parentSection.slug.current',
     },
     prepare(selection) {
-      const {title, author, issue} = selection
+      const {title, author, slug, issueNumber, sectionSlug, parentSectionSlug} = selection
+      
+      const urlPath = parentSectionSlug
+        ? `${issueNumber}/${parentSectionSlug}/${sectionSlug}/${slug}`
+        : `${issueNumber}/${sectionSlug}/${slug}`
+      
       return {
         title: title,
-        subtitle: `${author} | ${issue}호`,
+        subtitle: `${author} | ${urlPath}`,
       }
     },
   },

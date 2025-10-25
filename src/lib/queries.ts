@@ -67,3 +67,43 @@ export const articleQuery = `
     }
   }
 `
+
+// src/lib/queries.ts
+export const articleWithNavigationQuery = `
+  *[_type == "article" && slug.current == $slug][0]{
+    _id,
+    title,
+    author,
+    authorBio,
+    content,
+    references,
+    imageSources,
+    order,
+    "issue": issue->{
+      _id,
+      number,
+      title
+    },
+    "section": section->{
+      _id,
+      title,
+      slug
+    },
+    "prevArticle": *[
+      _type == "article" && 
+      section._ref == ^.section._ref && 
+      order < ^.order
+    ] | order(order desc)[0]{
+      title,
+      slug
+    },
+    "nextArticle": *[
+      _type == "article" && 
+      section._ref == ^.section._ref && 
+      order > ^.order
+    ] | order(order asc)[0]{
+      title,
+      slug
+    }
+  }
+`
