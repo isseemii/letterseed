@@ -1,0 +1,9 @@
+import ArticleClient from './ArticleClient.tsx.backup'
+
+interface PageProps {
+  params: Promise<{ slug: string }>
+}
+
+export default function ArticlePage({ params }: PageProps) {
+  return <ArticleClient params={params} />
+}

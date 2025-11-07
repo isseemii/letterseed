@@ -1,17 +1,17 @@
-// 호 목록 가져오기 (각 호별 섹션과 아티클 포함) - 수정됨
+// ✅ 최적화된 호 목록 쿼리
 export const issuesListQuery = `
   *[_type == "issue"] | order(number desc) {
     _id,
     number,
     title,
     publishDate,
-    coverImage,
-    "sections": *[_type == "section"] | order(order asc) {
+    credits,
+    "sections": *[_type == "section" && issue._ref == ^._id] | order(order asc) {
       _id,
       title,
       slug,
       order,
-      "articles": *[_type == "article" && references(^._id) && issue->number == ^.^.number] | order(order asc) {
+      "articles": *[_type == "article" && section._ref == ^._id] | order(order asc) {
         _id,
         title,
         slug,
@@ -22,7 +22,7 @@ export const issuesListQuery = `
   }
 `
 
-// 특정 호(단일) + 섹션/아티클 포함
+// ✅ 최적화된 단일 호 쿼리
 export const issueWithSectionsQuery = `
   *[_type == "issue" && number == $number][0]{
     _id,
@@ -30,12 +30,12 @@ export const issueWithSectionsQuery = `
     title,
     publishDate,
     coverImage,
-    "sections": *[_type == "section"] | order(order asc) {
+    "sections": *[_type == "section" && issue._ref == ^._id] | order(order asc) {
       _id,
       title,
       slug,
       order,
-      "articles": *[_type == "article" && references(^._id) && issue->number == $number] | order(order asc) {
+      "articles": *[_type == "article" && section._ref == ^._id] | order(order asc) {
         _id,
         title,
         slug,
@@ -46,7 +46,7 @@ export const issueWithSectionsQuery = `
   }
 `
 
-// 아티클 상세 가져오기
+// 아티클 쿼리는 그대로
 export const articleQuery = `
   *[_type == "article" && slug.current == $slug][0]{
     _id,
@@ -68,7 +68,7 @@ export const articleQuery = `
   }
 `
 
-// src/lib/queries.ts
+// ✅ 최적화된 네비게이션 쿼리 - credits 추가
 export const articleWithNavigationQuery = `
   *[_type == "article" && slug.current == $slug][0]{
     _id,
@@ -82,7 +82,8 @@ export const articleWithNavigationQuery = `
     "issue": issue->{
       _id,
       number,
-      title
+      title,
+      credits
     },
     "section": section->{
       _id,

@@ -142,14 +142,14 @@
   .본문폰트 {
     font-weight: 400;
     font-size: 18px;
-    line-height: 1.6em;
+    line-height: 1.66em;
   }
 
   @media (max-width: 768px) {
     .본문폰트 {
       font-weight: 400;
       font-size: 17px;
-      line-height: 1.62em;
+      line-height: 1.66em;
     }
   }
 
@@ -171,7 +171,7 @@
   /* 본문 민부리 */
   .본문폰트-민부리 {
     font-family: var(--font-ko-sans);
-    font-size: 22.3px;
+    font-size: 18px;
     line-height: 1.8em;
     letter-spacing: 0.02em;
   }
@@ -180,7 +180,7 @@
     .본문폰트-민부리 {
       font-family: var(--font-ko-sans);
       font-size: 16px;
-      line-height: 1.88em;
+      line-height: 1.6em;
       letter-spacing: 0.03em;
     }
   }
