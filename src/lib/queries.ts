@@ -1,4 +1,4 @@
-// ✅ 최적화된 호 목록 쿼리
+// ✅ 최적화된 호 목록 쿼리 (계층적 섹션 지원 - 3단계 깊이)
 export const issuesListQuery = `
   *[_type == "issue"] | order(number desc) {
     _id,
@@ -6,11 +6,37 @@ export const issuesListQuery = `
     title,
     publishDate,
     credits,
-    "sections": *[_type == "section" && issue._ref == ^._id] | order(order asc) {
+    "sections": *[_type == "section" && issue._ref == ^._id && !defined(parentSection)] | order(order asc) {
       _id,
       title,
       slug,
       order,
+      "subsections": *[_type == "section" && parentSection._ref == ^._id] | order(order asc) {
+        _id,
+        title,
+        slug,
+        order,
+        "subsections": *[_type == "section" && parentSection._ref == ^._id] | order(order asc) {
+          _id,
+          title,
+          slug,
+          order,
+          "articles": *[_type == "article" && section._ref == ^._id] | order(order asc) {
+            _id,
+            title,
+            slug,
+            author,
+            order
+          }
+        },
+        "articles": *[_type == "article" && section._ref == ^._id] | order(order asc) {
+          _id,
+          title,
+          slug,
+          author,
+          order
+        }
+      },
       "articles": *[_type == "article" && section._ref == ^._id] | order(order asc) {
         _id,
         title,
@@ -18,11 +44,11 @@ export const issuesListQuery = `
         author,
         order
       }
-    }[count(articles) > 0]
+    }
   }
 `
 
-// ✅ 최적화된 단일 호 쿼리
+// ✅ 최적화된 단일 호 쿼리 (계층적 섹션 지원 - 3단계 깊이)
 export const issueWithSectionsQuery = `
   *[_type == "issue" && number == $number][0]{
     _id,
@@ -30,11 +56,37 @@ export const issueWithSectionsQuery = `
     title,
     publishDate,
     coverImage,
-    "sections": *[_type == "section" && issue._ref == ^._id] | order(order asc) {
+    "sections": *[_type == "section" && issue._ref == ^._id && !defined(parentSection)] | order(order asc) {
       _id,
       title,
       slug,
       order,
+      "subsections": *[_type == "section" && parentSection._ref == ^._id] | order(order asc) {
+        _id,
+        title,
+        slug,
+        order,
+        "subsections": *[_type == "section" && parentSection._ref == ^._id] | order(order asc) {
+          _id,
+          title,
+          slug,
+          order,
+          "articles": *[_type == "article" && section._ref == ^._id] | order(order asc) {
+            _id,
+            title,
+            slug,
+            author,
+            order
+          }
+        },
+        "articles": *[_type == "article" && section._ref == ^._id] | order(order asc) {
+          _id,
+          title,
+          slug,
+          author,
+          order
+        }
+      },
       "articles": *[_type == "article" && section._ref == ^._id] | order(order asc) {
         _id,
         title,
@@ -92,7 +144,7 @@ export const articleWithNavigationQuery = `
     },
     "prevArticle": *[
       _type == "article" && 
-      section._ref == ^.section._ref && 
+      issue._ref == ^.issue._ref && 
       order < ^.order
     ] | order(order desc)[0]{
       title,
@@ -100,7 +152,7 @@ export const articleWithNavigationQuery = `
     },
     "nextArticle": *[
       _type == "article" && 
-      section._ref == ^.section._ref && 
+      issue._ref == ^.issue._ref && 
       order > ^.order
     ] | order(order asc)[0]{
       title,

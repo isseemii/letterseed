@@ -65,12 +65,12 @@
 @layer base {
   * {
     box-sizing: border-box;
+    overflow-wrap: break-word;
   }
 
   html {
     font-weight: 400;
     font-size: 1.2rem;
-    word-break: keep-all;
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -80,16 +80,6 @@
 
     scrollbar-color: #d9d9d9 #ffffff;
     scrollbar-width: thin;
-
-    @media (max-width: 768px) {
-
-      p,
-      div,
-      span {
-        /* word-break: break-word; */
-        overflow-wrap: break-word;
-      }
-    }
   }
 
   body {
@@ -97,6 +87,15 @@
     word-spacing: -0.05em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    word-break: break-word;
+  }
+
+  /* 데스크톱에서는 한글 keep-all 유지 */
+  @media (min-width: 769px) {
+    body {
+      word-break: keep-all;
+    }
   }
 
   .ml-en {
