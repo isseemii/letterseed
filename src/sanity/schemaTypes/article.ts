@@ -25,7 +25,6 @@ export default defineType({
       name: 'author',
       title: '글쓴이',
       type: 'string',
-      // validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'authorBio',
@@ -33,6 +32,120 @@ export default defineType({
       type: 'text',
       rows: 2,
     }),
+    
+    // ✨ 아티클 타입 선택 (선택 사항 - 여러 타입을 조합할 수 있음)
+    defineField({
+      name: 'articleType',
+      title: '아티클 타입 (참고용)',
+      type: 'string',
+      options: {
+        list: [
+          {title: '일반 아티클', value: 'standard'},
+          {title: '응답 모음', value: 'responses'},
+          {title: '인터뷰 Q&A', value: 'interview'},
+          {title: '대화', value: 'conversation'},
+          {title: 'Q&A', value: 'qa'},
+          {title: '혼합', value: 'mixed'}
+        ],
+        layout: 'radio'
+      },
+      description: '주로 사용하는 타입을 선택하세요 (여러 타입을 함께 사용할 수 있습니다)'
+    }),
+
+    // ✨ 개괄글/서론 (모든 타입 공통)
+    defineField({
+      name: 'introduction',
+      title: '개괄글 / 서론',
+      type: 'array',
+      of: [
+        {
+          type: 'block',
+          styles: [
+            {title: '본문', value: 'normal'},
+            {title: '제목 1', value: 'h2'},
+            {title: '제목 2', value: 'h3'},
+            {title: '제목 3', value: 'h4'},
+            {title: '제목 4', value: 'h5'},
+            {title: '인용', value: 'blockquote'},
+          ],
+          marks: {
+            decorators: [
+              {title: '굵게', value: 'strong'},
+              {title: '기울임', value: 'em'},
+              {title: '밑줄', value: 'underline'},
+              {title: '위첨자', value: 'sup'},
+              {title: '아래첨자', value: 'sub'},
+              {title: '들여쓰기', value: 'indent'},
+            ],
+            annotations: [
+              {
+                name: 'link',
+                type: 'object',
+                title: '링크',
+                fields: [
+                  {
+                    name: 'href',
+                    type: 'url',
+                    title: 'URL',
+                  },
+                ],
+              },
+              {
+                name: 'footnote',
+                type: 'object',
+                title: '주석',
+                fields: [
+                  {
+                    name: 'text',
+                    type: 'text',
+                    title: '주석 내용',
+                    rows: 2,
+                  },
+                ],
+                icon: () => '📝',
+              },
+            ],
+          },
+        },
+        {
+          type: 'image',
+          title: '이미지',
+          options: {hotspot: true},
+          fields: [
+            {
+              name: 'caption',
+              type: 'string',
+              title: '캡션',
+            },
+            {
+              name: 'alt',
+              type: 'string',
+              title: '대체 텍스트',
+            },
+            {
+              name: 'width',
+              type: 'string',
+              title: '너비',
+              options: {
+                list: [
+                  {title: '기본', value: 'default'},
+                  {title: '전체 너비', value: 'full'},
+                  {title: '작게', value: 'small'},
+                ],
+              },
+              initialValue: 'default',
+            },
+          ],
+        },
+      ],
+      description: '아티클 시작 부분의 개괄글이나 서론을 작성하세요 (모든 타입 공통)'
+    }),
+    
+    // ========================================
+    // 타입별 메인 컨텐츠
+    // ========================================
+    
+    // 일반 아티클
     defineField({
       name: 'content',
       title: '본문',
@@ -56,7 +169,7 @@ export default defineType({
               {title: '밑줄', value: 'underline'},
               {title: '위첨자', value: 'sup'},
               {title: '아래첨자', value: 'sub'},
-              {title: '들여쓰기', value: 'indent'}, // ✨ 추가!
+              {title: '들여쓰기', value: 'indent'},
             ],
             annotations: [
               {
@@ -245,7 +358,685 @@ export default defineType({
           },
         },
       ],
+      description: '일반 아티클 본문 (다른 타입과 함께 사용 가능)'
     }),
+
+    // ✨ 응답 모음
+    defineField({
+      name: 'responses',
+      title: '응답 목록',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          title: '응답',
+          fields: [
+            {
+              name: 'year',
+              title: '년도',
+              type: 'string',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'title',
+              title: '제목',
+              type: 'string',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'author',
+              title: '글쓴이',
+              type: 'string',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'content',
+              title: '본문',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  styles: [
+                    {title: '본문', value: 'normal'},
+                    {title: '제목 1', value: 'h2'},
+                    {title: '제목 2', value: 'h3'},
+                    {title: '제목 3', value: 'h4'},
+                    {title: '제목 4', value: 'h5'},
+                    {title: '인용', value: 'blockquote'},
+                  ],
+                  marks: {
+                    decorators: [
+                      {title: '굵게', value: 'strong'},
+                      {title: '기울임', value: 'em'},
+                      {title: '밑줄', value: 'underline'},
+                      {title: '위첨자', value: 'sup'},
+                      {title: '아래첨자', value: 'sub'},
+                      {title: '들여쓰기', value: 'indent'},
+                    ],
+                    annotations: [
+                      {
+                        name: 'link',
+                        type: 'object',
+                        title: '링크',
+                        fields: [
+                          {
+                            name: 'href',
+                            type: 'url',
+                            title: 'URL',
+                          },
+                        ],
+                      },
+                      {
+                        name: 'footnote',
+                        type: 'object',
+                        title: '주석',
+                        fields: [
+                          {
+                            name: 'text',
+                            type: 'text',
+                            title: '주석 내용',
+                            rows: 2,
+                          },
+                        ],
+                        icon: () => '📝',
+                      },
+                    ],
+                  },
+                },
+                {
+                  type: 'image',
+                  title: '이미지',
+                  options: {hotspot: true},
+                  fields: [
+                    {
+                      name: 'caption',
+                      type: 'string',
+                      title: '캡션',
+                    },
+                    {
+                      name: 'alt',
+                      type: 'string',
+                      title: '대체 텍스트',
+                    },
+                  ],
+                },
+              ],
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'references',
+              title: '참고문헌',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  styles: [{title: '본문', value: 'normal'}],
+                  marks: {
+                    decorators: [
+                      {title: '굵게', value: 'strong'},
+                      {title: '기울임', value: 'em'},
+                    ],
+                    annotations: [
+                      {
+                        name: 'link',
+                        type: 'object',
+                        title: '링크',
+                        fields: [
+                          {
+                            name: 'href',
+                            type: 'url',
+                            title: 'URL',
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              name: 'image',
+              title: '사진 첨부',
+              type: 'image',
+              options: {hotspot: true},
+              fields: [
+                {
+                  name: 'alt',
+                  type: 'string',
+                  title: '대체 텍스트',
+                },
+              ],
+            },
+          ],
+          preview: {
+            select: {
+              title: 'title',
+              author: 'author',
+              year: 'year',
+              media: 'image',
+            },
+            prepare(selection) {
+              const {title, author, year, media} = selection
+              return {
+                title: `${year} - ${title}`,
+                subtitle: author,
+                media: media,
+              }
+            },
+          },
+        },
+      ],
+      description: '응답 모음 (다른 타입과 함께 사용 가능)'
+    }),
+
+    // ✨ 인터뷰 Q&A (여러 질문, 각 질문마다 여러 응답자)
+    defineField({
+      name: 'interviewQA',
+      title: '인터뷰 Q&A',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          title: 'Q&A',
+          fields: [
+            {
+              name: 'question',
+              title: '질문',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  styles: [
+                    {title: '본문', value: 'normal'},
+                    {title: '제목 1', value: 'h2'},
+                    {title: '제목 2', value: 'h3'},
+                  ],
+                  marks: {
+                    decorators: [
+                      {title: '굵게', value: 'strong'},
+                      {title: '기울임', value: 'em'},
+                      {title: '밑줄', value: 'underline'},
+                    ],
+                    annotations: [
+                      {
+                        name: 'link',
+                        type: 'object',
+                        title: '링크',
+                        fields: [
+                          {
+                            name: 'href',
+                            type: 'url',
+                            title: 'URL',
+                          },
+                        ],
+                      },
+                      {
+                        name: 'footnote',
+                        type: 'object',
+                        title: '주석',
+                        fields: [
+                          {
+                            name: 'text',
+                            type: 'text',
+                            title: '주석 내용',
+                            rows: 2,
+                          },
+                        ],
+                        icon: () => '📝',
+                      },
+                    ],
+                  },
+                },
+              ],
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'answers',
+              title: '응답',
+              type: 'array',
+              of: [
+                {
+                  type: 'object',
+                  title: '답변',
+                  fields: [
+                    {
+                      name: 'person',
+                      title: '응답자',
+                      type: 'string',
+                      validation: (Rule) => Rule.required(),
+                    },
+                    {
+                      name: 'answer',
+                      title: '답변',
+                      type: 'array',
+                      of: [
+                        {
+                          type: 'block',
+                          styles: [
+                            {title: '본문', value: 'normal'},
+                            {title: '제목 1', value: 'h2'},
+                            {title: '제목 2', value: 'h3'},
+                            {title: '인용', value: 'blockquote'},
+                          ],
+                          marks: {
+                            decorators: [
+                              {title: '굵게', value: 'strong'},
+                              {title: '기울임', value: 'em'},
+                              {title: '밑줄', value: 'underline'},
+                              {title: '위첨자', value: 'sup'},
+                              {title: '아래첨자', value: 'sub'},
+                              {title: '들여쓰기', value: 'indent'},
+                            ],
+                            annotations: [
+                              {
+                                name: 'link',
+                                type: 'object',
+                                title: '링크',
+                                fields: [
+                                  {
+                                    name: 'href',
+                                    type: 'url',
+                                    title: 'URL',
+                                  },
+                                ],
+                              },
+                              {
+                                name: 'footnote',
+                                type: 'object',
+                                title: '주석',
+                                fields: [
+                                  {
+                                    name: 'text',
+                                    type: 'text',
+                                    title: '주석 내용',
+                                    rows: 2,
+                                  },
+                                ],
+                                icon: () => '📝',
+                              },
+                            ],
+                          },
+                        },
+                        {
+                          type: 'image',
+                          title: '이미지',
+                          options: {hotspot: true},
+                          fields: [
+                            {
+                              name: 'caption',
+                              type: 'string',
+                              title: '캡션',
+                            },
+                            {
+                              name: 'alt',
+                              type: 'string',
+                              title: '대체 텍스트',
+                            },
+                          ],
+                        },
+                      ],
+                      validation: (Rule) => Rule.required(),
+                    },
+                  ],
+                  preview: {
+                    select: {
+                      title: 'person',
+                      answer: 'answer',
+                    },
+                    prepare(selection) {
+                      const {title, answer} = selection
+                      // PortableText 배열에서 텍스트 추출
+                      const text = Array.isArray(answer) 
+                        ? answer
+                            .filter((block: any) => block._type === 'block' && block.children)
+                            .map((block: any) => 
+                              block.children
+                                .filter((child: any) => child._type === 'span')
+                                .map((child: any) => child.text)
+                                .join('')
+                            )
+                            .join(' ')
+                        : ''
+                      return {
+                        title: title,
+                        subtitle: text?.substring(0, 100) + (text?.length > 100 ? '...' : ''),
+                      }
+                    },
+                  },
+                },
+              ],
+              validation: (Rule) => Rule.required().min(1),
+            },
+          ],
+          preview: {
+            select: {
+              question: 'question',
+              answers: 'answers',
+            },
+            prepare(selection) {
+              const {question, answers} = selection
+              // PortableText 배열에서 텍스트 추출
+              const questionText = Array.isArray(question)
+                ? question
+                    .filter((block: any) => block._type === 'block' && block.children)
+                    .map((block: any) =>
+                      block.children
+                        .filter((child: any) => child._type === 'span')
+                        .map((child: any) => child.text)
+                        .join('')
+                    )
+                    .join(' ')
+                : question || '질문'
+              return {
+                title: questionText,
+                subtitle: `${answers?.length || 0}명의 응답`,
+              }
+            },
+          },
+        },
+      ],
+      description: '인터뷰 Q&A (다른 타입과 함께 사용 가능)'
+    }),
+
+    // ✨ 대화
+    defineField({
+      name: 'conversation',
+      title: '대화',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          title: '발언',
+          fields: [
+            {
+              name: 'speaker',
+              title: '발언자',
+              type: 'string',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'text',
+              title: '발언 내용',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  styles: [
+                    {title: '본문', value: 'normal'},
+                    {title: '제목 1', value: 'h2'},
+                    {title: '제목 2', value: 'h3'},
+                    {title: '인용', value: 'blockquote'},
+                  ],
+                  marks: {
+                    decorators: [
+                      {title: '굵게', value: 'strong'},
+                      {title: '기울임', value: 'em'},
+                      {title: '밑줄', value: 'underline'},
+                      {title: '위첨자', value: 'sup'},
+                      {title: '아래첨자', value: 'sub'},
+                      {title: '들여쓰기', value: 'indent'},
+                    ],
+                    annotations: [
+                      {
+                        name: 'link',
+                        type: 'object',
+                        title: '링크',
+                        fields: [
+                          {
+                            name: 'href',
+                            type: 'url',
+                            title: 'URL',
+                          },
+                        ],
+                      },
+                      {
+                        name: 'footnote',
+                        type: 'object',
+                        title: '주석',
+                        fields: [
+                          {
+                            name: 'text',
+                            type: 'text',
+                            title: '주석 내용',
+                            rows: 2,
+                          },
+                        ],
+                        icon: () => '📝',
+                      },
+                    ],
+                  },
+                },
+                {
+                  type: 'image',
+                  title: '이미지',
+                  options: {hotspot: true},
+                  fields: [
+                    {
+                      name: 'caption',
+                      type: 'string',
+                      title: '캡션',
+                    },
+                    {
+                      name: 'alt',
+                      type: 'string',
+                      title: '대체 텍스트',
+                    },
+                  ],
+                },
+              ],
+              validation: (Rule) => Rule.required(),
+            },
+          ],
+          preview: {
+            select: {
+              speaker: 'speaker',
+              text: 'text',
+            },
+            prepare(selection) {
+              const {speaker, text} = selection
+              // PortableText 배열에서 텍스트 추출
+              const textContent = Array.isArray(text)
+                ? text
+                    .filter((block: any) => block._type === 'block' && block.children)
+                    .map((block: any) =>
+                      block.children
+                        .filter((child: any) => child._type === 'span')
+                        .map((child: any) => child.text)
+                        .join('')
+                    )
+                    .join(' ')
+                : ''
+              return {
+                title: speaker,
+                subtitle: textContent?.substring(0, 100) + (textContent?.length > 100 ? '...' : ''),
+              }
+            },
+          },
+        },
+      ],
+      description: '대화 (다른 타입과 함께 사용 가능)'
+    }),
+
+    // ✨ Q&A (단순 질문-답변 반복)
+    defineField({
+      name: 'qaList',
+      title: 'Q&A 목록',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          title: 'Q&A',
+          fields: [
+            {
+              name: 'question',
+              title: '질문 (Q)',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  styles: [
+                    {title: '본문', value: 'normal'},
+                    {title: '제목 1', value: 'h2'},
+                    {title: '제목 2', value: 'h3'},
+                  ],
+                  marks: {
+                    decorators: [
+                      {title: '굵게', value: 'strong'},
+                      {title: '기울임', value: 'em'},
+                      {title: '밑줄', value: 'underline'},
+                    ],
+                    annotations: [
+                      {
+                        name: 'link',
+                        type: 'object',
+                        title: '링크',
+                        fields: [
+                          {
+                            name: 'href',
+                            type: 'url',
+                            title: 'URL',
+                          },
+                        ],
+                      },
+                      {
+                        name: 'footnote',
+                        type: 'object',
+                        title: '주석',
+                        fields: [
+                          {
+                            name: 'text',
+                            type: 'text',
+                            title: '주석 내용',
+                            rows: 2,
+                          },
+                        ],
+                        icon: () => '📝',
+                      },
+                    ],
+                  },
+                },
+              ],
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'answer',
+              title: '답변 (A)',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  styles: [
+                    {title: '본문', value: 'normal'},
+                    {title: '제목 1', value: 'h2'},
+                    {title: '제목 2', value: 'h3'},
+                    {title: '제목 3', value: 'h4'},
+                    {title: '인용', value: 'blockquote'},
+                  ],
+                  marks: {
+                    decorators: [
+                      {title: '굵게', value: 'strong'},
+                      {title: '기울임', value: 'em'},
+                      {title: '밑줄', value: 'underline'},
+                      {title: '위첨자', value: 'sup'},
+                      {title: '아래첨자', value: 'sub'},
+                      {title: '들여쓰기', value: 'indent'},
+                    ],
+                    annotations: [
+                      {
+                        name: 'link',
+                        type: 'object',
+                        title: '링크',
+                        fields: [
+                          {
+                            name: 'href',
+                            type: 'url',
+                            title: 'URL',
+                          },
+                        ],
+                      },
+                      {
+                        name: 'footnote',
+                        type: 'object',
+                        title: '주석',
+                        fields: [
+                          {
+                            name: 'text',
+                            type: 'text',
+                            title: '주석 내용',
+                            rows: 2,
+                          },
+                        ],
+                        icon: () => '📝',
+                      },
+                    ],
+                  },
+                },
+                {
+                  type: 'image',
+                  title: '이미지',
+                  options: {hotspot: true},
+                  fields: [
+                    {
+                      name: 'caption',
+                      type: 'string',
+                      title: '캡션',
+                    },
+                    {
+                      name: 'alt',
+                      type: 'string',
+                      title: '대체 텍스트',
+                    },
+                  ],
+                },
+              ],
+              validation: (Rule) => Rule.required(),
+            },
+          ],
+          preview: {
+            select: {
+              question: 'question',
+              answer: 'answer',
+            },
+            prepare(selection) {
+              const {question, answer} = selection
+              // PortableText 배열에서 텍스트 추출
+              const questionText = Array.isArray(question)
+                ? question
+                    .filter((block: any) => block._type === 'block' && block.children)
+                    .map((block: any) =>
+                      block.children
+                        .filter((child: any) => child._type === 'span')
+                        .map((child: any) => child.text)
+                        .join('')
+                    )
+                    .join(' ')
+                : question || '질문'
+              const answerText = Array.isArray(answer)
+                ? answer
+                    .filter((block: any) => block._type === 'block' && block.children)
+                    .map((block: any) =>
+                      block.children
+                        .filter((child: any) => child._type === 'span')
+                        .map((child: any) => child.text)
+                        .join('')
+                    )
+                    .join(' ')
+                : ''
+              return {
+                title: questionText,
+                subtitle: answerText?.substring(0, 100) + (answerText?.length > 100 ? '...' : ''),
+              }
+            },
+          },
+        },
+      ],
+      description: 'Q&A (다른 타입과 함께 사용 가능)'
+    }),
+
+    // ========================================
+    // 공통 필드
+    // ========================================
+
     defineField({
       name: 'issue',
       title: '소속 호',
@@ -260,76 +1051,108 @@ export default defineType({
       to: [{type: 'section'}],
       validation: (Rule) => Rule.required(),
     }),
+    
+    // ✨ 추가 섹션 (모든 타입 공통)
     defineField({
-      name: 'references',
-      title: '참고문헌',
+      name: 'additionalSections',
+      title: '추가 섹션 (후미)',
       type: 'array',
       of: [
         {
-          type: 'block',
-          styles: [{title: '본문', value: 'normal'}],
-          lists: [
-            {title: '불릿', value: 'bullet'},
-            {title: '번호', value: 'number'},
-          ],
-          marks: {
-            decorators: [
-              {title: '기울임', value: 'em'},
-            ],
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: '링크',
-                fields: [
-                  {
-                    name: 'href',
-                    type: 'url',
-                    title: 'URL',
+          type: 'object',
+          title: '섹션',
+          fields: [
+            {
+              name: 'title',
+              title: '섹션 제목',
+              type: 'string',
+              placeholder: '예: 참고문헌, 이미지 출처, 일러두기, 첨부사항 등',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'content',
+              title: '내용',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  styles: [{title: '본문', value: 'normal'}],
+                  lists: [
+                    {title: '불릿', value: 'bullet'},
+                    {title: '번호', value: 'number'},
+                  ],
+                  marks: {
+                    decorators: [
+                      {title: '기울임', value: 'em'},
+                      {title: '굵게', value: 'strong'},
+                    ],
+                    annotations: [
+                      {
+                        name: 'link',
+                        type: 'object',
+                        title: '링크',
+                        fields: [
+                          {
+                            name: 'href',
+                            type: 'url',
+                            title: 'URL',
+                          },
+                        ],
+                      },
+                      {
+                        name: 'footnote',
+                        type: 'object',
+                        title: '주석',
+                        fields: [
+                          {
+                            name: 'text',
+                            type: 'text',
+                            title: '주석 내용',
+                            rows: 2,
+                          },
+                        ],
+                        icon: () => '📝',
+                      },
+                    ],
                   },
-                ],
-              },
-            ],
+                },
+                {
+                  type: 'image',
+                  options: {hotspot: true},
+                  fields: [
+                    {
+                      name: 'caption',
+                      type: 'string',
+                      title: '캡션',
+                    },
+                    {
+                      name: 'alt',
+                      type: 'string',
+                      title: '대체 텍스트',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          preview: {
+            select: {
+              title: 'title',
+              content: 'content',
+            },
+            prepare(selection) {
+              const {title, content} = selection
+              return {
+                title: title || '제목 없음',
+                subtitle: `${content?.length || 0}개 블록`,
+              }
+            },
           },
         },
       ],
-      description: '참고문헌 목록',
+      description: '아티클 끝부분의 참고문헌, 이미지 출처, 일러두기 등 (모든 타입 공통)'
     }),
-    defineField({
-      name: 'imageSources',
-      title: '이미지 출처',
-      type: 'array',
-      of: [
-        {
-          type: 'block',
-          styles: [{title: '본문', value: 'normal'}],
-          lists: [
-            {title: '불릿', value: 'bullet'},
-            {title: '번호', value: 'number'},
-          ],
-          marks: {
-            decorators: [
-              {title: '기울임', value: 'em'},
-            ],
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: '링크',
-                fields: [
-                  {
-                    name: 'href',
-                    type: 'url',
-                    title: 'URL',
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      ],
-      description: '이미지 출처 목록',
-    }),
+    
     defineField({
       name: 'order',
       title: '순서',
@@ -345,17 +1168,26 @@ export default defineType({
       issueNumber: 'issue.number',
       sectionSlug: 'section.slug.current',
       parentSectionSlug: 'section.parentSection.slug.current',
+      articleType: 'articleType',
     },
     prepare(selection) {
-      const {title, author, slug, issueNumber, sectionSlug, parentSectionSlug} = selection
+      const {title, author, slug, issueNumber, sectionSlug, parentSectionSlug, articleType} = selection
       
       const urlPath = parentSectionSlug
         ? `${issueNumber}/${parentSectionSlug}/${sectionSlug}/${slug}`
         : `${issueNumber}/${sectionSlug}/${slug}`
       
+      const typeLabels: any = {
+        standard: '일반',
+        responses: '응답',
+        interview: '인터뷰',
+        conversation: '대화',
+        qa: 'Q&A',
+      }
+      
       return {
         title: title,
-        subtitle: `${author} | ${urlPath}`,
+        subtitle: `${typeLabels[articleType] || '일반'} | ${author || '-'} | ${urlPath}`,
       }
     },
   },

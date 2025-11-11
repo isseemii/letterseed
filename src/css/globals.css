@@ -195,8 +195,8 @@
   @media (max-width: 768px) {
     .각주폰트-민부리 {
       font-family: var(--font-ko-sans);
-      font-size: 12px;
-      line-height: 1.6em;
+      font-size: 14px;
+      line-height: 1.7em;
     }
   }
 
@@ -238,5 +238,15 @@
       padding-left: 0;
       padding-right: 0;
     }
+  }
+
+  /* 스크롤바 숨기기 */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
   }
 }

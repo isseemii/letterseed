@@ -484,63 +484,21 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
             ))}
           </div>
 
+          <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />
+
           {/* 크레딧 섹션 (기존 코드) */}
           <div className="py-8 space-y-8">
             <div>
-              <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                크레딧 목록
-              </h3>
-              <div className={`space-y-6 본문폰트 ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                <div>
-                  <p className="mb-2">
-                    발행인: 심우진, 안미르, 안마노 <br />
-                    발행처: 한국타이포그라피학회, 안그라픽스
-                  </p>
-                </div>
-
-                <div>
-                  <p className="mb-2">
-                    한국타이포그라피학회 <br />
-                    (03035) 서울특별시 종로구 자하문로19길 25 <br />
-                    info@koreantypography.org
-                  </p>
-                </div>
-
-                <div>
-                  <p className="mb-2">
-                    안그라픽스 <br />
-                    (10881) 경기도 파주시 회동길 125-15 <br />
-                    T. 031-955-7766 <br />
-                    F. 031-955-7744
-                  </p>
-                </div>
-
-                <div>
-                  <p>
-                    이 학술지에 게재된 논고는 한국타이포그라피학회 웹사이트에서 보실 수 있습니다. <br />
-                    <a href="http://k-s-t.org/" target="_blank" className="text-[#7CFC00] underline">
-                      http://k-s-t.org/
-                    </a>
-                  </p>
-                  <p className="mt-2">
-                    이 학술지는 크리에이티브 커먼즈 저작자 표시-비영리-변경 금지 4.0 국제 저작권이 적용되어 있습니다. 이 저작권의 자세한 설명은{' '}
-                    <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" className="text-[#7CFC00] underline">
-                      http://creativecommons.org/licenses/by-nc/4.0/
-                    </a>
-                    에서 확인할 수 있습니다.
-                  </p>
-                </div>
-              </div>
+              <p className={`본문폰트 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                한국타이포그라피학회는 글자와 타이포그래피를 연구하기 위해 2008년 창립되었다. 『글짜씨』는 학회에서 2009년 12월부터 발간한 타이포그래피 학술지다.
+              </p>
             </div>
-
-            <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />
-
             {/* 한국타이포그라피학회 */}
             <div>
               <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                 한국타이포그라피학회
               </h3>
-              <div className={`space-y-6 본문폰트 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              <div className={`space-y-6 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                 <div>
                   <p className="mb-2">
                     회장: 심우진 <br />
@@ -579,21 +537,6 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                     출판국장: 문민주, 김도연, 황세미
                   </p>
                 </div>
-
-                <div>
-                  <p>
-                    한국타이포그라피학회는 글자와 타이포그래피를 연구하기 위해 2008년 창립되었다. 『글짜씨』는 학회에서 2009년 12월부터 발간한 타이포그래피 학술지다.
-                  </p>
-                  <p className="mt-2">
-                    <a href="mailto:info@koreantypography.org" className="text-[#7CFC00] underline">
-                      info@koreantypography.org
-                    </a>
-                    <br />
-                    <a href="https://k-s-t.org" target="_blank" className="text-[#7CFC00] underline">
-                      k-s-t.org
-                    </a>
-                  </p>
-                </div>
               </div>
             </div>
 
@@ -605,17 +548,31 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                   후원
                 </h3>
-                <p className={`본문폰트 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  (후원사 로고)
-                </p>
+                <div className="flex flex-col gap-8">
+                  <img src="/img/sp/01_sp/sp-01-ahngraphics.gif" alt="안그라픽스" className="w-36" />
+                  <img src="/img/sp/01_sp/sp-02-doosungpaper.gif" alt="두성종이" className="w-36" />
+                  <img src="/img/sp/01_sp/sp-03-coloso.gif" alt="콜로소" className="w-36" />
+                </div>
               </div>
               <div>
                 <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                   파트너
                 </h3>
-                <p className={`본문폰트 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  (파트너사 로고)
-                </p>
+                <div className="grid grid-cols-2 gap-8">
+                  {/* 울트라블랙 */}
+                  <img src="/img/sp/02_pt/1/pt-01-happybean.gif" alt="해피빈" className="w-36" />
+                  <img src="/img/sp/02_pt/1/pt-06-woowa.gif" alt="우아한형제들" className="w-36" />
+                  <img src="/img/sp/02_pt/1/pt-14-adobe.gif" alt="아도비" className="w-36" />
+                  {/* 블랙 */}
+                  <img src="/img/sp/02_pt/2/pt-12-visang.gif" alt="비상" className="w-36" />
+                  {/* 볼드 */}
+                  <img src="/img/sp/02_pt/3/pt-11-samwon.png" alt="삼원종이" className="w-36" />
+                  <img src="/img/sp/02_pt/3/pt-15-morisawakorea.png" alt="모리사워코리아" className="w-36" />
+                  {/* 레귤러 */}
+                  <img src="/img/sp/02_pt/4/pt-10-innoiz.gif" alt="인노이즈" className="w-36" />
+                  {/* 공익위반제보 */}
+                  <img src="/img/sp/02_pt/5/link-01-munhwa.png" alt="문화체육관광부" className="w-36" />
+                </div>
               </div>
             </div>
           </div>
@@ -1026,7 +983,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
         </div>
 
         {/* 데스크톱 크레딧 섹션 */}
-        <div className={`각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+        <div className={`hidden lg:block 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
           {/* 학회 크레딧 섹션 */}
           <div className="grid grid-cols-5 gap-8 pb-12 ">
             <div className="col-span-1">

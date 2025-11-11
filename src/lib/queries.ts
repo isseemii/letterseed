@@ -98,7 +98,7 @@ export const issueWithSectionsQuery = `
   }
 `
 
-// 아티클 쿼리는 그대로
+// ✅ 아티클 쿼리 (모든 타입 지원)
 export const articleQuery = `
   *[_type == "article" && slug.current == $slug][0]{
     _id,
@@ -106,9 +106,14 @@ export const articleQuery = `
     slug,
     author,
     authorBio,
+    articleType,
+    introduction,
     content,
-    references,
-    imageSources,
+    responses,
+    interviewQA,
+    conversation,
+    qaList,
+    additionalSections,
     "issue": issue->{
       number,
       title
@@ -120,16 +125,21 @@ export const articleQuery = `
   }
 `
 
-// ✅ 최적화된 네비게이션 쿼리 - credits 추가
+// ✅ 최적화된 네비게이션 쿼리 (모든 아티클 타입 + 추가 섹션 지원)
 export const articleWithNavigationQuery = `
   *[_type == "article" && slug.current == $slug][0]{
     _id,
     title,
     author,
     authorBio,
+    articleType,
+    introduction,
     content,
-    references,
-    imageSources,
+    responses,
+    interviewQA,
+    conversation,
+    qaList,
+    additionalSections,
     order,
     "issue": issue->{
       _id,
