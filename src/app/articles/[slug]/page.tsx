@@ -10,6 +10,235 @@ import { client } from '@/lib/sanity'
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
 
+// 이미지 슬라이더 컴포넌트
+const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: boolean; urlFor: any }) => {
+  if (!value?.images || !Array.isArray(value.images) || value.images.length < 2) return null
+
+  // 이미지 URL 배열 생성
+  const imageUrls = value.images
+    .map((image: any) => {
+      if (image?.asset?._ref) {
+        return urlFor(image).url() || null
+      } else if (image?.asset?.url) {
+        return image.asset.url
+      }
+      return null
+    })
+    .filter((url: string | null) => url !== null)
+
+  if (imageUrls.length < 2) return null
+
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [direction, setDirection] = useState<'left' | 'right'>('right')
+  const [isTransitioning, setIsTransitioning] = useState(false)
+
+  const goToNext = () => {
+    if (isTransitioning) return
+    setDirection('right')
+    setIsTransitioning(true)
+    setCurrentIndex((prev) => (prev + 1) % imageUrls.length)
+    setTimeout(() => setIsTransitioning(false), 500)
+  }
+
+  const goToPrevious = () => {
+    if (isTransitioning) return
+    setDirection('left')
+    setIsTransitioning(true)
+    setCurrentIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length)
+    setTimeout(() => setIsTransitioning(false), 500)
+  }
+
+  const goToSlide = (index: number) => {
+    if (isTransitioning) return
+    setDirection(index > currentIndex ? 'right' : 'left')
+    setIsTransitioning(true)
+    setCurrentIndex(index)
+    setTimeout(() => setIsTransitioning(false), 500)
+  }
+
+  // 자동 재생
+  useEffect(() => {
+    if (value.autoplay && !isTransitioning) {
+      const interval = setInterval(() => {
+        setDirection('right')
+        setIsTransitioning(true)
+        setCurrentIndex((prev) => {
+          const newIndex = (prev + 1) % imageUrls.length
+          setTimeout(() => setIsTransitioning(false), 500)
+          return newIndex
+        })
+      }, 3000) // 3초마다
+      return () => {
+        if (interval) clearInterval(interval)
+      }
+    }
+  }, [value.autoplay, imageUrls.length, isTransitioning])
+
+  // 키보드 네비게이션
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isTransitioning) return
+      if (e.key === 'ArrowLeft') {
+        setDirection('left')
+        setIsTransitioning(true)
+        setCurrentIndex((prev) => {
+          const newIndex = (prev - 1 + imageUrls.length) % imageUrls.length
+          setTimeout(() => setIsTransitioning(false), 500)
+          return newIndex
+        })
+      } else if (e.key === 'ArrowRight') {
+        setDirection('right')
+        setIsTransitioning(true)
+        setCurrentIndex((prev) => {
+          const newIndex = (prev + 1) % imageUrls.length
+          setTimeout(() => setIsTransitioning(false), 500)
+          return newIndex
+        })
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [imageUrls.length, isTransitioning])
+
+  return (
+    <div className="my-8 md:my-12">
+      {/* 메인 이미지 */}
+      <div className="relative group w-full">
+        <div className="relative overflow-hidden w-[80%] mx-auto">
+          {/* 슬라이드 컨테이너 */}
+          <div
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{
+              transform: `translateX(-${currentIndex * 100}%)`,
+            }}
+          >
+            {imageUrls.map((url: string, index: number) => (
+              <div
+                key={index}
+                className="w-full flex-shrink-0"
+              >
+                <img
+                  src={url}
+                  alt={value.images[index]?.alt || `이미지 ${index + 1}`}
+                  className="w-full h-auto"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* 이전/다음 버튼 - 이미지 바깥 양옆 여백에 위치 */}
+        {imageUrls.length > 1 && (
+          <>
+            <button
+              onClick={goToPrevious}
+              className={`hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center z-10 ${isDarkMode ? 'text-white' : 'text-black'}`}
+              aria-label="이전 이미지"
+            >
+              <svg
+                className="w-5 h-5 md:w-6 md:h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={goToNext}
+              className={`hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center z-10 ${isDarkMode ? 'text-white' : 'text-black'}`}
+              aria-label="다음 이미지"
+            >
+              <svg
+                className="w-5 h-5 md:w-6 md:h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* 인디케이터 - 이미지 슬라이더 버튼과 동일한 스타일 */}
+        {imageUrls.length > 1 && (
+          <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-20 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+            {imageUrls.map((_: any, index: number) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-2 h-2 md:w-2 md:h-2 rounded-full border-2 transition-all duration-300 ${
+                  index === currentIndex
+                    ? isDarkMode
+                      ? 'border-white'
+                      : 'border-black'
+                    : isDarkMode
+                    ? 'border-white/40 hover:border-white/80'
+                    : 'border-black/40 hover:border-black/80'
+                }`}
+                aria-label={`이미지 ${index + 1}로 이동`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* 이미지 카운터 (데스크톱에서 표시) */}
+        {imageUrls.length > 1 && (
+          <div className={`hidden md:block absolute top-[-1] right-1 px-3 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+            {currentIndex + 1} / {imageUrls.length}
+          </div>
+        )}
+      </div>
+
+      {/* 현재 이미지 캡션 */}
+      {value.images[currentIndex]?.caption && (
+        <p className={`캡션-민부리 mt-2 md:mt-3 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          {value.images[currentIndex].caption}
+        </p>
+      )}
+
+      {/* 슬라이더 전체 캡션 */}
+      {value.sliderCaption && (
+        <p className={`캡션-민부리 mt-2 md:mt-3 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          {value.sliderCaption}
+        </p>
+      )}
+
+      {/* 썸네일 (showThumbnails가 true일 때) - 고정 크기로 통일 */}
+      {value.showThumbnails && imageUrls.length > 1 && (
+        <div className="mt-2 md:mt-4 flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide justify-center">
+          {imageUrls.map((url: string, index: number) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 overflow-hidden transition-all hover:scale-105 ${
+                index === currentIndex
+                  ? isDarkMode
+                    ? 'scale-105'
+                    : 'scale-105'
+                  : isDarkMode
+                  ? 'opacity-60 hover:opacity-80'
+                  : 'opacity-60 hover:opacity-80'
+              }`}
+            >
+              <img
+                src={url}
+                alt={`썸네일 ${index + 1}`}
+                className="w-full h-full object-cover"
+                style={{ aspectRatio: '1 / 1' }}
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const articleWithNavigationQuery = `
   *[_type == "article" && slug.current == $slug][0]{
     _id,
@@ -18,6 +247,7 @@ const articleWithNavigationQuery = `
     authorBio,
     articleType,
     introduction,
+    contentBlocks,
     content,
     responses,
     interviewQA,
@@ -34,23 +264,42 @@ const articleWithNavigationQuery = `
     "section": section->{
       _id,
       title,
-      slug
+      slug,
+      order,
+      "parentSection": parentSection->{
+        _id,
+        title,
+        slug,
+        order,
+        "parentSection": parentSection->{
+          _id,
+          title,
+          slug,
+          order
+        }
+      }
     },
-    "prevArticle": *[
+    // 같은 호의 모든 아티클을 가져와서 클라이언트에서 정렬
+    "allArticlesInIssue": *[
       _type == "article" && 
-      issue._ref == ^.issue._ref && 
-      order < ^.order
-    ] | order(order desc)[0]{
+      issue._ref == ^.issue._ref
+    ] {
+      _id,
       title,
-      "slug": slug.current
-    },
-    "nextArticle": *[
-      _type == "article" && 
-      issue._ref == ^.issue._ref && 
-      order > ^.order
-    ] | order(order asc)[0]{
-      title,
-      "slug": slug.current
+      "slug": slug.current,
+      order,
+      "section": section->{
+        _id,
+        order,
+        "parentSection": parentSection->{
+          _id,
+          order,
+          "parentSection": parentSection->{
+            _id,
+            order
+          }
+        }
+      }
     }
   }
 `
@@ -225,10 +474,100 @@ export default function ArticlePage({ params }: PageProps) {
     }
   }, [])
 
+  // 섹션 계층 구조를 고려한 정렬 함수
+  // 반환값: [최상위 섹션 order, 하위 섹션 order, 하하위 섹션 order]
+  const getSectionPath = (section: any): number[] => {
+    if (!section) return [999999, 999999, 999999] // 섹션이 없으면 맨 뒤로
+    
+    const getOrder = (s: any) => s?.order ?? 999999
+    
+    // 섹션 계층 구조 파악
+    if (section.parentSection?.parentSection) {
+      // 하하위 섹션 (3단계): 최상위 -> 하위 -> 하하위
+      return [
+        getOrder(section.parentSection.parentSection), // 최상위 섹션 order
+        getOrder(section.parentSection), // 하위 섹션 order
+        getOrder(section) // 하하위 섹션 order
+      ]
+    } else if (section.parentSection) {
+      // 하위 섹션 (2단계): 최상위 -> 하위
+      return [
+        getOrder(section.parentSection), // 최상위 섹션 order
+        getOrder(section), // 하위 섹션 order
+        0 // 하하위 섹션 없음 (직속 article)
+      ]
+    } else {
+      // 최상위 섹션 (1단계) - 직속 article
+      return [
+        getOrder(section), // 최상위 섹션 order
+        0, // 하위 섹션 없음 (직속 article)
+        0 // 하하위 섹션 없음
+      ]
+    }
+  }
+
+  // 아티클 정렬 함수
+  const sortArticles = (articles: any[]): any[] => {
+    return [...articles].sort((a, b) => {
+      const pathA = getSectionPath(a.section)
+      const pathB = getSectionPath(b.section)
+      
+      // 섹션 경로 비교 (최상위 -> 하위 -> 하하위)
+      for (let i = 0; i < 3; i++) {
+        if (pathA[i] !== pathB[i]) {
+          return pathA[i] - pathB[i]
+        }
+      }
+      
+      // 같은 섹션 내에서는 order로 정렬 (null/undefined는 0으로 처리)
+      const orderA = a.order ?? 0
+      const orderB = b.order ?? 0
+      return orderA - orderB
+    })
+  }
+
   useEffect(() => {
     params.then((resolvedParams) => {
       setSlug(resolvedParams.slug)
       client.fetch(articleWithNavigationQuery, { slug: resolvedParams.slug }).then((data) => {
+        if (data && data.allArticlesInIssue) {
+          // 같은 호의 모든 아티클을 섹션 계층 구조로 정렬
+          const sortedArticles = sortArticles(data.allArticlesInIssue)
+          
+          // 디버깅: 정렬된 아티클 목록 확인
+          console.log('정렬된 아티클:', sortedArticles.map((a: any) => ({
+            title: a.title,
+            path: getSectionPath(a.section),
+            order: a.order
+          })))
+          
+          // 현재 아티클의 인덱스 찾기
+          const currentIndex = sortedArticles.findIndex((a: any) => a._id === data._id)
+          
+          console.log('현재 아티클 인덱스:', currentIndex, '제목:', data.title)
+          
+          // 이전/다음 아티클 찾기
+          if (currentIndex > 0) {
+            data.prevArticle = {
+              title: sortedArticles[currentIndex - 1].title,
+              slug: sortedArticles[currentIndex - 1].slug
+            }
+            console.log('이전 글:', data.prevArticle.title)
+          } else {
+            data.prevArticle = null
+          }
+          
+          if (currentIndex < sortedArticles.length - 1) {
+            data.nextArticle = {
+              title: sortedArticles[currentIndex + 1].title,
+              slug: sortedArticles[currentIndex + 1].slug
+            }
+            console.log('다음 글:', data.nextArticle.title)
+          } else {
+            data.nextArticle = null
+          }
+        }
+        
         setArticle(data)
         setLoading(false)
       })
@@ -306,10 +645,10 @@ export default function ArticlePage({ params }: PageProps) {
             <img
               src={imageUrl}
               alt={value.alt || ''}
-              className="w-full h-auto"
+              className="w-[80%] h-auto mx-auto"
             />
             {value.caption && (
-              <p className={`text-sm mt-2 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className={`w-[75%] mx-auto 캡션-민부리 mt-3 md:mt-4 text-center  ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 {value.caption}
               </p>
             )}
@@ -351,13 +690,16 @@ export default function ArticlePage({ params }: PageProps) {
             })}
           </div>
         )
+      },
+      imageSlider: ({ value }: any) => {
+        return <ImageSlider value={value} isDarkMode={isDarkMode} urlFor={urlFor} />
       }
     },
     block: {
       h2: ({ children }: any) => (
         <h2
           style={{ fontFamily: 'AGCJHS', fontWeight: '600' }}
-          className={`본문폰트 indent-[2em] py-[0.2em] md:본문폰트 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+          className={`indent-[2em] py-[0.2em] md:md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
         >
           {children}
         </h2>
@@ -412,7 +754,7 @@ export default function ArticlePage({ params }: PageProps) {
         const Tag = hasBlockElements ? 'div' : 'p'
         return (
           <Tag
-            className={`본문폰트 my-0 md:본문폰트 md:my-[1.2em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+            className={`본문폰트 my-[0.6em] md:본문폰트 md:my-[1em] ${isDarkMode ? 'text-white' : 'text-black'}`}
             style={{ lineHeight: '1.68' }}
           >
             {children}
@@ -520,14 +862,14 @@ export default function ArticlePage({ params }: PageProps) {
   if (!article) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">아티클을 찾을 수 없습니다.</p>
+        <p className="본문폰트 text-gray-500">아티클을 찾을 수 없습니다.</p>
       </div>
     )
   }
 
   return (
     <div className={`h-screen overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-[#171717]' : 'bg-white'}`}>
-      <div className="h-full max-w-[1400px] mx-auto px-4 py-6 md:px-6 md:py-16">
+      <div className="h-full max-w-[1400px] mx-auto px-4 py-6 md:px-6 md:py-6">
         <div className="h-full grid grid-cols-1 md:grid-cols-[200px_1fr_200px] gap-4 md:gap-16">
 
           {/* 왼쪽: 돌아가기 버튼 + 이전 아티클 */}
@@ -546,7 +888,7 @@ export default function ArticlePage({ params }: PageProps) {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <div className="text-sm text-right">
+                <div className="text-right">
                   <div className="각주폰트-민부리 line-clamp-1">돌아가기</div>
                 </div>
               </Link>
@@ -568,7 +910,7 @@ export default function ArticlePage({ params }: PageProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l-7 7 7 7" />
                   </svg>
-                  <div className="text-sm text-right w-[180px]">
+                  <div className="text-right w-[180px]">
                     <div className="각주폰트-민부리 line-clamp-2 text-right">{article.prevArticle.title}</div>
                   </div>
                 </Link>
@@ -581,22 +923,22 @@ export default function ArticlePage({ params }: PageProps) {
           </div>
 
           {/* 중앙: 아티클 본문 */}
-          <article className="max-w-[800px] mx-auto w-full overflow-y-auto h-full scrollbar-hide">
+          <article className="max-w-[800px] mx-auto mt-6 w-full overflow-y-auto h-full scrollbar-hide">
             {/* 호수, 섹션 */}
-            <div className={`text-center md:text-left mb-1 각주폰트-민부리 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            <div className={`text-center mb-1 md:text-left md:indent-[0.2em] 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
               {article.issue.number} · {article.section.title}
             </div>
 
             {/* 제목과 저자 - 데스크톱에서 두 단으로 */}
-            <div className="mb-6 md:mb-12">
+            <div className="mb-6 md:mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 md:gap-4">
                 {/* 제목 - 왼쪽 */}
-                <h1 className={`text-center mb-4 md:text-left text-[1em] md:text-[1.8em] 본문폰트 font-bold leading-[1.5] ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                <h1 className={`h2 text-center mb-4 md:text-left font-bold leading-[1.5] ${isDarkMode ? 'text-white' : 'text-black'}`}>
                   {article.title}
                 </h1>
 
                 {/* 저자 - 오른쪽 */}
-                <div className={`text-center md:text-right text-[1em] md:text-[1.8em] 본문폰트 font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                <div className={`h2 text-center md:text-left font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
                   {article.author}
                 </div>
               </div>
@@ -612,20 +954,165 @@ export default function ArticlePage({ params }: PageProps) {
               </div>
             )}
 
-            {/* 본문 - 모든 타입 렌더링 (값이 있으면 표시) */}
-            <div className={`mb-16 md:mb-20 space-y-12 ${isDarkMode ? 'text-white' : 'text-black'}`}>
-              {/* 일반 본문 */}
-              {article.content && Array.isArray(article.content) && article.content.length > 0 && (
-                <div>
-                  <PortableText
-                    value={article.content}
-                    components={components}
-                  />
-                </div>
-              )}
+            {/* 본문 - contentBlocks 우선, 없으면 기존 필드들 렌더링 */}
+            <div className={`mb-16 space-y-12 md:mb-20 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              {/* ✨ 통합 컨텐츠 블록 (순서 자유 배치) */}
+              {article.contentBlocks && Array.isArray(article.contentBlocks) && article.contentBlocks.length > 0 ? (
+                article.contentBlocks.map((block: any, blockIdx: number) => {
+                  if (block.blockType === 'standard' && block.standardContent) {
+                    return (
+                      <div key={blockIdx}>
+                        <PortableText
+                          value={block.standardContent}
+                          components={components}
+                        />
+                      </div>
+                    )
+                  } else if (block.blockType === 'responses' && block.responsesContent) {
+                    return (
+                      <div key={blockIdx} className="space-y-12">
+                        {block.responsesContent.map((response: any, idx: number) => (
+                          <div key={idx} className="space-y-4">
+                            <div className="flex items-baseline gap-4">
+                              <span className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                {response.year}
+                              </span>
+                              <h3 className={`본문폰트 font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                                {response.title}
+                              </h3>
+                              {response.author && (
+                                <span className={`각주폰트-민부리 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                  {response.author}
+                                </span>
+                              )}
+                            </div>
+                            {response.content && Array.isArray(response.content) && response.content.length > 0 && (
+                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                                <PortableText
+                                  value={response.content}
+                                  components={components}
+                                />
+                              </div>
+                            )}
+                            {response.image && (
+                              <div className="my-6">
+                                <img
+                                  src={urlFor(response.image).url() || ''}
+                                  alt={response.image.alt || ''}
+                                  className="w-full h-auto"
+                                />
+                              </div>
+                            )}
+                            {response.references && Array.isArray(response.references) && response.references.length > 0 && (
+                              <div className={`각주폰트-민부리 mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                <div className="font-bold mb-2">참고문헌</div>
+                                <PortableText
+                                  value={response.references}
+                                  components={components}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  } else if (block.blockType === 'interviewQA' && block.interviewQAContent) {
+                    return (
+                      <div key={blockIdx} className="space-y-12">
+                        {block.interviewQAContent.map((qa: any, idx: number) => (
+                          <div key={idx} className="space-y-6">
+                            {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
+                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                                <PortableText
+                                  value={qa.question}
+                                  components={components}
+                                />
+                              </div>
+                            )}
+                            <div className="space-y-4 pl-4">
+                              {qa.answers && qa.answers.map((answer: any, ansIdx: number) => (
+                                <div key={ansIdx} className="space-y-2">
+                                  <div className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    {answer.person}
+                                  </div>
+                                  {answer.answer && Array.isArray(answer.answer) && answer.answer.length > 0 && (
+                                    <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                                      <PortableText
+                                        value={answer.answer}
+                                        components={components}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  } else if (block.blockType === 'conversation' && block.conversationContent) {
+                    return (
+                      <div key={blockIdx} className="space-y-6">
+                        {block.conversationContent.map((turn: any, idx: number) => (
+                          <div key={idx} className="space-y-2">
+                            <div className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              {turn.speaker}
+                            </div>
+                            {turn.text && Array.isArray(turn.text) && turn.text.length > 0 && (
+                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                                <PortableText
+                                  value={turn.text}
+                                  components={components}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  } else if (block.blockType === 'qaList' && block.qaListContent) {
+                    return (
+                      <div key={blockIdx} className="space-y-8">
+                        {block.qaListContent.map((qa: any, idx: number) => (
+                          <div key={idx} className="space-y-4">
+                            {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
+                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                                <PortableText
+                                  value={qa.question}
+                                  components={components}
+                                />
+                              </div>
+                            )}
+                            {qa.answer && Array.isArray(qa.answer) && qa.answer.length > 0 && (
+                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                                <PortableText
+                                  value={qa.answer}
+                                  components={components}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  }
+                  return null
+                })
+              ) : (
+                <>
+                  {/* 기존 필드들 (하위 호환성) */}
+                  {/* 일반 본문 */}
+                  {article.content && Array.isArray(article.content) && article.content.length > 0 && (
+                    <div>
+                      <PortableText
+                        value={article.content}
+                        components={components}
+                      />
+                    </div>
+                  )}
 
-              {/* 응답 모음 */}
-              {article.responses && Array.isArray(article.responses) && article.responses.length > 0 && (
+                  {/* 응답 모음 */}
+                  {article.responses && Array.isArray(article.responses) && article.responses.length > 0 && (
                 <div className="space-y-12">
                   {article.responses.map((response: any, idx: number) => (
                     <div key={idx} className="space-y-4">
@@ -660,7 +1147,7 @@ export default function ArticlePage({ params }: PageProps) {
                         </div>
                       )}
                       {response.references && Array.isArray(response.references) && response.references.length > 0 && (
-                        <div className={`각주폰트-민부리 text-sm mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <div className={`각주폰트-민부리 mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                           <div className="font-bold mb-2">참고문헌</div>
                           <PortableText
                             value={response.references}
@@ -754,6 +1241,8 @@ export default function ArticlePage({ params }: PageProps) {
                   ))}
                 </div>
               )}
+                </>
+              )}
             </div>
 
             {/* 추가 섹션 (참고문헌, 이미지 출처 등) */}
@@ -820,7 +1309,7 @@ export default function ArticlePage({ params }: PageProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5l7 7-7 7" />
                   </svg>
-                  <div className="text-sm text-left w-[180px]">
+                  <div className="text-left w-[180px]">
                     <div className="각주폰트-민부리 line-clamp-2">{article.nextArticle.title}</div>
                   </div>
                 </Link>
@@ -855,10 +1344,10 @@ export default function ArticlePage({ params }: PageProps) {
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                    <span className="각주폰트-민부리 text-xs">이전</span>
+                    <span className="각주폰트-민부리">이전</span>
                   </Link>
                 ) : (
-                  <div className={`각주폰트-민부리 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>이전 글 없음</div>
+                  <div className={`각주폰트-민부리 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>이전 글 없음</div>
                 )}
               </div>
 
@@ -866,7 +1355,7 @@ export default function ArticlePage({ params }: PageProps) {
               <div className="col-span-1 flex justify-center">
                 <Link
                   href="/"
-                  className={`flex items-center 각주폰트-민부리 text-xs transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`flex items-center 각주폰트-민부리 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                 >
                   돌아가기
                 </Link>
@@ -879,7 +1368,7 @@ export default function ArticlePage({ params }: PageProps) {
                     href={`/articles/${article.nextArticle.slug}`}
                     className={`group flex items-center justify-end gap-1.5 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                   >
-                    <span className="각주폰트-민부리 text-xs">다음</span>
+                    <span className="각주폰트-민부리">다음</span>
                     <svg
                       className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
                       fill="none"
@@ -890,7 +1379,7 @@ export default function ArticlePage({ params }: PageProps) {
                     </svg>
                   </Link>
                 ) : (
-                  <div className={`각주폰트-민부리 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>다음 글 없음</div>
+                  <div className={`각주폰트-민부리 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>다음 글 없음</div>
                 )}
               </div>
             </div>

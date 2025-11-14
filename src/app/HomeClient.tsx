@@ -197,17 +197,17 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                   className={`w-full py-3 flex justify-between items-center text-left ${isDarkMode ? 'text-white' : 'text-black'}`}
                 >
                   <div>
-                    <span className="각주폰트-민부리 font-bold mr-2">{issue.number}호</span>
+                    <span className="본문폰트-민부리 font-bold mr-2">{issue.number}호</span>
                     <span className="본문폰트">{issue.title}</span>
                   </div>
                 </button>
 
                 {expandedIssue === issue._id && (
-                  <div className="pb-4 pl-8 space-y-6">
+                  <div className="pb-4 pl-11 space-y-6">
                     {issue.sections && issue.sections.length > 0 ? (
                       <div className="space-y-4">
                         {issue.sections.map((section: any, sectionIdx: number) => (
-                          <div key={`${issue._id}-${section._id || sectionIdx}`} className="space-y-2">
+                          <div key={`${issue._id}-${section._id || sectionIdx}`} className="space-y-1.5">
                             {/* 섹션 제목 */}
                             <p className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
                               {section.title}
@@ -229,8 +229,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                           >
                                             {article.title || '제목 없음'}
                                             {article.author && section.title !== '인터뷰' && (
-                                              <span className={`ml-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                · {article.author}
+                                              <span className={`각주폰트-민부리 ml-2 md:ml-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                <span className="md:hidden"><br />{article.author}</span>
+                                                <span className="hidden md:inline">· {article.author}</span>
                                               </span>
                                             )}
                                           </Link>
@@ -245,7 +246,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                       {section.subsections.map((subsection: any, subIdx: number) => (
                                         <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
                                           {/* Subsection 제목 (토글 없음, 항상 펼침) */}
-                                          <p className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                          <p className={`각주폰트-민부리 font-bold py-[0.5em] ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                             {subsection.title}
                                           </p>
 
@@ -286,8 +287,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                             >
                                                               {article.title || '제목 없음'}
                                                               {article.author && (
-                                                                <span className={`ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                                  · {article.author}
+                                                                <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                                                  <span className="md:hidden"><br />{article.author}</span>
+                                                                  <span className="hidden md:inline">· {article.author}</span>
                                                                 </span>
                                                               )}
                                                             </Link>
@@ -312,8 +314,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                     >
                                                       {article.title || '제목 없음'}
                                                       {article.author && (
-                                                        <span className={`ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                          · {article.author}
+                                                        <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                                          <span className="md:hidden"><br />{article.author}</span>
+                                                          <span className="hidden md:inline">· {article.author}</span>
                                                         </span>
                                                       )}
                                                     </Link>
@@ -335,7 +338,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                       {section.subsections.map((subsection: any, subIdx: number) => (
                                         <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
                                           {/* Subsection 제목 (토글 없음, 항상 펼침) */}
-                                          <p className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                          <p className={`각주폰트-민부리 font-bold mt-[1em] ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                             {subsection.title}
                                           </p>
 
@@ -376,8 +379,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                             >
                                                               {article.title || '제목 없음'}
                                                               {article.author && (
-                                                                <span className={`ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                                  · {article.author}
+                                                                <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                                                  <span className="md:hidden"><br />{article.author}</span>
+                                                                  <span className="hidden md:inline">· {article.author}</span>
                                                                 </span>
                                                               )}
                                                             </Link>
@@ -402,8 +406,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                     >
                                                       {article.title || '제목 없음'}
                                                       {article.author && (
-                                                        <span className={`ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                          · {article.author}
+                                                        <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                                          <span className="md:hidden"><br />{article.author}</span>
+                                                          <span className="hidden md:inline">· {article.author}</span>
                                                         </span>
                                                       )}
                                                     </Link>
@@ -429,8 +434,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                           >
                                             {article.title || '제목 없음'}
                                             {article.author && section.title !== '인터뷰' && (
-                                              <span className={`ml-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                · {article.author}
+                                              <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                <span className="md:hidden"><br />{article.author}</span>
+                                                <span className="hidden md:inline">· {article.author}</span>
                                               </span>
                                             )}
                                           </Link>
@@ -458,7 +464,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                           className={`flex items-center gap-2 각주폰트-민부리 transition-colors ${isDarkMode ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
                         >
                           <span>크레딧</span>
-                          <svg
+                          {/* <svg
                             className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
                             fill="none"
                             stroke="currentColor"
@@ -466,7 +472,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5l7 7-7 7" />
-                          </svg>
+                          </svg> */}
                         </button>
 
                         {expandedCredits[issue._id] && (
@@ -487,7 +493,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />
 
           {/* 크레딧 섹션 (기존 코드) */}
-          <div className="py-8 space-y-8">
+          <div className="pt-4 pb-8 space-y-8">
             <div>
               <p className={`본문폰트 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                 한국타이포그라피학회는 글자와 타이포그래피를 연구하기 위해 2008년 창립되었다. 『글짜씨』는 학회에서 2009년 12월부터 발간한 타이포그래피 학술지다.
@@ -540,10 +546,10 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
               </div>
             </div>
 
-            <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />
+            {/* <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} /> */}
 
             {/* 후원 & 파트너 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-0 md:gap-4">
               <div>
                 <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                   후원
