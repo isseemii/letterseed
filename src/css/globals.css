@@ -138,46 +138,46 @@
   /* 본문 */
   .본문폰트 {
     font-weight: 400;
-    font-size: 18px;
+    font-size: 1.15em;
     line-height: 1.66em;
   }
 
   @media (max-width: 768px) {
     .본문폰트 {
       font-weight: 400;
-      font-size: 17px;
-      line-height: 1.66em;
+      font-size: 1.07em;
+      line-height: 1.7em;
     }
   }
 
   /* 본문 볼드 */
   .본문폰트-볼드 {
     font-weight: 700;
-    font-size: 24px;
-    line-height: 1.88em;
+    font-size: 1.5em;
+    line-height: 1.76em;
   }
 
   @media (max-width: 768px) {
     .본문폰트-볼드 {
       font-weight: 700;
-      font-size: 16.5px;
-      line-height: 1.88em;
+      font-size: 1.05em;
+      line-height: 1.76em;
     }
   }
 
   /* 본문 민부리 */
   .본문폰트-민부리 {
     font-family: var(--font-ko-sans);
-    font-size: 18px;
-    line-height: 1.8em;
+    font-size: 1.05em;
+    line-height: 1.76em;
     letter-spacing: 0.02em;
   }
 
   @media (max-width: 768px) {
     .본문폰트-민부리 {
       font-family: var(--font-ko-sans);
-      font-size: 16px;
-      line-height: 1.6em;
+      font-size: 1.015em;
+      line-height: 1.76em;
       letter-spacing: 0.03em;
     }
   }
@@ -185,30 +185,30 @@
   /* 이미지, 각주 */
   .캡션-민부리 {
     font-family: var(--font-ko-sans);
-    font-size: 0.8rem;
-    line-height: 1.68em;
+    font-size: 0.9em;
+    line-height: 1.76em;
   }
 
   @media (max-width: 768px) {
     .캡션-민부리 {
       font-family: var(--font-ko-sans);
-      font-size: 0.7rem;
-      line-height: 1.68em;
+      font-size: 0.85em;
+      line-height: 1.76em;
     }
   }
 
   .각주폰트-민부리 {
     font-family: var(--font-ko-sans);
-    font-size: 14px;
-    line-height: 1.68em;
+    font-size: 0.96em;
+    line-height: 1.76em;
     letter-spacing: 0.03em;
   }
 
   @media (max-width: 768px) {
     .각주폰트-민부리 {
       font-family: var(--font-ko-sans);
-      font-size: 14px;
-      line-height: 1.7em;
+      font-size: 0.85em;
+      line-height: 1.76em;
     }
   }
 

@@ -52,7 +52,7 @@ export default defineType({
       description: '주로 사용하는 타입을 선택하세요 (여러 타입을 함께 사용할 수 있습니다)'
     }),
 
-    // ✨ 개괄글/서론 (모든 타입 공통)
+    // 개괄글/서론 (모든 타입 공통)
     defineField({
       name: 'introduction',
       title: '개괄글 / 서론',
@@ -145,7 +145,7 @@ export default defineType({
     // 타입별 메인 컨텐츠
     // ========================================
     
-    // ✨ 통합 컨텐츠 블록 (순서 자유롭게 배치 가능)
+    // 통합 컨텐츠 블록 (순서 자유롭게 배치 가능)
     defineField({
       name: 'contentBlocks',
       title: '컨텐츠 블록 (순서 자유 배치)',

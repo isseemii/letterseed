@@ -14,11 +14,14 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const [expandedCredits, setExpandedCredits] = useState<{ [key: string]: boolean }>({})
-  // ✨ Subsection 토글 상태 추가
+  // Subsection 토글 상태 추가
   const [expandedSubsections, setExpandedSubsections] = useState<{ [key: string]: boolean }>({})
   const { isDarkMode, toggleDarkMode } = useDarkMode()
 
   const issues = initialIssues
+
+  // 후원/파트너 이미지 크기 클래스명
+  const sponsorImageClassName = "w-36 lg:w-40"
 
   // 크레딧 토글 함수
   const toggleCredits = (issueId: string) => {
@@ -28,7 +31,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
     }))
   }
 
-  // ✨ Subsection 토글 함수
+  // Subsection 토글 함수
   const toggleSubsection = (sectionId: string) => {
     setExpandedSubsections(prev => ({
       ...prev,
@@ -174,7 +177,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           </div>
 
           {/* 상단 소개글 */}
-          <div className={`space-y-4 본문폰트 pb-4 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+          <div className={`space-y-4 본문폰트 pb-6 ${isDarkMode ? 'text-white' : 'text-black'}`}>
             <p>
               2024년 임기를 시작한 제8대 한국타이포그래피학회는 디지털 환경에서의 타이포그래피를 둘러싼 현상과 실천 등을 살펴보며 디지털 타이포그래피의 정체성을 탐구한다. 이에 대한 연장선으로 제8대 한국타이포그래피학회는 글짜씨를 통해 디지털 환경 속의 타이포그래피를 실험하고 이를 웹을 통해 공유하는 프로젝트를 진행한다.
             </p>
@@ -202,12 +205,17 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                   </div>
                 </button>
 
-                {expandedIssue === issue._id && (
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedIssue === issue._id
+                      ? 'max-h-[5000px] opacity-100'
+                      : 'max-h-0 opacity-0'
+                    }`}
+                >
                   <div className="pb-4 pl-11 space-y-6">
                     {issue.sections && issue.sections.length > 0 ? (
                       <div className="space-y-4">
                         {issue.sections.map((section: any, sectionIdx: number) => (
-                          <div key={`${issue._id}-${section._id || sectionIdx}`} className="space-y-1.5">
+                          <div key={`${issue._id}-${section._id || sectionIdx}`} className="pt-2 space-y-2">
                             {/* 섹션 제목 */}
                             <p className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
                               {section.title}
@@ -224,13 +232,13 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                         <div key={`${article._id || idx}`} className="group">
                                           <Link
                                             href={`/articles/${article.slug?.current || article._id}`}
-                                            className={`block 본문폰트 transition ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-black hover:text-gray-600'
+                                            className={`block 본문폰트 transition ${isDarkMode ? 'text-white lg:text-gray-300 lg:hover:text-white' : 'text-black lg:hover:text-gray-600'
                                               }`}
                                           >
                                             {article.title || '제목 없음'}
                                             {article.author && section.title !== '인터뷰' && (
-                                              <span className={`각주폰트-민부리 ml-2 md:ml-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                <span className="md:hidden"><br />{article.author}</span>
+                                              <span className={`각주폰트-민부리 ml-1.5 pb-0.5 md:ml-2 md:mb-0 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                <span className="md:hidden">· {article.author}</span>
                                                 <span className="hidden md:inline">· {article.author}</span>
                                               </span>
                                             )}
@@ -246,7 +254,8 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                       {section.subsections.map((subsection: any, subIdx: number) => (
                                         <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
                                           {/* Subsection 제목 (토글 없음, 항상 펼침) */}
-                                          <p className={`각주폰트-민부리 font-bold py-[0.5em] ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                          <p className={`본문폰트-민부리 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            {/* <span className="text-lg mr-1.5">·</span> */}
                                             {subsection.title}
                                           </p>
 
@@ -256,45 +265,54 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                             {subsection.subsections && subsection.subsections.length > 0 && (
                                               <>
                                                 {subsection.subsections.map((subsubsection: any, subsubIdx: number) => (
-                                                  <div key={`${subsection._id}-${subsubsection._id || subsubIdx}`} className="space-y-2">
+                                                  <div
+                                                    key={`${subsection._id}-${subsubsection._id || subsubIdx}`}
+                                                  >
                                                     {/* 하하위 섹션 제목 + 토글 버튼 */}
                                                     <button
                                                       onClick={() => toggleSubsection(subsubsection._id)}
-                                                      className={`w-full flex items-center justify-between text-left 각주폰트-민부리 font-bold transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
+                                                      className={`w-full flex items-center justify-between text-left 각주폰트-민부리 font-bold transition-colors ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
                                                         }`}
                                                     >
                                                       <span>{subsubsection.title}</span>
                                                       <svg
-                                                        className={`w-3 h-3 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-90' : ''
+                                                        className={`w-3 h-3 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
                                                           }`}
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
                                                       >
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                                       </svg>
                                                     </button>
 
                                                     {/* 하하위 섹션의 articles */}
-                                                    {expandedSubsections[subsubsection._id] && subsubsection.articles && subsubsection.articles.length > 0 && (
-                                                      <div className="space-y-1.5 pl-4">
-                                                        {subsubsection.articles.map((article: any, artIdx: number) => (
-                                                          <div key={`${article._id || artIdx}`} className="group">
-                                                            <Link
-                                                              href={`/articles/${article.slug?.current || article._id}`}
-                                                              className={`block 본문폰트 transition ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
-                                                                }`}
-                                                            >
-                                                              {article.title || '제목 없음'}
-                                                              {article.author && (
-                                                                <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                                  <span className="md:hidden"><br />{article.author}</span>
-                                                                  <span className="hidden md:inline">· {article.author}</span>
-                                                                </span>
-                                                              )}
-                                                            </Link>
-                                                          </div>
-                                                        ))}
+                                                    {subsubsection.articles && subsubsection.articles.length > 0 && (
+                                                      <div
+                                                        className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedSubsections[subsubsection._id]
+                                                            ? 'max-h-[1000px] opacity-100'
+                                                            : 'max-h-0 opacity-0'
+                                                          }`}
+                                                      >
+                                                        <div className="space-y-1.5 pl-4">
+                                                          {subsubsection.articles.map((article: any, artIdx: number) => (
+                                                            <div key={`${article._id || artIdx}`} className="group">
+                                                              <Link
+                                                                href={`/articles/${article.slug?.current || article._id}`}
+                                                                className={`block 본문폰트 transition ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
+                                                                  }`}
+                                                              >
+                                                                {article.title || '제목 없음'}
+                                                                {article.author && (
+                                                                  <span className={`각주폰트-민부리 ml-1.5 pb-0.5 md:ml-2 md:mb-0 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                                                    <span className="md:hidden">· {article.author}</span>
+                                                                    <span className="hidden md:inline">· {article.author}</span>
+                                                                  </span>
+                                                                )}
+                                                              </Link>
+                                                            </div>
+                                                          ))}
+                                                        </div>
                                                       </div>
                                                     )}
                                                   </div>
@@ -309,13 +327,13 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                   <div key={`${article._id || artIdx}`} className="group">
                                                     <Link
                                                       href={`/articles/${article.slug?.current || article._id}`}
-                                                      className={`block 본문폰트 transition ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
+                                                      className={`block 본문폰트 transition ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
                                                         }`}
                                                     >
                                                       {article.title || '제목 없음'}
                                                       {article.author && (
-                                                        <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                          <span className="md:hidden"><br />{article.author}</span>
+                                                        <span className={`각주폰트-민부리 ml-1.5 pb-0.5 md:ml-2 md:mb-0 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                                          <span className="md:hidden">· {article.author}</span>
                                                           <span className="hidden md:inline">· {article.author}</span>
                                                         </span>
                                                       )}
@@ -338,7 +356,8 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                       {section.subsections.map((subsection: any, subIdx: number) => (
                                         <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
                                           {/* Subsection 제목 (토글 없음, 항상 펼침) */}
-                                          <p className={`각주폰트-민부리 font-bold mt-[1em] ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                          <p className={`본문폰트-민부리 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            {/* <span className="mr-1.5">·</span> */}
                                             {subsection.title}
                                           </p>
 
@@ -348,45 +367,54 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                             {subsection.subsections && subsection.subsections.length > 0 && (
                                               <>
                                                 {subsection.subsections.map((subsubsection: any, subsubIdx: number) => (
-                                                  <div key={`${subsection._id}-${subsubsection._id || subsubIdx}`} className="space-y-2">
+                                                  <div
+                                                    key={`${subsection._id}-${subsubsection._id || subsubIdx}`}
+                                                  >
                                                     {/* 하하위 섹션 제목 + 토글 버튼 */}
                                                     <button
                                                       onClick={() => toggleSubsection(subsubsection._id)}
-                                                      className={`w-full flex items-center justify-between text-left 각주폰트-민부리 font-bold transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
+                                                      className={`w-full flex items-start justify-between text-left 본문폰트 transition-colors ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
                                                         }`}
                                                     >
                                                       <span>{subsubsection.title}</span>
                                                       <svg
-                                                        className={`w-3 h-3 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-90' : ''
+                                                        className={`w-4 h-4 mt-2 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
                                                           }`}
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
                                                       >
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
                                                       </svg>
                                                     </button>
 
                                                     {/* 하하위 섹션의 articles */}
-                                                    {expandedSubsections[subsubsection._id] && subsubsection.articles && subsubsection.articles.length > 0 && (
-                                                      <div className="space-y-1.5 pl-4">
-                                                        {subsubsection.articles.map((article: any, artIdx: number) => (
-                                                          <div key={`${article._id || artIdx}`} className="group">
-                                                            <Link
-                                                              href={`/articles/${article.slug?.current || article._id}`}
-                                                              className={`block 본문폰트 transition ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
-                                                                }`}
-                                                            >
-                                                              {article.title || '제목 없음'}
-                                                              {article.author && (
-                                                                <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                                  <span className="md:hidden"><br />{article.author}</span>
-                                                                  <span className="hidden md:inline">· {article.author}</span>
-                                                                </span>
-                                                              )}
-                                                            </Link>
-                                                          </div>
-                                                        ))}
+                                                    {subsubsection.articles && subsubsection.articles.length > 0 && (
+                                                      <div
+                                                        className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedSubsections[subsubsection._id]
+                                                            ? 'max-h-[1000px] opacity-100'
+                                                            : 'max-h-0 opacity-0'
+                                                          }`}
+                                                      >
+                                                        <div className="space-y-1.5 pl-4">
+                                                          {subsubsection.articles.map((article: any, artIdx: number) => (
+                                                            <div key={`${article._id || artIdx}`} className="group">
+                                                              <Link
+                                                                href={`/articles/${article.slug?.current || article._id}`}
+                                                                className={`block 본문폰트 transition ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
+                                                                  }`}
+                                                              >
+                                                                {article.title || '제목 없음'}
+                                                                {article.author && (
+                                                                  <span className={`각주폰트-민부리 ml-1.5 pb-0.5 md:ml-2 md:mb-0 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                                                    <span className="md:hidden">· {article.author}</span>
+                                                                    <span className="hidden md:inline">· {article.author}</span>
+                                                                  </span>
+                                                                )}
+                                                              </Link>
+                                                            </div>
+                                                          ))}
+                                                        </div>
                                                       </div>
                                                     )}
                                                   </div>
@@ -401,13 +429,13 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                   <div key={`${article._id || artIdx}`} className="group">
                                                     <Link
                                                       href={`/articles/${article.slug?.current || article._id}`}
-                                                      className={`block 본문폰트 transition ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
+                                                      className={`block 본문폰트 transition ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
                                                         }`}
                                                     >
                                                       {article.title || '제목 없음'}
                                                       {article.author && (
-                                                        <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                          <span className="md:hidden"><br />{article.author}</span>
+                                                        <span className={`각주폰트-민부리 ml-1.5 pb-0.5 md:ml-2 md:mb-0 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                                          <span className="md:hidden">· {article.author}</span>
                                                           <span className="hidden md:inline">· {article.author}</span>
                                                         </span>
                                                       )}
@@ -429,13 +457,13 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                         <div key={`${article._id || idx}`} className="group">
                                           <Link
                                             href={`/articles/${article.slug?.current || article._id}`}
-                                            className={`block 본문폰트 transition ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-black hover:text-gray-600'
+                                            className={`block 본문폰트 transition ${isDarkMode ? 'text-white lg:text-gray-300 lg:hover:text-white' : 'text-black lg:hover:text-gray-600'
                                               }`}
                                           >
                                             {article.title || '제목 없음'}
                                             {article.author && section.title !== '인터뷰' && (
-                                              <span className={`각주폰트-민부리 ml-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                <span className="md:hidden"><br />{article.author}</span>
+                                              <span className={`각주폰트-민부리 ml-1.5 pb-0.5 md:ml-2 md:mb-0 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                <span className="md:hidden">· {article.author}</span>
                                                 <span className="hidden md:inline">· {article.author}</span>
                                               </span>
                                             )}
@@ -451,39 +479,43 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                         ))}
                       </div>
                     ) : (
-                      <div className={`본문폰트 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                      <div className={`각주폰트-민부리 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                         업데이트 예정입니다.
                       </div>
                     )}
 
                     {/* ✨ 호별 크레딧 */}
                     {issue.credits && issue.credits.length > 0 && (
-                      <div className={`pt-4 border-t space-y-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                      <div className={`space-y-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
                         <button
                           onClick={() => toggleCredits(issue._id)}
-                          className={`flex items-center gap-2 각주폰트-민부리 transition-colors ${isDarkMode ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
+                          className={`flex items-center gap-0 각주폰트-민부리 transition-colors ${isDarkMode ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
                         >
                           <span>크레딧</span>
-                          {/* <svg
-                            className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
+                          <svg
+                            className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5l7 7-7 7" />
-                          </svg> */}
+                          </svg>
                         </button>
 
-                        {expandedCredits[issue._id] && (
-                          <div className="pl-4 각주폰트-민부리">
+                        <div
+                          className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedCredits[issue._id]
+                              ? 'max-h-[1000px] opacity-100'
+                              : 'max-h-0 opacity-0'
+                            }`}
+                        >
+                          <div className="각주폰트-민부리">
                             <PortableText value={issue.credits} components={creditsComponents} />
                           </div>
-                        )}
+                        </div>
                       </div>
                     )}
                   </div>
-                )}
+                </div>
 
                 {idx < issues.length - 1 && <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />}
               </div>
@@ -493,64 +525,60 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />
 
           {/* 크레딧 섹션 (기존 코드) */}
-          <div className="pt-4 pb-8 space-y-8">
-            <div>
+          <div className="pt-6 pb-8 space-y-8">
+            {/* <div>
               <p className={`본문폰트 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                 한국타이포그라피학회는 글자와 타이포그래피를 연구하기 위해 2008년 창립되었다. 『글짜씨』는 학회에서 2009년 12월부터 발간한 타이포그래피 학술지다.
               </p>
-            </div>
+            </div> */}
+
+            {/* <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} /> */}
+
             {/* 한국타이포그라피학회 */}
             <div>
-              <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              <h3 className={`font-bold mb-5 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                 한국타이포그라피학회
               </h3>
-              <div className={`space-y-6 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                <div>
-                  <p className="mb-2">
-                    회장: 심우진 <br />
-                    부회장: 김수은, 민구홍 <br />
-                    사무총장: 박혜지 <br />
-                    정책기획이사: 민본, 박고은 <br />
-                    학술출판이사: 박유선, 유도원 <br />
-                    대외전시이사: 김기창, 이재환 <br />
-                    감사: 노영권
-                  </p>
-                  <p className="mb-2">
-                    논문편집위원장: 이병학 <br />
-                    논문편집위원: 박수진, 석재원, 이지원, 정희숙, 하주현 <br />
-                    연구윤리위원장: 조주은 <br />
-                    연구윤리위원: 박재홍 <br />
-                    연구자문위원장: 크리스 하마모토 <br />
-                    연구자문위원: 박지훈 <br />
-                    국제교류위원장: 제임스 채 <br />
-                    국제교류위원: 김민영
-                  </p>
+              <div className={`space-y-5 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                <div className="space-y-[0.25em]">
+                  <span className="block">회장: 심우진</span>
+                  <span className="block">부회장: 김수은, 민구홍</span>
+                  <span className="block">사무총장: 박혜지</span>
+                  <span className="block">정책기획이사: 민본, 박고은</span>
+                  <span className="block">학술출판이사: 박유선, 유도원</span>
+                  <span className="block">대외전시이사: 김기창, 이재환</span>
+                  <span className="block">감사: 노영권</span>
+                  <span className="block">논문편집위원장: 이병학</span>
+                  <span className="block">논문편집위원: 박수진, 석재원, 이지원, 정희숙, 하주현</span>
+                  <span className="block">연구윤리위원장: 조주은</span>
+                  <span className="block">연구윤리위원: 박재홍</span>
+                  <span className="block">연구자문위원장: 크리스 하마모토</span>
+                  <span className="block">연구자문위원: 박지훈</span>
+                  <span className="block">국제교류위원장: 제임스 채</span>
+                  <span className="block">국제교류위원: 김민영</span>
                 </div>
 
-                <div>
-                  <p className="mb-2">
-                    대외협력위원: 김은지, 김태룡, 윤율리, 이주현, 임혜은, 최규호, 함지은, 홍원태 <br />
-                    한글특별위원회위원장: 길형진 <br />
-                    다양성특별위원회위원장: 이지원 <br />
-                    타이포잔치특별위원회장: 심우진 <br />
-                    타이포잔치특별위원: 김경선, 박연주, 안병학, 유정미, 이재민, 최성민, 최슬기 <br />
-                    글꼴창작지원사업심의위원장: 심우진 <br />
-                    글꼴창작지원사업심의위원: 구모아, 노영권, 박부미, 장수영, 정태영
-                  </p>
-                  <p className="mb-2">
-                    사무국장: 이름, 홍유림 <br />
-                    홍보국장: 강인구 <br />
-                    출판국장: 문민주, 김도연, 황세미
-                  </p>
+                <div className="space-y-[0.25em]">
+                  <span className="block">대외협력위원: 김은지, 김태룡, 윤율리, 이주현, 임혜은, 최규호, 함지은, 홍원태</span>
+                  <span className="block">한글특별위원회위원장: 길형진</span>
+                  <span className="block">다양성특별위원회위원장: 이지원</span>
+                  <span className="block">타이포잔치특별위원회장: 심우진</span>
+                  <span className="block">타이포잔치특별위원: 김경선, 박연주, 안병학, 유정미, 이재민, 최성민, 최슬기</span>
+                  <span className="block">글꼴창작지원사업심의위원장: 심우진</span>
+                  <span className="block">글꼴창작지원사업심의위원: 구모아, 노영권, 박부미, 장수영, 정태영</span>
+                </div>
+
+                <div className="space-y-[0.25em]">
+                  <span className="block">사무국장: 이름, 홍유림</span>
+                  <span className="block">홍보국장: 강인구</span>
+                  <span className="block">출판국장: 문민주, 김도연, 황세미</span>
                 </div>
               </div>
             </div>
 
-            {/* <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} /> */}
-
             {/* 후원 & 파트너 */}
-            <div className="grid grid-cols-2 gap-0 md:gap-4">
-              <div>
+            <div className="grid grid-cols-3 gap-6">
+              <div className="col-span-1">
                 <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                   후원
                 </h3>
@@ -560,11 +588,11 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                   <img src="/img/sp/01_sp/sp-03-coloso.gif" alt="콜로소" className="w-36" />
                 </div>
               </div>
-              <div>
+              <div className="col-span-2">
                 <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                   파트너
                 </h3>
-                <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-2 gap-6">
                   {/* 울트라블랙 */}
                   <img src="/img/sp/02_pt/1/pt-01-happybean.gif" alt="해피빈" className="w-36" />
                   <img src="/img/sp/02_pt/1/pt-06-woowa.gif" alt="우아한형제들" className="w-36" />
@@ -701,7 +729,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                             {article.title || '제목 없음'}
                                           </span>
                                           {article.author && (
-                                            <span className="absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[#7CFC00]">
+                                            <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                               {article.author}
                                             </span>
                                           )}
@@ -718,12 +746,12 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                   {section.subsections.map((subsection: any, subIdx: number) => (
                                     <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
                                       {/* Subsection 제목 (토글 없음, 항상 펼침) */}
-                                      <p className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                                      <p className={`본문폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                                         {subsection.title}
                                       </p>
 
                                       {/* Subsection 내용 (항상 표시) */}
-                                      <div className="space-y-2">
+                                      <div className="space-y-2 ml-8">
                                         {/* ✨ 하하위 섹션 (3단계) - 토글 가능 */}
                                         {subsection.subsections && subsection.subsections.length > 0 && (
                                           <>
@@ -732,140 +760,50 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                 {/* 하하위 섹션 제목 + 토글 버튼 */}
                                                 <button
                                                   onClick={() => toggleSubsection(subsubsection._id)}
-                                                  className={`w-full flex items-center justify-between text-left 각주폰트-민부리 font-bold transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
+                                                  className={`w-full flex items-center justify-between text-left 각주폰트-민부리 font-bold transition-colors ${isDarkMode ? 'text-white' : 'text-black'
                                                     }`}
                                                 >
                                                   <span>{subsubsection.title}</span>
                                                   <svg
-                                                    className={`w-3 h-3 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-90' : ''
+                                                    className={`w-3 h-3 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
                                                       }`}
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
                                                   >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                                   </svg>
                                                 </button>
 
                                                 {/* 하하위 섹션의 articles */}
-                                                {expandedSubsections[subsubsection._id] && subsubsection.articles && subsubsection.articles.length > 0 && (
-                                                  <div className="space-y-1.5">
-                                                    {subsubsection.articles.map((article: any, artIdx: number) => (
-                                                      <div key={`${article._id || artIdx}`} className="group">
-                                                        <Link
-                                                          href={`/articles/${article.slug?.current || article._id}`}
-                                                          className={`block 본문폰트 transition relative ${isDarkMode ? 'text-white' : 'text-black'}`}
-                                                          onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                                          onMouseLeave={() => setPreviewUrl(null)}
-                                                        >
-                                                          <span className="group-hover:opacity-0 transition-opacity">
-                                                            {article.title || '제목 없음'}
-                                                          </span>
-                                                          {article.author && (
-                                                            <span className="absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[#7CFC00]">
-                                                              {article.author}
-                                                            </span>
-                                                          )}
-                                                        </Link>
-                                                      </div>
-                                                    ))}
-                                                  </div>
-                                                )}
-                                              </div>
-                                            ))}
-                                          </>
-                                        )}
-
-                                        {/* Subsection의 직속 articles */}
-                                        {subsection.articles && subsection.articles.length > 0 && (
-                                          <div className="space-y-1.5">
-                                            {subsection.articles.map((article: any, artIdx: number) => (
-                                              <div key={`${article._id || artIdx}`} className="group">
-                                                <Link
-                                                  href={`/articles/${article.slug?.current || article._id}`}
-                                                  className={`block 본문폰트 transition relative ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-black hover:text-gray-600'
-                                                    }`}
-                                                  onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                                  onMouseLeave={() => setPreviewUrl(null)}
-                                                >
-                                                  <span className="group-hover:opacity-0 transition-opacity">
-                                                    {article.title || '제목 없음'}
-                                                  </span>
-                                                  {article.author && (
-                                                    <span className="absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[#7CFC00]">
-                                                      {article.author}
-                                                    </span>
-                                                  )}
-                                                </Link>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              {/* ✨ 다른 호: Subsections 먼저 렌더링 (항상 펼침) */}
-                              {section.subsections && section.subsections.length > 0 && (
-                                <>
-                                  {section.subsections.map((subsection: any, subIdx: number) => (
-                                    <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
-                                      {/* Subsection 제목 (토글 없음, 항상 펼침) */}
-                                      <p className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                                        {subsection.title}
-                                      </p>
-
-                                      {/* Subsection 내용 (항상 표시) */}
-                                      <div className="space-y-2">
-                                        {/* ✨ 하하위 섹션 (3단계) - 토글 가능 */}
-                                        {subsection.subsections && subsection.subsections.length > 0 && (
-                                          <>
-                                            {subsection.subsections.map((subsubsection: any, subsubIdx: number) => (
-                                              <div key={`${subsection._id}-${subsubsection._id || subsubIdx}`} className="space-y-2">
-                                                {/* 하하위 섹션 제목 + 토글 버튼 */}
-                                                <button
-                                                  onClick={() => toggleSubsection(subsubsection._id)}
-                                                  className={`w-full flex items-center justify-between text-left 본문폰트 transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}
-                                                >
-                                                  <span>{subsubsection.title}</span>
-                                                  <svg
-                                                    className={`w-3 h-3 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-90' : ''
+                                                {subsubsection.articles && subsubsection.articles.length > 0 && (
+                                                  <div
+                                                    className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedSubsections[subsubsection._id]
+                                                        ? 'max-h-[1000px] opacity-100'
+                                                        : 'max-h-0 opacity-0'
                                                       }`}
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
                                                   >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                  </svg>
-                                                </button>
-
-                                                {/* 하하위 섹션의 articles */}
-                                                {expandedSubsections[subsubsection._id] && subsubsection.articles && subsubsection.articles.length > 0 && (
-                                                  <div className="space-y-1.5">
-                                                    {subsubsection.articles.map((article: any, artIdx: number) => (
-                                                      <div key={`${article._id || artIdx}`} className="group">
-                                                        <Link
-                                                          href={`/articles/${article.slug?.current || article._id}`}
-                                                          className={`block 본문폰트 transition relative ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-black'
-                                                            }`}
-                                                          onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                                          onMouseLeave={() => setPreviewUrl(null)}
-                                                        >
-                                                          <span className="group-hover:opacity-0 transition-opacity">
-                                                            {article.title || '제목 없음'}
-                                                          </span>
-                                                          {article.author && (
-                                                            <span className="absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[#7CFC00]">
-                                                              {article.author}
+                                                    <div className="space-y-1.5">
+                                                      {subsubsection.articles.map((article: any, artIdx: number) => (
+                                                        <div key={`${article._id || artIdx}`} className="group">
+                                                          <Link
+                                                            href={`/articles/${article.slug?.current || article._id}`}
+                                                            className={`block 본문폰트 transition relative ${isDarkMode ? 'text-white' : 'text-black'}`}
+                                                            onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
+                                                            onMouseLeave={() => setPreviewUrl(null)}
+                                                          >
+                                                            <span className="group-hover:opacity-0 transition-opacity">
+                                                              {article.title || '제목 없음'}
                                                             </span>
-                                                          )}
-                                                        </Link>
-                                                      </div>
-                                                    ))}
+                                                            {article.author && (
+                                                              <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                                {article.author}
+                                                              </span>
+                                                            )}
+                                                          </Link>
+                                                        </div>
+                                                      ))}
+                                                    </div>
                                                   </div>
                                                 )}
                                               </div>
@@ -889,7 +827,104 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                     {article.title || '제목 없음'}
                                                   </span>
                                                   {article.author && (
-                                                    <span className="absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[#7CFC00]">
+                                                    <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                      {article.author}
+                                                    </span>
+                                                  )}
+                                                </Link>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {/* ✨ 다른 호: Subsections 먼저 렌더링 (항상 펼침) */}
+                              {section.subsections && section.subsections.length > 0 && (
+                                <>
+                                  {section.subsections.map((subsection: any, subIdx: number) => (
+                                    <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
+                                      {/* Subsection 제목 (토글 없음, 항상 펼침) */}
+                                      <p className={`본문폰트-민부리 mt-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                                        {subsection.title}
+                                      </p>
+
+                                      {/* Subsection 내용 (항상 표시) */}
+                                      <div className="space-y-2">
+                                        {/* ✨ 하하위 섹션 (3단계) - 토글 가능 */}
+                                        {subsection.subsections && subsection.subsections.length > 0 && (
+                                          <>
+                                            {subsection.subsections.map((subsubsection: any, subsubIdx: number) => (
+                                              <div key={`${subsection._id}-${subsubsection._id || subsubIdx}`} className="space-y-2">
+                                                {/* 하하위 섹션 제목 + 토글 버튼 */}
+                                                <button
+                                                  onClick={() => toggleSubsection(subsubsection._id)}
+                                                  className={`w-full flex items-start justify-between text-left 본문폰트 transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}
+                                                >
+                                                  <span>{subsubsection.title}</span>
+                                                  <svg
+                                                    className={`w-6 h-6 mt-1 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
+                                                      }`}
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                  >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                                                  </svg>
+                                                </button>
+
+                                                {/* 하하위 섹션의 articles */}
+                                                {expandedSubsections[subsubsection._id] && subsubsection.articles && subsubsection.articles.length > 0 && (
+                                                  <div className="space-y-1.5">
+                                                    {subsubsection.articles.map((article: any, artIdx: number) => (
+                                                      <div key={`${article._id || artIdx}`} className="group">
+                                                        <Link
+                                                          href={`/articles/${article.slug?.current || article._id}`}
+                                                          className={`block 본문폰트 transition relative ml-8 ${isDarkMode ? 'text-white' : 'text-black'
+                                                            }`}
+                                                          onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
+                                                          onMouseLeave={() => setPreviewUrl(null)}
+                                                        >
+                                                          <span className="group-hover:opacity-0 transition-opacity">
+                                                            {article.title || '제목 없음'}
+                                                          </span>
+                                                          {article.author && (
+                                                            <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                              {article.author}
+                                                            </span>
+                                                          )}
+                                                        </Link>
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            ))}
+                                          </>
+                                        )}
+
+                                        {/* Subsection의 직속 articles */}
+                                        {subsection.articles && subsection.articles.length > 0 && (
+                                          <div className="space-y-1.5 ml-8">
+                                            {subsection.articles.map((article: any, artIdx: number) => (
+                                              <div key={`${article._id || artIdx}`} className="group">
+                                                <Link
+                                                  href={`/articles/${article.slug?.current || article._id}`}
+                                                  className={`block 본문폰트 transition relative ${isDarkMode ? 'text-white' : 'text-black'
+                                                    }`}
+                                                  onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
+                                                  onMouseLeave={() => setPreviewUrl(null)}
+                                                >
+                                                  <span className="group-hover:opacity-0 transition-opacity">
+                                                    {article.title || '제목 없음'}
+                                                  </span>
+                                                  {article.author && (
+                                                    <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                       {article.author}
                                                     </span>
                                                   )}
@@ -921,7 +956,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                       ) : (
                                         <Link
                                           href={`/articles/${article.slug?.current || article._id}`}
-                                          className={`block 본문폰트 transition relative ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-black hover:text-gray-600'}`}
+                                          className={`block 본문폰트 transition relative ${isDarkMode ? 'text-white' : 'text-black'}`}
                                           onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
                                           onMouseLeave={() => setPreviewUrl(null)}
                                         >
@@ -929,7 +964,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                             {article.title || '제목 없음'}
                                           </span>
                                           {article.author && (
-                                            <span className="absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-[#7CFC00]">
+                                            <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                               {article.author}
                                             </span>
                                           )}
@@ -961,32 +996,37 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                   <>
                     <button
                       onClick={() => toggleCredits(issue._id)}
-                      className={`flex items-center gap-2 transition-colors group ${isDarkMode ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'
-                        }`}
+                      className={`flex items-center gap-0 각주폰트-민부리 transition-colors ${isDarkMode ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
                     >
                       <span>{issue.number}호 크레딧</span>
                       <svg
-                        className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
+                        className="w-3.5 h-3.5 hover:translate-x-0.5 transition-transform"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5l7 7-7 7" />
                       </svg>
                     </button>
 
-                    {expandedCredits[issue._id] && (
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedCredits[issue._id]
+                          ? 'max-h-[1000px] opacity-100'
+                          : 'max-h-0 opacity-0'
+                        }`}
+                    >
                       <div className="space-y-1">
                         <PortableText value={issue.credits} components={creditsComponents} />
                       </div>
-                    )}
+                    </div>
                   </>
                 )}
               </div>
             ))}
           </div>
         </div>
+
+        <hr className={`border-t mb-12 ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />
 
         {/* 데스크톱 크레딧 섹션 */}
         <div className={`hidden lg:block 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
@@ -1006,50 +1046,50 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
             <div className="col-span-1"></div>
 
-            <div className="col-span-1 space-y-1">
-              <p> 회장: 심우진 </p>
-              <p> 부회장: 김수은, 민구홍 </p>
-              <p> 사무총장: 박혜지 </p>
-              <p> 정책기획이사: 민본, 박고은 </p>
-              <p> 학술출판이사: 박유선, 유도원 </p>
-              <p> 대외전시이사: 김기창, 이재환 </p>
-              <p> 감사: 노영권 </p>
+            <div className="col-span-1 space-y-[0.25em]">
+              <span className="block">회장: 심우진</span>
+              <span className="block">부회장: 김수은, 민구홍</span>
+              <span className="block">사무총장: 박혜지</span>
+              <span className="block">정책기획이사: 민본, 박고은</span>
+              <span className="block">학술출판이사: 박유선, 유도원</span>
+              <span className="block">대외전시이사: 김기창, 이재환</span>
+              <span className="block">감사: 노영권</span>
             </div>
 
-            <div className="col-span-1 space-y-1">
-              <p> 논문편집위원장: 이병학 </p>
-              <p> 논문편집위원: 박수진, 석재원, 이지원, 정희숙, 하주현 </p>
-              <p> 연구윤리위원장: 조주은 </p>
-              <p> 연구윤리위원: 박재홍 </p>
-              <p> 연구자문위원장: 크리스 하마모토 </p>
-              <p> 연구자문위원: 박지훈 </p>
-              <p> 국제교류위원장: 제임스 채 </p>
-              <p> 국제교류위원: 김민영 </p>
-              <p> 대외협력위원: 김은지, 김태룡, 윤율리, 이주현, 임혜은, 최규호, 함지은, 홍원태 </p>
-              <p> 한글특별위원회위원장: 길형진 </p>
-              <p> 다양성특별위원회위원장: 이지원 </p>
-              <p> 타이포잔치특별위원회장: 심우진 </p>
-              <p> 타이포잔치특별위원: 김경선, 박연주, 안병학, 유정미, 이재민, 최성민, 최슬기 </p>
-              <p> 글꼴창작지원사업심의위원장: 심우진 </p>
-              <p> 글꼴창작지원사업심의위원: 구모아, 노영권, 박부미, 장수영, 정태영 </p>
+            <div className="col-span-1 space-y-[0.25em]">
+              <span className="block">논문편집위원장: 이병학</span>
+              <span className="block">논문편집위원: 박수진, 석재원, 이지원, 정희숙, 하주현</span>
+              <span className="block">연구윤리위원장: 조주은</span>
+              <span className="block">연구윤리위원: 박재홍</span>
+              <span className="block">연구자문위원장: 크리스 하마모토</span>
+              <span className="block">연구자문위원: 박지훈</span>
+              <span className="block">국제교류위원장: 제임스 채</span>
+              <span className="block">국제교류위원: 김민영</span>
+              <span className="block">대외협력위원: 김은지, 김태룡, 윤율리, 이주현, 임혜은, 최규호, 함지은, 홍원태</span>
+              <span className="block">한글특별위원회위원장: 길형진</span>
+              <span className="block">다양성특별위원회위원장: 이지원</span>
+              <span className="block">타이포잔치특별위원회장: 심우진</span>
+              <span className="block">타이포잔치특별위원: 김경선, 박연주, 안병학, 유정미, 이재민, 최성민, 최슬기</span>
+              <span className="block">글꼴창작지원사업심의위원장: 심우진</span>
+              <span className="block">글꼴창작지원사업심의위원: 구모아, 노영권, 박부미, 장수영, 정태영</span>
             </div>
 
-            <div className="col-span-1 space-y-1">
-              <p> 사무국장: 이름, 홍유림 </p>
-              <p> 홍보국장: 강인구 </p>
-              <p> 출판국장: 문민주, 김도연, 황세미 </p>
+            <div className="col-span-1 space-y-[0.25em]">
+              <span className="block">사무국장: 이름, 홍유림</span>
+              <span className="block">홍보국장: 강인구</span>
+              <span className="block">출판국장: 문민주, 김도연, 황세미</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-8 pb-12">
+          <div className="grid grid-cols-5 gap-8 pb-12 font-bold">
             <div className="col-span-2"></div>
             <div className="col-span-1 space-y-4">
               <div className="space-y-4">
                 <p>후원</p>
                 <div className="flex flex-col gap-8">
-                  <img src="/img/sp/01_sp/sp-01-ahngraphics.gif" alt="안그라픽스" className="w-36 lg:w-40" />
-                  <img src="/img/sp/01_sp/sp-02-doosungpaper.gif" alt="두성종이" className="w-36 lg:w-40" />
-                  <img src="/img/sp/01_sp/sp-03-coloso.gif" alt="콜로소" className="w-36 lg:w-40" />
+                  <img src="/img/sp/01_sp/sp-01-ahngraphics.gif" alt="안그라픽스" className={sponsorImageClassName} />
+                  <img src="/img/sp/01_sp/sp-02-doosungpaper.gif" alt="두성종이" className={sponsorImageClassName} />
+                  <img src="/img/sp/01_sp/sp-03-coloso.gif" alt="콜로소" className={sponsorImageClassName} />
                 </div>
               </div>
             </div>
@@ -1059,18 +1099,18 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 <p>파트너</p>
                 <div className="grid grid-cols-2 gap-8">
                   {/* 울트라블랙 */}
-                  <img src="/img/sp/02_pt/1/pt-01-happybean.gif" alt="해피빈" className="w-36 lg:w-40" />
-                  <img src="/img/sp/02_pt/1/pt-06-woowa.gif" alt="우아한형제들" className="w-36 lg:w-40" />
-                  <img src="/img/sp/02_pt/1/pt-14-adobe.gif" alt="아도비" className="w-36 lg:w-40" />
+                  <img src="/img/sp/02_pt/1/pt-01-happybean.gif" alt="해피빈" className={sponsorImageClassName} />
+                  <img src="/img/sp/02_pt/1/pt-06-woowa.gif" alt="우아한형제들" className={sponsorImageClassName} />
+                  <img src="/img/sp/02_pt/1/pt-14-adobe.gif" alt="아도비" className={sponsorImageClassName} />
                   {/* 블랙 */}
-                  <img src="/img/sp/02_pt/2/pt-12-visang.gif" alt="비상" className="w-36 lg:w-40" />
+                  <img src="/img/sp/02_pt/2/pt-12-visang.gif" alt="비상" className={sponsorImageClassName} />
                   {/* 볼드 */}
-                  <img src="/img/sp/02_pt/3/pt-11-samwon.png" alt="삼원종이" className="w-36 lg:w-40" />
-                  <img src="/img/sp/02_pt/3/pt-15-morisawakorea.png" alt="모리사워코리아" className="w-36 lg:w-40" />
+                  <img src="/img/sp/02_pt/3/pt-11-samwon.png" alt="삼원종이" className={sponsorImageClassName} />
+                  <img src="/img/sp/02_pt/3/pt-15-morisawakorea.png" alt="모리사워코리아" className={sponsorImageClassName} />
                   {/* 레귤러 */}
-                  <img src="/img/sp/02_pt/4/pt-10-innoiz.gif" alt="인노이즈" className="w-36 lg:w-40" />
+                  <img src="/img/sp/02_pt/4/pt-10-innoiz.gif" alt="인노이즈" className={sponsorImageClassName} />
                   {/* 공익위반제보 */}
-                  <img src="/img/sp/02_pt/5/link-01-munhwa.png" alt="문화체육관광부" className="w-36 lg:w-40" />
+                  <img src="/img/sp/02_pt/5/link-01-munhwa.png" alt="문화체육관광부" className={sponsorImageClassName} />
                 </div>
               </div>
             </div>

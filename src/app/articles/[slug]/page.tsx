@@ -699,7 +699,7 @@ export default function ArticlePage({ params }: PageProps) {
       h2: ({ children }: any) => (
         <h2
           style={{ fontFamily: 'AGCJHS', fontWeight: '600' }}
-          className={`indent-[2em] py-[0.2em] md:md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트-민부리 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
         >
           {children}
         </h2>
@@ -707,7 +707,7 @@ export default function ArticlePage({ params }: PageProps) {
       h3: ({ children }: any) => (
         <h3
           style={{ fontFamily: 'AGCJHS', fontWeight: '600' }}
-          className={`본문폰트 indent-[2em] py-[0.2em] md:본문폰트 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트-민부리 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
         >
           {children}
         </h3>
@@ -715,7 +715,7 @@ export default function ArticlePage({ params }: PageProps) {
       h4: ({ children }: any) => (
         <h4
           style={{ fontFamily: 'AGCJHS', fontWeight: '600' }}
-          className={`본문폰트 indent-[2em] py-[0.2em] md:본문폰트 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트-민부리 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
         >
           {children}
         </h4>
@@ -754,7 +754,7 @@ export default function ArticlePage({ params }: PageProps) {
         const Tag = hasBlockElements ? 'div' : 'p'
         return (
           <Tag
-            className={`본문폰트 my-[0.6em] md:본문폰트 md:my-[1em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+            className={`본문폰트 my-[0.6em] md:본문폰트 md:my-2 ${isDarkMode ? 'text-white' : 'text-black'}`}
             style={{ lineHeight: '1.68' }}
           >
             {children}
@@ -783,7 +783,7 @@ export default function ArticlePage({ params }: PageProps) {
             href={value?.href || '#'}
             rel={rel}
             target={value?.href?.startsWith('/') ? '_self' : '_blank'}
-            className={`${isDarkMode ? 'text-[#7CFC00]' : 'text-[#0066cc]'} underline`}
+            className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} underline`}
           >
             {children}
           </a>
@@ -854,7 +854,7 @@ export default function ArticlePage({ params }: PageProps) {
   if (loading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-[#171717]' : 'bg-white'}`}>
-        <img src={isDarkMode ? "/img/logo2-i.gif" : "/img/logo2.gif"} alt="글짜씨" className="w-32 lg:w-40" />
+        <img src={isDarkMode ? "/img/logo2-i.gif" : "/img/logo2.gif"} alt="글짜씨" className="w-32 lg:w-48" />
       </div>
     )
   }
