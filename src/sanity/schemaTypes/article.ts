@@ -1,5 +1,140 @@
 import {defineField, defineType} from 'sanity'
 
+// ========================================
+// 공통 스타일 및 마크 정의
+// ========================================
+
+// 제목 스타일 정의 (명확한 매핑)
+const headingStyles = [
+  {title: '제목 1 (H2)', value: 'h2'},
+  {title: '제목 2 (H3)', value: 'h3'},
+  {title: '제목 3 (H4)', value: 'h4'},
+  {title: '제목 4 (H5)', value: 'h5'},
+  {title: '질문 (H6)', value: 'h6'},
+]
+
+// 블록 스타일 정의
+const blockStyles = {
+  standard: [
+    {title: '본문', value: 'normal'},
+    ...headingStyles.slice(0, 4), // 제목 1~4
+    {title: '인용', value: 'blockquote'},
+  ],
+  withQuestion: [
+    {title: '본문', value: 'normal'},
+    ...headingStyles.slice(0, 4), // 제목 1~4
+    headingStyles[4], // 질문 (H6)
+    {title: '인용', value: 'blockquote'},
+  ],
+  minimal: [
+    {title: '본문', value: 'normal'},
+    ...headingStyles.slice(0, 2), // 제목 1~2
+  ],
+  simple: [
+    {title: '본문', value: 'normal'},
+  ],
+}
+
+// 데코레이터 마크 정의
+const decoratorMarks = {
+  full: [
+    {title: '굵게', value: 'strong'},
+    {title: '기울임', value: 'em'},
+    {title: '밑줄', value: 'underline'},
+    {title: '위첨자', value: 'sup'},
+    {title: '아래첨자', value: 'sub'},
+    {title: '들여쓰기', value: 'indent'},
+  ],
+  basic: [
+    {title: '굵게', value: 'strong'},
+    {title: '기울임', value: 'em'},
+    {title: '밑줄', value: 'underline'},
+  ],
+  minimal: [
+    {title: '굵게', value: 'strong'},
+    {title: '기울임', value: 'em'},
+  ],
+}
+
+// 주석(annotation) 정의
+const annotations = [
+  {
+    name: 'link',
+    type: 'object',
+    title: '링크',
+    fields: [
+      {
+        name: 'href',
+        type: 'url',
+        title: 'URL',
+      },
+    ],
+  },
+  {
+    name: 'footnote',
+    type: 'object',
+    title: '주석',
+    fields: [
+      {
+        name: 'text',
+        type: 'text',
+        title: '주석 내용',
+        rows: 2,
+      },
+    ],
+    icon: () => '📝',
+  },
+]
+
+// 이미지 필드 정의
+const imageFields = [
+  {
+    name: 'caption',
+    type: 'string',
+    title: '캡션',
+  },
+  {
+    name: 'alt',
+    type: 'string',
+    title: '대체 텍스트',
+  },
+  {
+    name: 'width',
+    type: 'string',
+    title: '너비',
+    options: {
+      list: [
+        {title: '기본', value: 'default'},
+        {title: '전체 너비', value: 'full'},
+        {title: '작게', value: 'small'},
+      ],
+    },
+    initialValue: 'default',
+  },
+]
+
+// 재사용 가능한 블록 정의 함수
+const createBlockDefinition = (
+  styleType: keyof typeof blockStyles = 'standard',
+  decoratorType: keyof typeof decoratorMarks = 'full',
+  includeAnnotations: boolean = true
+) => ({
+  type: 'block',
+  styles: blockStyles[styleType],
+  marks: {
+    decorators: decoratorMarks[decoratorType],
+    ...(includeAnnotations && { annotations }),
+  },
+})
+
+// 재사용 가능한 이미지 정의 함수
+const createImageDefinition = () => ({
+  type: 'image',
+  title: '이미지',
+  options: {hotspot: true},
+  fields: imageFields,
+})
+
 export default defineType({
   name: 'article',
   title: '아티클',
@@ -58,85 +193,8 @@ export default defineType({
       title: '개괄글 / 서론',
       type: 'array',
       of: [
-        {
-          type: 'block',
-          styles: [
-            {title: '본문', value: 'normal'},
-            {title: '제목 1', value: 'h2'},
-            {title: '제목 2', value: 'h3'},
-            {title: '제목 3', value: 'h4'},
-            {title: '제목 4', value: 'h5'},
-            {title: '인용', value: 'blockquote'},
-          ],
-          marks: {
-            decorators: [
-              {title: '굵게', value: 'strong'},
-              {title: '기울임', value: 'em'},
-              {title: '밑줄', value: 'underline'},
-              {title: '위첨자', value: 'sup'},
-              {title: '아래첨자', value: 'sub'},
-              {title: '들여쓰기', value: 'indent'},
-            ],
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: '링크',
-                fields: [
-                  {
-                    name: 'href',
-                    type: 'url',
-                    title: 'URL',
-                  },
-                ],
-              },
-              {
-                name: 'footnote',
-                type: 'object',
-                title: '주석',
-                fields: [
-                  {
-                    name: 'text',
-                    type: 'text',
-                    title: '주석 내용',
-                    rows: 2,
-                  },
-                ],
-                icon: () => '📝',
-              },
-            ],
-          },
-        },
-        {
-          type: 'image',
-          title: '이미지',
-          options: {hotspot: true},
-          fields: [
-            {
-              name: 'caption',
-              type: 'string',
-              title: '캡션',
-            },
-            {
-              name: 'alt',
-              type: 'string',
-              title: '대체 텍스트',
-            },
-            {
-              name: 'width',
-              type: 'string',
-              title: '너비',
-              options: {
-                list: [
-                  {title: '기본', value: 'default'},
-                  {title: '전체 너비', value: 'full'},
-                  {title: '작게', value: 'small'},
-                ],
-              },
-              initialValue: 'default',
-            },
-          ],
-        },
+        createBlockDefinition('standard', 'full', true),
+        createImageDefinition(),
       ],
       description: '아티클 시작 부분의 개괄글이나 서론을 작성하세요 (모든 타입 공통)'
     }),
@@ -178,56 +236,7 @@ export default defineType({
               title: '일반 본문 내용',
               type: 'array',
               of: [
-                {
-                  type: 'block',
-                  styles: [
-                    {title: '본문', value: 'normal'},
-                    {title: '제목 1', value: 'h2'},
-                    {title: '제목 2', value: 'h3'},
-                    {title: '제목 3', value: 'h4'},
-                    {title: '제목 4', value: 'h5'},
-                    {title: '질문', value: 'h6'},
-                    {title: '인용', value: 'blockquote'},
-                  ],
-                  marks: {
-                    decorators: [
-                      {title: '굵게', value: 'strong'},
-                      {title: '기울임', value: 'em'},
-                      {title: '밑줄', value: 'underline'},
-                      {title: '위첨자', value: 'sup'},
-                      {title: '아래첨자', value: 'sub'},
-                      {title: '들여쓰기', value: 'indent'},
-                    ],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: '링크',
-                        fields: [
-                          {
-                            name: 'href',
-                            type: 'url',
-                            title: 'URL',
-                          },
-                        ],
-                      },
-                      {
-                        name: 'footnote',
-                        type: 'object',
-                        title: '주석',
-                        fields: [
-                          {
-                            name: 'text',
-                            type: 'text',
-                            title: '주석 내용',
-                            rows: 2,
-                          },
-                        ],
-                        icon: () => '📝',
-                      },
-                    ],
-                  },
-                },
+                createBlockDefinition('withQuestion', 'full', true),
                 {
                   type: 'image',
                   title: '이미지',
@@ -417,55 +426,7 @@ export default defineType({
                       title: '본문',
                       type: 'array',
                       of: [
-                        {
-                          type: 'block',
-                          styles: [
-                            {title: '본문', value: 'normal'},
-                            {title: '제목 1', value: 'h2'},
-                            {title: '제목 2', value: 'h3'},
-                            {title: '제목 3', value: 'h4'},
-                            {title: '제목 4', value: 'h5'},
-                            {title: '인용', value: 'blockquote'},
-                          ],
-                          marks: {
-                            decorators: [
-                              {title: '굵게', value: 'strong'},
-                              {title: '기울임', value: 'em'},
-                              {title: '밑줄', value: 'underline'},
-                              {title: '위첨자', value: 'sup'},
-                              {title: '아래첨자', value: 'sub'},
-                              {title: '들여쓰기', value: 'indent'},
-                            ],
-                            annotations: [
-                              {
-                                name: 'link',
-                                type: 'object',
-                                title: '링크',
-                                fields: [
-                                  {
-                                    name: 'href',
-                                    type: 'url',
-                                    title: 'URL',
-                                  },
-                                ],
-                              },
-                              {
-                                name: 'footnote',
-                                type: 'object',
-                                title: '주석',
-                                fields: [
-                                  {
-                                    name: 'text',
-                                    type: 'text',
-                                    title: '주석 내용',
-                                    rows: 2,
-                                  },
-                                ],
-                                icon: () => '📝',
-                              },
-                            ],
-                          },
-                        },
+                        createBlockDefinition('standard', 'full', true),
                         {
                           type: 'image',
                           title: '이미지',
@@ -491,30 +452,7 @@ export default defineType({
                       title: '참고문헌',
                       type: 'array',
                       of: [
-                        {
-                          type: 'block',
-                          styles: [{title: '본문', value: 'normal'}],
-                          marks: {
-                            decorators: [
-                              {title: '굵게', value: 'strong'},
-                              {title: '기울임', value: 'em'},
-                            ],
-                            annotations: [
-                              {
-                                name: 'link',
-                                type: 'object',
-                                title: '링크',
-                                fields: [
-                                  {
-                                    name: 'href',
-                                    type: 'url',
-                                    title: 'URL',
-                                  },
-                                ],
-                              },
-                            ],
-                          },
-                        },
+                        createBlockDefinition('simple', 'minimal', false),
                       ],
                     },
                     {
@@ -566,49 +504,7 @@ export default defineType({
                       title: '질문',
                       type: 'array',
                       of: [
-                        {
-                          type: 'block',
-                          styles: [
-                            {title: '본문', value: 'normal'},
-                            {title: '제목 1', value: 'h2'},
-                            {title: '제목 2', value: 'h3'},
-                          ],
-                          marks: {
-                            decorators: [
-                              {title: '굵게', value: 'strong'},
-                              {title: '기울임', value: 'em'},
-                              {title: '밑줄', value: 'underline'},
-                            ],
-                            annotations: [
-                              {
-                                name: 'link',
-                                type: 'object',
-                                title: '링크',
-                                fields: [
-                                  {
-                                    name: 'href',
-                                    type: 'url',
-                                    title: 'URL',
-                                  },
-                                ],
-                              },
-                              {
-                                name: 'footnote',
-                                type: 'object',
-                                title: '주석',
-                                fields: [
-                                  {
-                                    name: 'text',
-                                    type: 'text',
-                                    title: '주석 내용',
-                                    rows: 2,
-                                  },
-                                ],
-                                icon: () => '📝',
-                              },
-                            ],
-                          },
-                        },
+                        createBlockDefinition('minimal', 'basic', true),
                       ],
                       validation: (Rule) => Rule.required(),
                     },
@@ -632,53 +528,7 @@ export default defineType({
                               title: '답변',
                               type: 'array',
                               of: [
-                                {
-                                  type: 'block',
-                                  styles: [
-                                    {title: '본문', value: 'normal'},
-                                    {title: '제목 1', value: 'h2'},
-                                    {title: '제목 2', value: 'h3'},
-                                    {title: '인용', value: 'blockquote'},
-                                  ],
-                                  marks: {
-                                    decorators: [
-                                      {title: '굵게', value: 'strong'},
-                                      {title: '기울임', value: 'em'},
-                                      {title: '밑줄', value: 'underline'},
-                                      {title: '위첨자', value: 'sup'},
-                                      {title: '아래첨자', value: 'sub'},
-                                      {title: '들여쓰기', value: 'indent'},
-                                    ],
-                                    annotations: [
-                                      {
-                                        name: 'link',
-                                        type: 'object',
-                                        title: '링크',
-                                        fields: [
-                                          {
-                                            name: 'href',
-                                            type: 'url',
-                                            title: 'URL',
-                                          },
-                                        ],
-                                      },
-                                      {
-                                        name: 'footnote',
-                                        type: 'object',
-                                        title: '주석',
-                                        fields: [
-                                          {
-                                            name: 'text',
-                                            type: 'text',
-                                            title: '주석 내용',
-                                            rows: 2,
-                                          },
-                                        ],
-                                        icon: () => '📝',
-                                      },
-                                    ],
-                                  },
-                                },
+                                createBlockDefinition('standard', 'full', true),
                                 {
                                   type: 'image',
                                   title: '이미지',
@@ -778,53 +628,7 @@ export default defineType({
                       title: '발언 내용',
                       type: 'array',
                       of: [
-                        {
-                          type: 'block',
-                          styles: [
-                            {title: '본문', value: 'normal'},
-                            {title: '제목 1', value: 'h2'},
-                            {title: '제목 2', value: 'h3'},
-                            {title: '인용', value: 'blockquote'},
-                          ],
-                          marks: {
-                            decorators: [
-                              {title: '굵게', value: 'strong'},
-                              {title: '기울임', value: 'em'},
-                              {title: '밑줄', value: 'underline'},
-                              {title: '위첨자', value: 'sup'},
-                              {title: '아래첨자', value: 'sub'},
-                              {title: '들여쓰기', value: 'indent'},
-                            ],
-                            annotations: [
-                              {
-                                name: 'link',
-                                type: 'object',
-                                title: '링크',
-                                fields: [
-                                  {
-                                    name: 'href',
-                                    type: 'url',
-                                    title: 'URL',
-                                  },
-                                ],
-                              },
-                              {
-                                name: 'footnote',
-                                type: 'object',
-                                title: '주석',
-                                fields: [
-                                  {
-                                    name: 'text',
-                                    type: 'text',
-                                    title: '주석 내용',
-                                    rows: 2,
-                                  },
-                                ],
-                                icon: () => '📝',
-                              },
-                            ],
-                          },
-                        },
+                        createBlockDefinition('standard', 'full', true),
                         {
                           type: 'image',
                           title: '이미지',
@@ -889,49 +693,7 @@ export default defineType({
                       title: '질문 (Q)',
                       type: 'array',
                       of: [
-                        {
-                          type: 'block',
-                          styles: [
-                            {title: '본문', value: 'normal'},
-                            {title: '제목 1', value: 'h2'},
-                            {title: '제목 2', value: 'h3'},
-                          ],
-                          marks: {
-                            decorators: [
-                              {title: '굵게', value: 'strong'},
-                              {title: '기울임', value: 'em'},
-                              {title: '밑줄', value: 'underline'},
-                            ],
-                            annotations: [
-                              {
-                                name: 'link',
-                                type: 'object',
-                                title: '링크',
-                                fields: [
-                                  {
-                                    name: 'href',
-                                    type: 'url',
-                                    title: 'URL',
-                                  },
-                                ],
-                              },
-                              {
-                                name: 'footnote',
-                                type: 'object',
-                                title: '주석',
-                                fields: [
-                                  {
-                                    name: 'text',
-                                    type: 'text',
-                                    title: '주석 내용',
-                                    rows: 2,
-                                  },
-                                ],
-                                icon: () => '📝',
-                              },
-                            ],
-                          },
-                        },
+                        createBlockDefinition('minimal', 'basic', true),
                       ],
                       validation: (Rule) => Rule.required(),
                     },
@@ -940,54 +702,7 @@ export default defineType({
                       title: '답변 (A)',
                       type: 'array',
                       of: [
-                        {
-                          type: 'block',
-                          styles: [
-                            {title: '본문', value: 'normal'},
-                            {title: '제목 1', value: 'h2'},
-                            {title: '제목 2', value: 'h3'},
-                            {title: '제목 3', value: 'h4'},
-                            {title: '인용', value: 'blockquote'},
-                          ],
-                          marks: {
-                            decorators: [
-                              {title: '굵게', value: 'strong'},
-                              {title: '기울임', value: 'em'},
-                              {title: '밑줄', value: 'underline'},
-                              {title: '위첨자', value: 'sup'},
-                              {title: '아래첨자', value: 'sub'},
-                              {title: '들여쓰기', value: 'indent'},
-                            ],
-                            annotations: [
-                              {
-                                name: 'link',
-                                type: 'object',
-                                title: '링크',
-                                fields: [
-                                  {
-                                    name: 'href',
-                                    type: 'url',
-                                    title: 'URL',
-                                  },
-                                ],
-                              },
-                              {
-                                name: 'footnote',
-                                type: 'object',
-                                title: '주석',
-                                fields: [
-                                  {
-                                    name: 'text',
-                                    type: 'text',
-                                    title: '주석 내용',
-                                    rows: 2,
-                                  },
-                                ],
-                                icon: () => '📝',
-                              },
-                            ],
-                          },
-                        },
+                        createBlockDefinition('standard', 'full', true),
                         {
                           type: 'image',
                           title: '이미지',
@@ -1092,56 +807,7 @@ export default defineType({
       title: '본문',
       type: 'array',
       of: [
-        {
-          type: 'block',
-          styles: [
-            {title: '본문', value: 'normal'},
-            {title: '제목 1', value: 'h2'},
-            {title: '제목 2', value: 'h3'},
-            {title: '제목 3', value: 'h4'},
-            {title: '제목 4', value: 'h5'},
-            {title: '질문', value: 'h6'},
-            {title: '인용', value: 'blockquote'},
-          ],
-          marks: {
-            decorators: [
-              {title: '굵게', value: 'strong'},
-              {title: '기울임', value: 'em'},
-              {title: '밑줄', value: 'underline'},
-              {title: '위첨자', value: 'sup'},
-              {title: '아래첨자', value: 'sub'},
-              {title: '들여쓰기', value: 'indent'},
-            ],
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: '링크',
-                fields: [
-                  {
-                    name: 'href',
-                    type: 'url',
-                    title: 'URL',
-                  },
-                ],
-              },
-              {
-                name: 'footnote',
-                type: 'object',
-                title: '주석',
-                fields: [
-                  {
-                    name: 'text',
-                    type: 'text',
-                    title: '주석 내용',
-                    rows: 2,
-                  },
-                ],
-                icon: () => '📝',
-              },
-            ],
-          },
-        },
+        createBlockDefinition('withQuestion', 'full', true),
         // 단일 이미지
         {
           type: 'image',
@@ -1335,55 +1001,7 @@ export default defineType({
               title: '본문',
               type: 'array',
               of: [
-                {
-                  type: 'block',
-                  styles: [
-                    {title: '본문', value: 'normal'},
-                    {title: '제목 1', value: 'h2'},
-                    {title: '제목 2', value: 'h3'},
-                    {title: '제목 3', value: 'h4'},
-                    {title: '제목 4', value: 'h5'},
-                    {title: '인용', value: 'blockquote'},
-                  ],
-                  marks: {
-                    decorators: [
-                      {title: '굵게', value: 'strong'},
-                      {title: '기울임', value: 'em'},
-                      {title: '밑줄', value: 'underline'},
-                      {title: '위첨자', value: 'sup'},
-                      {title: '아래첨자', value: 'sub'},
-                      {title: '들여쓰기', value: 'indent'},
-                    ],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: '링크',
-                        fields: [
-                          {
-                            name: 'href',
-                            type: 'url',
-                            title: 'URL',
-                          },
-                        ],
-                      },
-                      {
-                        name: 'footnote',
-                        type: 'object',
-                        title: '주석',
-                        fields: [
-                          {
-                            name: 'text',
-                            type: 'text',
-                            title: '주석 내용',
-                            rows: 2,
-                          },
-                        ],
-                        icon: () => '📝',
-                      },
-                    ],
-                  },
-                },
+                createBlockDefinition('standard', 'full', true),
                 {
                   type: 'image',
                   title: '이미지',
@@ -1409,30 +1027,7 @@ export default defineType({
               title: '참고문헌',
               type: 'array',
               of: [
-                {
-                  type: 'block',
-                  styles: [{title: '본문', value: 'normal'}],
-                  marks: {
-                    decorators: [
-                      {title: '굵게', value: 'strong'},
-                      {title: '기울임', value: 'em'},
-                    ],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: '링크',
-                        fields: [
-                          {
-                            name: 'href',
-                            type: 'url',
-                            title: 'URL',
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                },
+                createBlockDefinition('simple', 'minimal', false),
               ],
             },
             {
@@ -1485,49 +1080,7 @@ export default defineType({
               title: '질문',
               type: 'array',
               of: [
-                {
-                  type: 'block',
-                  styles: [
-                    {title: '본문', value: 'normal'},
-                    {title: '제목 1', value: 'h2'},
-                    {title: '제목 2', value: 'h3'},
-                  ],
-                  marks: {
-                    decorators: [
-                      {title: '굵게', value: 'strong'},
-                      {title: '기울임', value: 'em'},
-                      {title: '밑줄', value: 'underline'},
-                    ],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: '링크',
-                        fields: [
-                          {
-                            name: 'href',
-                            type: 'url',
-                            title: 'URL',
-                          },
-                        ],
-                      },
-                      {
-                        name: 'footnote',
-                        type: 'object',
-                        title: '주석',
-                        fields: [
-                          {
-                            name: 'text',
-                            type: 'text',
-                            title: '주석 내용',
-                            rows: 2,
-                          },
-                        ],
-                        icon: () => '📝',
-                      },
-                    ],
-                  },
-                },
+                createBlockDefinition('minimal', 'basic', true),
               ],
               validation: (Rule) => Rule.required(),
             },
@@ -1551,53 +1104,7 @@ export default defineType({
                       title: '답변',
                       type: 'array',
                       of: [
-                        {
-                          type: 'block',
-                          styles: [
-                            {title: '본문', value: 'normal'},
-                            {title: '제목 1', value: 'h2'},
-                            {title: '제목 2', value: 'h3'},
-                            {title: '인용', value: 'blockquote'},
-                          ],
-                          marks: {
-                            decorators: [
-                              {title: '굵게', value: 'strong'},
-                              {title: '기울임', value: 'em'},
-                              {title: '밑줄', value: 'underline'},
-                              {title: '위첨자', value: 'sup'},
-                              {title: '아래첨자', value: 'sub'},
-                              {title: '들여쓰기', value: 'indent'},
-                            ],
-                            annotations: [
-                              {
-                                name: 'link',
-                                type: 'object',
-                                title: '링크',
-                                fields: [
-                                  {
-                                    name: 'href',
-                                    type: 'url',
-                                    title: 'URL',
-                                  },
-                                ],
-                              },
-                              {
-                                name: 'footnote',
-                                type: 'object',
-                                title: '주석',
-                                fields: [
-                                  {
-                                    name: 'text',
-                                    type: 'text',
-                                    title: '주석 내용',
-                                    rows: 2,
-                                  },
-                                ],
-                                icon: () => '📝',
-                              },
-                            ],
-                          },
-                        },
+                        createBlockDefinition('standard', 'full', true),
                         {
                           type: 'image',
                           title: '이미지',
@@ -1700,53 +1207,7 @@ export default defineType({
               title: '발언 내용',
               type: 'array',
               of: [
-                {
-                  type: 'block',
-                  styles: [
-                    {title: '본문', value: 'normal'},
-                    {title: '제목 1', value: 'h2'},
-                    {title: '제목 2', value: 'h3'},
-                    {title: '인용', value: 'blockquote'},
-                  ],
-                  marks: {
-                    decorators: [
-                      {title: '굵게', value: 'strong'},
-                      {title: '기울임', value: 'em'},
-                      {title: '밑줄', value: 'underline'},
-                      {title: '위첨자', value: 'sup'},
-                      {title: '아래첨자', value: 'sub'},
-                      {title: '들여쓰기', value: 'indent'},
-                    ],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: '링크',
-                        fields: [
-                          {
-                            name: 'href',
-                            type: 'url',
-                            title: 'URL',
-                          },
-                        ],
-                      },
-                      {
-                        name: 'footnote',
-                        type: 'object',
-                        title: '주석',
-                        fields: [
-                          {
-                            name: 'text',
-                            type: 'text',
-                            title: '주석 내용',
-                            rows: 2,
-                          },
-                        ],
-                        icon: () => '📝',
-                      },
-                    ],
-                  },
-                },
+                createBlockDefinition('standard', 'full', true),
                 {
                   type: 'image',
                   title: '이미지',
@@ -1813,49 +1274,7 @@ export default defineType({
               title: '질문 (Q)',
               type: 'array',
               of: [
-                {
-                  type: 'block',
-                  styles: [
-                    {title: '본문', value: 'normal'},
-                    {title: '제목 1', value: 'h2'},
-                    {title: '제목 2', value: 'h3'},
-                  ],
-                  marks: {
-                    decorators: [
-                      {title: '굵게', value: 'strong'},
-                      {title: '기울임', value: 'em'},
-                      {title: '밑줄', value: 'underline'},
-                    ],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: '링크',
-                        fields: [
-                          {
-                            name: 'href',
-                            type: 'url',
-                            title: 'URL',
-                          },
-                        ],
-                      },
-                      {
-                        name: 'footnote',
-                        type: 'object',
-                        title: '주석',
-                        fields: [
-                          {
-                            name: 'text',
-                            type: 'text',
-                            title: '주석 내용',
-                            rows: 2,
-                          },
-                        ],
-                        icon: () => '📝',
-                      },
-                    ],
-                  },
-                },
+                createBlockDefinition('minimal', 'basic', true),
               ],
               validation: (Rule) => Rule.required(),
             },
@@ -1864,54 +1283,7 @@ export default defineType({
               title: '답변 (A)',
               type: 'array',
               of: [
-                {
-                  type: 'block',
-                  styles: [
-                    {title: '본문', value: 'normal'},
-                    {title: '제목 1', value: 'h2'},
-                    {title: '제목 2', value: 'h3'},
-                    {title: '제목 3', value: 'h4'},
-                    {title: '인용', value: 'blockquote'},
-                  ],
-                  marks: {
-                    decorators: [
-                      {title: '굵게', value: 'strong'},
-                      {title: '기울임', value: 'em'},
-                      {title: '밑줄', value: 'underline'},
-                      {title: '위첨자', value: 'sup'},
-                      {title: '아래첨자', value: 'sub'},
-                      {title: '들여쓰기', value: 'indent'},
-                    ],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: '링크',
-                        fields: [
-                          {
-                            name: 'href',
-                            type: 'url',
-                            title: 'URL',
-                          },
-                        ],
-                      },
-                      {
-                        name: 'footnote',
-                        type: 'object',
-                        title: '주석',
-                        fields: [
-                          {
-                            name: 'text',
-                            type: 'text',
-                            title: '주석 내용',
-                            rows: 2,
-                          },
-                        ],
-                        icon: () => '📝',
-                      },
-                    ],
-                  },
-                },
+                createBlockDefinition('standard', 'full', true),
                 {
                   type: 'image',
                   title: '이미지',

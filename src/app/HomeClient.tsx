@@ -6,6 +6,7 @@ import { useState } from 'react'
 import imageUrlBuilder from '@sanity/image-url'
 import { client } from '@/lib/sanity'
 import { PortableText } from '@portabletext/react'
+import { getTextColor, getBgColor, getBorderColor } from '@/lib/DarkModeUtils'
 
 const builder = imageUrlBuilder(client as any)
 const urlFor = (source: any) => builder.image(source).url()
@@ -127,7 +128,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-[#171717]' : 'bg-white'}`}>
+    <div className={`min-h-screen transition-colors duration-300 ${getBgColor(isDarkMode)}`}>
       <div className="w-full lg:w-5/6 mx-auto">
 
         {/* ========================================
@@ -177,7 +178,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           </div>
 
           {/* 상단 소개글 */}
-          <div className={`space-y-4 본문폰트 pb-6 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+          <div className={`space-y-4 본문폰트 pb-6 ${getTextColor(isDarkMode)}`}>
             <p>
               2024년 임기를 시작한 제8대 한국타이포그래피학회는 디지털 환경에서의 타이포그래피를 둘러싼 현상과 실천 등을 살펴보며 디지털 타이포그래피의 정체성을 탐구한다. 이에 대한 연장선으로 제8대 한국타이포그래피학회는 글짜씨를 통해 디지털 환경 속의 타이포그래피를 실험하고 이를 웹을 통해 공유하는 프로젝트를 진행한다.
             </p>
@@ -189,7 +190,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
             </p>
           </div>
 
-          <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />
+          <hr className={`border-t ${getBorderColor(isDarkMode)}`} />
 
           {/* 호별 아코디언 목차 */}
           <div className="">
@@ -197,7 +198,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
               <div key={issue._id}>
                 <button
                   onClick={() => toggleIssue(issue._id)}
-                  className={`w-full py-3 flex justify-between items-center text-left ${isDarkMode ? 'text-white' : 'text-black'}`}
+                  className={`w-full py-3 flex justify-between items-center text-left ${getTextColor(isDarkMode)}`}
                 >
                   <div>
                     <span className="본문폰트-민부리 font-bold mr-2">{issue.number}호</span>
@@ -217,7 +218,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                         {issue.sections.map((section: any, sectionIdx: number) => (
                           <div key={`${issue._id}-${section._id || sectionIdx}`} className="pt-2 space-y-2">
                             {/* 섹션 제목 */}
-                            <p className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                            <p className={`각주폰트-민부리 font-bold ${getTextColor(isDarkMode)}`}>
                               {section.title}
                             </p>
 
@@ -486,7 +487,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
                     {/* ✨ 호별 크레딧 */}
                     {issue.credits && issue.credits.length > 0 && (
-                      <div className={`space-y-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                      <div className={`space-y-2 ${getBorderColor(isDarkMode)}`}>
                         <button
                           onClick={() => toggleCredits(issue._id)}
                           className={`flex items-center gap-0 각주폰트-민부리 transition-colors ${isDarkMode ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
@@ -522,24 +523,24 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
             ))}
           </div>
 
-          <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />
+          <hr className={`border-t ${getBorderColor(isDarkMode)}`} />
 
           {/* 크레딧 섹션 (기존 코드) */}
           <div className="pt-6 pb-8 space-y-8">
             {/* <div>
-              <p className={`본문폰트 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              <p className={`본문폰트 ${getTextColor(isDarkMode)}`}>
                 한국타이포그라피학회는 글자와 타이포그래피를 연구하기 위해 2008년 창립되었다. 『글짜씨』는 학회에서 2009년 12월부터 발간한 타이포그래피 학술지다.
               </p>
             </div> */}
 
-            {/* <hr className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} /> */}
+            {/* <hr className={`border-t ${getBorderColor(isDarkMode)}`} /> */}
 
             {/* 한국타이포그라피학회 */}
             <div>
-              <h3 className={`font-bold mb-5 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              <h3 className={`font-bold mb-5 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
                 한국타이포그라피학회
               </h3>
-              <div className={`space-y-5 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              <div className={`space-y-5 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
                 <div className="space-y-[0.25em]">
                   <span className="block">회장: 심우진</span>
                   <span className="block">부회장: 김수은, 민구홍</span>
@@ -579,7 +580,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
             {/* 후원 & 파트너 */}
             <div className="grid grid-cols-3 gap-6">
               <div className="col-span-1">
-                <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                <h3 className={`font-bold mb-4 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
                   후원
                 </h3>
                 <div className="flex flex-col gap-8">
@@ -589,7 +590,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 </div>
               </div>
               <div className="col-span-2">
-                <h3 className={`font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                <h3 className={`font-bold mb-4 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
                   파트너
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
@@ -625,7 +626,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
             </div>
 
             <div className="col-span-3 pt-12">
-              <div className={`space-y-4 본문폰트 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              <div className={`space-y-4 본문폰트 ${getTextColor(isDarkMode)}`}>
                 <p>
                   2024년 임기를 시작한 제8대 한국타이포그래피학회는 디지털 환경에서의 타이포그래피를 둘러싼 현상과 실천 등을 살펴보며 디지털 타이포그래피의 정체성을 탐구한다. 이에 대한 연장선으로 제8대 한국타이포그래피학회는 글짜씨를 통해 디지털 환경 속의 타이포그래피를 실험하고 이를 웹을 통해 공유하는 프로젝트를 진행한다.
                 </p>
@@ -683,10 +684,10 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
             {issues.map((issue) => (
               <div key={issue._id} className="col-span-1 space-y-4">
                 <div className="mb-6">
-                  <p className={`각주폰트-민부리 font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                  <p className={`각주폰트-민부리 font-bold mb-1 ${getTextColor(isDarkMode)}`}>
                     {issue.number}
                   </p>
-                  <p className={`본문폰트 mb-4 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                  <p className={`본문폰트 mb-4 ${getTextColor(isDarkMode)}`}>
                     {issue.title}
                   </p>
                 </div>
@@ -696,7 +697,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                     {issue.sections.map((section: any, sectionIdx: number) => (
                       <div key={`${issue._id}-${section._id || sectionIdx}`} className="">
                         {/* 섹션 제목 */}
-                        <p className={`각주폰트-민부리 font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                        <p className={`각주폰트-민부리 font-bold mb-3 ${getTextColor(isDarkMode)}`}>
                           {section.title}
                         </p>
 
@@ -712,7 +713,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                       {section.title === '인터뷰' ? (
                                         <Link
                                           href={`/articles/${article.slug?.current || article._id}`}
-                                          className={`block 본문폰트 transition ${isDarkMode ? 'text-white' : 'text-black'}`}
+                                          className={`block 본문폰트 transition ${getTextColor(isDarkMode)}`}
                                           onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
                                           onMouseLeave={() => setPreviewUrl(null)}
                                         >
@@ -721,7 +722,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                       ) : (
                                         <Link
                                           href={`/articles/${article.slug?.current || article._id}`}
-                                          className={`block 본문폰트 transition relative ${isDarkMode ? 'text-white' : 'text-black'}`}
+                                          className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)}`}
                                           onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
                                           onMouseLeave={() => setPreviewUrl(null)}
                                         >
@@ -746,7 +747,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                   {section.subsections.map((subsection: any, subIdx: number) => (
                                     <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
                                       {/* Subsection 제목 (토글 없음, 항상 펼침) */}
-                                      <p className={`본문폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                                      <p className={`본문폰트-민부리 ${getTextColor(isDarkMode)}`}>
                                         {subsection.title}
                                       </p>
 
@@ -760,7 +761,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                 {/* 하하위 섹션 제목 + 토글 버튼 */}
                                                 <button
                                                   onClick={() => toggleSubsection(subsubsection._id)}
-                                                  className={`w-full flex items-center justify-between text-left 각주폰트-민부리 font-bold transition-colors ${isDarkMode ? 'text-white' : 'text-black'
+                                                  className={`w-full flex items-center justify-between text-left 각주폰트-민부리 font-bold transition-colors ${getTextColor(isDarkMode)
                                                     }`}
                                                 >
                                                   <span>{subsubsection.title}</span>
@@ -788,7 +789,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                         <div key={`${article._id || artIdx}`} className="group">
                                                           <Link
                                                             href={`/articles/${article.slug?.current || article._id}`}
-                                                            className={`block 본문폰트 transition relative ${isDarkMode ? 'text-white' : 'text-black'}`}
+                                                            className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)}`}
                                                             onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
                                                             onMouseLeave={() => setPreviewUrl(null)}
                                                           >
@@ -818,7 +819,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                               <div key={`${article._id || artIdx}`} className="group">
                                                 <Link
                                                   href={`/articles/${article.slug?.current || article._id}`}
-                                                  className={`block 본문폰트 transition relative ${isDarkMode ? 'text-white' : 'text-black'
+                                                  className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)
                                                     }`}
                                                   onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
                                                   onMouseLeave={() => setPreviewUrl(null)}
@@ -864,7 +865,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                 {/* 하하위 섹션 제목 + 토글 버튼 */}
                                                 <button
                                                   onClick={() => toggleSubsection(subsubsection._id)}
-                                                  className={`w-full flex items-start justify-between text-left 본문폰트 transition-colors ${isDarkMode ? 'text-white' : 'text-black'}`}
+                                                  className={`w-full flex items-start justify-between text-left 본문폰트 transition-colors ${getTextColor(isDarkMode)}`}
                                                 >
                                                   <span>{subsubsection.title}</span>
                                                   <svg
@@ -885,7 +886,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                       <div key={`${article._id || artIdx}`} className="group">
                                                         <Link
                                                           href={`/articles/${article.slug?.current || article._id}`}
-                                                          className={`block 본문폰트 transition relative ml-8 ${isDarkMode ? 'text-white' : 'text-black'
+                                                          className={`block 본문폰트 transition relative ml-8 ${getTextColor(isDarkMode)
                                                             }`}
                                                           onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
                                                           onMouseLeave={() => setPreviewUrl(null)}
@@ -915,7 +916,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                               <div key={`${article._id || artIdx}`} className="group">
                                                 <Link
                                                   href={`/articles/${article.slug?.current || article._id}`}
-                                                  className={`block 본문폰트 transition relative ${isDarkMode ? 'text-white' : 'text-black'
+                                                  className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)
                                                     }`}
                                                   onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
                                                   onMouseLeave={() => setPreviewUrl(null)}
@@ -956,7 +957,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                       ) : (
                                         <Link
                                           href={`/articles/${article.slug?.current || article._id}`}
-                                          className={`block 본문폰트 transition relative ${isDarkMode ? 'text-white' : 'text-black'}`}
+                                          className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)}`}
                                           onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
                                           onMouseLeave={() => setPreviewUrl(null)}
                                         >
@@ -1026,10 +1027,10 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           </div>
         </div>
 
-        <hr className={`border-t mb-12 ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`} />
+        <hr className={`border-t mb-12 ${getBorderColor(isDarkMode)}`} />
 
         {/* 데스크톱 크레딧 섹션 */}
-        <div className={`hidden lg:block 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+        <div className={`hidden lg:block 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
           {/* 학회 크레딧 섹션 */}
           <div className="grid grid-cols-5 gap-8 pb-12 ">
             <div className="col-span-1">

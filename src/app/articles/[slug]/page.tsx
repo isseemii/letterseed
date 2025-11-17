@@ -6,31 +6,36 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useDarkMode } from '@/contexts/DarkModeContext'
 import imageUrlBuilder from '@sanity/image-url'
 import { client } from '@/lib/sanity'
+import { getTextColor, getBgColor, getBorderColor, getHoverTextColor, getLinkColor } from '@/lib/DarkModeUtils'
+import { LAYOUT } from '@/lib/constants'
 
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
 
 // 이미지 슬라이더 컴포넌트
 const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: boolean; urlFor: any }) => {
-  if (!value?.images || !Array.isArray(value.images) || value.images.length < 2) return null
-
-  // 이미지 URL 배열 생성
-  const imageUrls = value.images
-    .map((image: any) => {
-      if (image?.asset?._ref) {
-        return urlFor(image).url() || null
-      } else if (image?.asset?.url) {
-        return image.asset.url
-      }
-      return null
-    })
-    .filter((url: string | null) => url !== null)
-
-  if (imageUrls.length < 2) return null
-
+  // Hooks는 항상 같은 순서로 호출되어야 하므로 조건부 return 전에 호출
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState<'left' | 'right'>('right')
   const [isTransitioning, setIsTransitioning] = useState(false)
+
+  // 이미지 URL 배열 생성
+  const imageUrls = useMemo(() => {
+    if (!value?.images || !Array.isArray(value.images)) return []
+    return value.images
+      .map((image: any) => {
+        if (image?.asset?._ref) {
+          return urlFor(image).url() || null
+        } else if (image?.asset?.url) {
+          return image.asset.url
+        }
+        return null
+      })
+      .filter((url: string | null) => url !== null)
+  }, [value?.images, urlFor])
+
+  // 조건부 return은 hooks 호출 후에
+  if (!value?.images || !Array.isArray(value.images) || imageUrls.length < 2) return null
 
   const goToNext = () => {
     if (isTransitioning) return
@@ -58,24 +63,27 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
 
   // 자동 재생
   useEffect(() => {
-    if (value.autoplay && !isTransitioning) {
-      const interval = setInterval(() => {
-        setDirection('right')
-        setIsTransitioning(true)
-        setCurrentIndex((prev) => {
-          const newIndex = (prev + 1) % imageUrls.length
-          setTimeout(() => setIsTransitioning(false), 500)
-          return newIndex
-        })
-      }, 3000) // 3초마다
-      return () => {
-        if (interval) clearInterval(interval)
-      }
+    if (!value.autoplay || imageUrls.length < 2) return
+    
+    const interval = setInterval(() => {
+      setDirection('right')
+      setIsTransitioning(true)
+      setCurrentIndex((prev) => {
+        const newIndex = (prev + 1) % imageUrls.length
+        setTimeout(() => setIsTransitioning(false), 500)
+        return newIndex
+      })
+    }, 3000) // 3초마다
+    
+    return () => {
+      clearInterval(interval)
     }
-  }, [value.autoplay, imageUrls.length, isTransitioning])
+  }, [value.autoplay, imageUrls.length])
 
   // 키보드 네비게이션
   useEffect(() => {
+    if (imageUrls.length < 2) return
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isTransitioning) return
       if (e.key === 'ArrowLeft') {
@@ -135,7 +143,7 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
           <>
             <button
               onClick={goToPrevious}
-              className={`hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center z-10 ${isDarkMode ? 'text-white' : 'text-black'}`}
+              className={`hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center z-10 ${getTextColor(isDarkMode)}`}
               aria-label="이전 이미지"
             >
               <svg
@@ -149,7 +157,7 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
             </button>
             <button
               onClick={goToNext}
-              className={`hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center z-10 ${isDarkMode ? 'text-white' : 'text-black'}`}
+              className={`hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center z-10 ${getTextColor(isDarkMode)}`}
               aria-label="다음 이미지"
             >
               <svg
@@ -188,7 +196,7 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
 
         {/* 이미지 카운터 (데스크톱에서 표시) */}
         {imageUrls.length > 1 && (
-          <div className={`hidden md:block absolute top-[-1] right-1 px-3 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+          <div className={`hidden md:block absolute top-[-1] right-1 px-3 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
             {currentIndex + 1} / {imageUrls.length}
           </div>
         )}
@@ -196,14 +204,14 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
 
       {/* 현재 이미지 캡션 */}
       {value.images[currentIndex]?.caption && (
-        <p className={`캡션-민부리 mt-2 md:mt-3 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`캡션-민부리 mt-2 md:mt-3 text-center ${getTextColor(isDarkMode, 'subtle')}`}>
           {value.images[currentIndex].caption}
         </p>
       )}
 
       {/* 슬라이더 전체 캡션 */}
       {value.sliderCaption && (
-        <p className={`캡션-민부리 mt-2 md:mt-3 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        <p className={`캡션-민부리 mt-2 md:mt-3 text-center ${getTextColor(isDarkMode, 'subtle')}`}>
           {value.sliderCaption}
         </p>
       )}
@@ -406,6 +414,49 @@ export default function ArticlePage({ params }: PageProps) {
     if (footnoteElement) {
       footnoteElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
+  }
+
+  // 각주 텍스트에서 URL을 하이퍼링크로 변환하는 함수
+  const renderFootnoteWithLinks = (text: string) => {
+    if (!text) return text
+
+    // URL 패턴 매칭 (http://, https://, www.로 시작하는 URL)
+    const urlPattern = /(https?:\/\/[^\s]+|www\.[^\s]+)/g
+    const parts: Array<React.ReactElement | string> = []
+    let lastIndex = 0
+    let match
+    let key = 0
+
+    while ((match = urlPattern.exec(text)) !== null) {
+      // URL 이전의 텍스트 추가
+      if (match.index > lastIndex) {
+        parts.push(<span key={key++}>{text.substring(lastIndex, match.index)}</span>)
+      }
+      
+      // URL을 링크로 변환
+      const url = match[0]
+      const href = url.startsWith('http') ? url : `https://${url}`
+      parts.push(
+        <a
+          key={key++}
+          href={href}
+          target="_blank"
+          rel="noreferrer noopener"
+          className={`${getLinkColor(isDarkMode)} underline hover:opacity-80`}
+        >
+          {url}
+        </a>
+      )
+      
+      lastIndex = urlPattern.lastIndex
+    }
+    
+    // 마지막 남은 텍스트 추가
+    if (lastIndex < text.length) {
+      parts.push(<span key={key++}>{text.substring(lastIndex)}</span>)
+    }
+    
+    return parts.length > 0 ? <>{parts}</> : text
   }
 
   // Intersection Observer로 각주 텍스트가 화면에 들어오는지 감지
@@ -648,7 +699,7 @@ export default function ArticlePage({ params }: PageProps) {
               className="w-[80%] h-auto mx-auto"
             />
             {value.caption && (
-              <p className={`w-[75%] mx-auto 캡션-민부리 mt-3 md:mt-4 text-center  ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className={`w-[75%] mx-auto 캡션-민부리 mt-3 md:mt-4 text-center ${getTextColor(isDarkMode, 'subtle')}`}>
                 {value.caption}
               </p>
             )}
@@ -681,7 +732,7 @@ export default function ArticlePage({ params }: PageProps) {
                     className="w-full h-auto"
                   />
                   {image.caption && (
-                    <p className={`각주폰트-민부리 mt-2 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className={`각주폰트-민부리 mt-2 text-center ${getTextColor(isDarkMode, 'subtle')}`}>
                       {image.caption}
                     </p>
                   )}
@@ -699,7 +750,7 @@ export default function ArticlePage({ params }: PageProps) {
       h2: ({ children }: any) => (
         <h2
           style={{ fontFamily: 'AGCJHS', fontWeight: '600' }}
-          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트-민부리 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트-민부리 md:indent-[2em] md:py-[0.5em] ${getTextColor(isDarkMode)}`}
         >
           {children}
         </h2>
@@ -707,7 +758,7 @@ export default function ArticlePage({ params }: PageProps) {
       h3: ({ children }: any) => (
         <h3
           style={{ fontFamily: 'AGCJHS', fontWeight: '600' }}
-          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트-민부리 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트-민부리 md:indent-[2em] md:py-[0.5em] ${getTextColor(isDarkMode)}`}
         >
           {children}
         </h3>
@@ -715,21 +766,21 @@ export default function ArticlePage({ params }: PageProps) {
       h4: ({ children }: any) => (
         <h4
           style={{ fontFamily: 'AGCJHS', fontWeight: '600' }}
-          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트-민부리 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트-민부리 md:indent-[2em] md:py-[0.5em] ${getTextColor(isDarkMode)}`}
         >
           {children}
         </h4>
       ),
       h5: ({ children }: any) => (
         <h5
-          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트 md:indent-[2em] md:py-[0.5em] ${isDarkMode ? 'text-white' : 'text-black'}`}
+          className={`본문폰트-민부리 indent-[2em] py-[0.2em] md:본문폰트 md:indent-[2em] md:py-[0.5em] ${getTextColor(isDarkMode)}`}
         >
           {children}
         </h5>
       ),
       h6: ({ children }: any) => (
         <h6
-          className={`본문폰트-민부리 py-[0.5em] md:본문폰트 md:py-[0.5em] pl-[40%] ${isDarkMode ? 'text-white' : 'text-black'}`}
+          className={`본문폰트-민부리 py-[0.5em] md:본문폰트-민부리 md:py-[0.5em] pl-[40%] ${getTextColor(isDarkMode)}`}
         >
           {children}
         </h6>
@@ -754,8 +805,7 @@ export default function ArticlePage({ params }: PageProps) {
         const Tag = hasBlockElements ? 'div' : 'p'
         return (
           <Tag
-            className={`본문폰트 my-[0.6em] md:본문폰트 md:my-2 ${isDarkMode ? 'text-white' : 'text-black'}`}
-            style={{ lineHeight: '1.68' }}
+            className={`본문폰트 my-[0.6em] md:본문폰트 md:my-3 ${getTextColor(isDarkMode)}`}
           >
             {children}
           </Tag>
@@ -769,7 +819,7 @@ export default function ArticlePage({ params }: PageProps) {
             paddingLeft: '1.5em',
             margin: '32px 0',
           }}
-          className={isDarkMode ? 'text-white' : 'text-black'}
+          className={getTextColor(isDarkMode)}
         >
           {children}
         </blockquote>
@@ -783,7 +833,7 @@ export default function ArticlePage({ params }: PageProps) {
             href={value?.href || '#'}
             rel={rel}
             target={value?.href?.startsWith('/') ? '_self' : '_blank'}
-            className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} underline`}
+            className={`${getLinkColor(isDarkMode)} underline`}
           >
             {children}
           </a>
@@ -826,25 +876,25 @@ export default function ArticlePage({ params }: PageProps) {
           </span>
         )
       },
-      strong: ({ children }: any) => <strong className={isDarkMode ? 'text-white' : 'text-black'}>{children}</strong>,
-      em: ({ children }: any) => <em className={isDarkMode ? 'text-white' : 'text-black'}>{children}</em>,
-      underline: ({ children }: any) => <u className={isDarkMode ? 'text-white' : 'text-black'}>{children}</u>,
-      sup: ({ children }: any) => <sup className={isDarkMode ? 'text-white' : 'text-black'}>{children}</sup>,
-      sub: ({ children }: any) => <sub className={isDarkMode ? 'text-white' : 'text-black'}>{children}</sub>,
+      strong: ({ children }: any) => <strong className={getTextColor(isDarkMode)}>{children}</strong>,
+      em: ({ children }: any) => <em className={getTextColor(isDarkMode)}>{children}</em>,
+      underline: ({ children }: any) => <u className={getTextColor(isDarkMode)}>{children}</u>,
+      sup: ({ children }: any) => <sup className={getTextColor(isDarkMode)}>{children}</sup>,
+      sub: ({ children }: any) => <sub className={getTextColor(isDarkMode)}>{children}</sub>,
       indent: ({ children }: any) => (
-        <span className={`inline-block pl-[2em] md:pl-[2em] ${isDarkMode ? 'text-white' : 'text-black'}`}>
+        <span className={`inline-block pl-[2em] md:pl-[2em] ${getTextColor(isDarkMode)}`}>
           {children}
         </span>
       ),
     },
     list: {
       bullet: ({ children }: any) => (
-        <ul style={{ marginLeft: '24px', marginTop: '16px', marginBottom: '16px' }} className={isDarkMode ? 'text-white' : 'text-black'}>
+        <ul style={{ marginLeft: '24px', marginTop: '16px', marginBottom: '16px' }} className={getTextColor(isDarkMode)}>
           {children}
         </ul>
       ),
       number: ({ children }: any) => (
-        <ol style={{ marginLeft: '24px', marginTop: '16px', marginBottom: '16px' }} className={isDarkMode ? 'text-white' : 'text-black'}>
+        <ol style={{ marginLeft: '24px', marginTop: '16px', marginBottom: '16px' }} className={getTextColor(isDarkMode)}>
           {children}
         </ol>
       )
@@ -853,7 +903,7 @@ export default function ArticlePage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-[#171717]' : 'bg-white'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${getBgColor(isDarkMode)}`}>
         <img src={isDarkMode ? "/img/logo2-i.gif" : "/img/logo2.gif"} alt="글짜씨" className="w-32 lg:w-48" />
       </div>
     )
@@ -868,8 +918,8 @@ export default function ArticlePage({ params }: PageProps) {
   }
 
   return (
-    <div className={`h-screen overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-[#171717]' : 'bg-white'}`}>
-      <div className="h-full max-w-[1400px] mx-auto px-4 py-6 md:px-6 md:py-6">
+    <div className={`h-screen overflow-hidden transition-colors duration-300 ${getBgColor(isDarkMode)}`}>
+      <div className="h-full max-w-[1400px] mx-auto px-4 pt-2 pb-8 md:px-6 md:pt-5 md:pb-6">
         <div className="h-full grid grid-cols-1 md:grid-cols-[200px_1fr_200px] gap-4 md:gap-16">
 
           {/* 왼쪽: 돌아가기 버튼 + 이전 아티클 */}
@@ -878,7 +928,7 @@ export default function ArticlePage({ params }: PageProps) {
             <div className="flex justify-end">
               <Link
                 href="/"
-                className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-800 hover:text-black'}`}
+                className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${getTextColor(isDarkMode, 'muted')} ${getHoverTextColor(isDarkMode)}`}
               >
                 <svg
                   className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
@@ -899,7 +949,7 @@ export default function ArticlePage({ params }: PageProps) {
               {article?.prevArticle ? (
                 <Link
                   href={`/articles/${article.prevArticle.slug}`}
-                  className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-800 hover:text-black'}`}
+                  className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${getTextColor(isDarkMode, 'muted')} ${getHoverTextColor(isDarkMode)}`}
                 >
                   <svg
                     className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
@@ -915,7 +965,7 @@ export default function ArticlePage({ params }: PageProps) {
                   </div>
                 </Link>
               ) : (
-                <div className={`각주폰트-민부리 text-right w-[180px] ${isDarkMode ? 'text-gray-500' : 'text-gray-300'}`}>
+                <div className={`각주폰트-민부리 text-right w-[180px] ${getTextColor(isDarkMode, 'subtle')}`}>
                   <br /> 이전 글 없음
                 </div>
               )}
@@ -923,9 +973,9 @@ export default function ArticlePage({ params }: PageProps) {
           </div>
 
           {/* 중앙: 아티클 본문 */}
-          <article className="max-w-[800px] mx-auto mt-6 w-full overflow-y-auto h-full scrollbar-hide">
+          <article className="max-w-[800px] mx-auto mt-6 mb-8 md:mb-16 w-full overflow-y-auto h-full scrollbar-hide">
             {/* 호수, 섹션 */}
-            <div className={`text-center mb-1 md:text-left md:indent-[0.2em] 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+            <div className={`text-center mb-1 md:text-left md:indent-[0.2em] 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
               {article.issue.number} · {article.section.title}
             </div>
 
@@ -933,12 +983,12 @@ export default function ArticlePage({ params }: PageProps) {
             <div className="mb-6 md:mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 md:gap-4">
                 {/* 제목 - 왼쪽 */}
-                <h1 className={`h2 text-center mb-4 md:text-left font-bold leading-[1.5] ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                <h1 className={`h2 text-center mb-4 md:text-left font-bold leading-[1.5] ${getTextColor(isDarkMode)}`}>
                   {article.title}
                 </h1>
 
                 {/* 저자 - 오른쪽 */}
-                <div className={`h2 text-center md:text-left font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                <div className={`h2 text-center md:text-left font-bold ${getTextColor(isDarkMode)}`}>
                   {article.author}
                 </div>
               </div>
@@ -946,7 +996,7 @@ export default function ArticlePage({ params }: PageProps) {
 
             {/* 개괄글/서론 (모든 타입 공통) */}
             {article.introduction && Array.isArray(article.introduction) && article.introduction.length > 0 && (
-              <div className={`mb-8 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              <div className={`mb-8 ${getTextColor(isDarkMode)}`}>
                 <PortableText
                   value={article.introduction}
                   components={components}
@@ -955,7 +1005,7 @@ export default function ArticlePage({ params }: PageProps) {
             )}
 
             {/* 본문 - contentBlocks 우선, 없으면 기존 필드들 렌더링 */}
-            <div className={`mb-16 space-y-12 md:mb-20 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+            <div className={`mb-16 space-y-12 md:mb-20 ${getTextColor(isDarkMode)}`}>
               {/* ✨ 통합 컨텐츠 블록 (순서 자유 배치) */}
               {article.contentBlocks && Array.isArray(article.contentBlocks) && article.contentBlocks.length > 0 ? (
                 article.contentBlocks.map((block: any, blockIdx: number) => {
@@ -974,20 +1024,20 @@ export default function ArticlePage({ params }: PageProps) {
                         {block.responsesContent.map((response: any, idx: number) => (
                           <div key={idx} className="space-y-4">
                             <div className="flex items-baseline gap-4">
-                              <span className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              <span className={`각주폰트-민부리 font-bold ${getTextColor(isDarkMode, 'muted')}`}>
                                 {response.year}
                               </span>
-                              <h3 className={`본문폰트 font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                              <h3 className={`본문폰트 font-bold ${getTextColor(isDarkMode)}`}>
                                 {response.title}
                               </h3>
                               {response.author && (
-                                <span className={`각주폰트-민부리 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                <span className={`각주폰트-민부리 ${getTextColor(isDarkMode, 'subtle')}`}>
                                   {response.author}
                                 </span>
                               )}
                             </div>
                             {response.content && Array.isArray(response.content) && response.content.length > 0 && (
-                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                              <div className={getTextColor(isDarkMode)}>
                                 <PortableText
                                   value={response.content}
                                   components={components}
@@ -1004,7 +1054,7 @@ export default function ArticlePage({ params }: PageProps) {
                               </div>
                             )}
                             {response.references && Array.isArray(response.references) && response.references.length > 0 && (
-                              <div className={`각주폰트-민부리 mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              <div className={`각주폰트-민부리 mt-4 ${getTextColor(isDarkMode, 'subtle')}`}>
                                 <div className="font-bold mb-2">참고문헌</div>
                                 <PortableText
                                   value={response.references}
@@ -1022,7 +1072,7 @@ export default function ArticlePage({ params }: PageProps) {
                         {block.interviewQAContent.map((qa: any, idx: number) => (
                           <div key={idx} className="space-y-6">
                             {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
-                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                              <div className={getTextColor(isDarkMode)}>
                                 <PortableText
                                   value={qa.question}
                                   components={components}
@@ -1032,11 +1082,11 @@ export default function ArticlePage({ params }: PageProps) {
                             <div className="space-y-4 pl-4">
                               {qa.answers && qa.answers.map((answer: any, ansIdx: number) => (
                                 <div key={ansIdx} className="space-y-2">
-                                  <div className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                  <div className={`각주폰트-민부리 font-bold ${getTextColor(isDarkMode, 'muted')}`}>
                                     {answer.person}
                                   </div>
                                   {answer.answer && Array.isArray(answer.answer) && answer.answer.length > 0 && (
-                                    <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                                    <div className={getTextColor(isDarkMode)}>
                                       <PortableText
                                         value={answer.answer}
                                         components={components}
@@ -1055,11 +1105,11 @@ export default function ArticlePage({ params }: PageProps) {
                       <div key={blockIdx} className="space-y-6">
                         {block.conversationContent.map((turn: any, idx: number) => (
                           <div key={idx} className="space-y-2">
-                            <div className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <div className={`각주폰트-민부리 font-bold ${getTextColor(isDarkMode, 'muted')}`}>
                               {turn.speaker}
                             </div>
                             {turn.text && Array.isArray(turn.text) && turn.text.length > 0 && (
-                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                              <div className={getTextColor(isDarkMode)}>
                                 <PortableText
                                   value={turn.text}
                                   components={components}
@@ -1076,7 +1126,7 @@ export default function ArticlePage({ params }: PageProps) {
                         {block.qaListContent.map((qa: any, idx: number) => (
                           <div key={idx} className="space-y-4">
                             {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
-                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                              <div className={getTextColor(isDarkMode)}>
                                 <PortableText
                                   value={qa.question}
                                   components={components}
@@ -1084,7 +1134,7 @@ export default function ArticlePage({ params }: PageProps) {
                               </div>
                             )}
                             {qa.answer && Array.isArray(qa.answer) && qa.answer.length > 0 && (
-                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                              <div className={getTextColor(isDarkMode)}>
                                 <PortableText
                                   value={qa.answer}
                                   components={components}
@@ -1117,20 +1167,20 @@ export default function ArticlePage({ params }: PageProps) {
                   {article.responses.map((response: any, idx: number) => (
                     <div key={idx} className="space-y-4">
                       <div className="flex items-baseline gap-4">
-                        <span className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        <span className={`각주폰트-민부리 font-bold ${getTextColor(isDarkMode, 'muted')}`}>
                           {response.year}
                         </span>
-                        <h3 className={`본문폰트 font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                        <h3 className={`본문폰트 font-bold ${getTextColor(isDarkMode)}`}>
                           {response.title}
                         </h3>
                         {response.author && (
-                          <span className={`각주폰트-민부리 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          <span className={`각주폰트-민부리 ${getTextColor(isDarkMode, 'subtle')}`}>
                             {response.author}
                           </span>
                         )}
                       </div>
                       {response.content && Array.isArray(response.content) && response.content.length > 0 && (
-                        <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                        <div className={getTextColor(isDarkMode)}>
                           <PortableText
                             value={response.content}
                             components={components}
@@ -1147,7 +1197,7 @@ export default function ArticlePage({ params }: PageProps) {
                         </div>
                       )}
                       {response.references && Array.isArray(response.references) && response.references.length > 0 && (
-                        <div className={`각주폰트-민부리 mt-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <div className={`각주폰트-민부리 mt-4 ${getTextColor(isDarkMode, 'subtle')}`}>
                           <div className="font-bold mb-2">참고문헌</div>
                           <PortableText
                             value={response.references}
@@ -1166,7 +1216,7 @@ export default function ArticlePage({ params }: PageProps) {
                   {article.interviewQA.map((qa: any, idx: number) => (
                     <div key={idx} className="space-y-6">
                       {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
-                        <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                        <div className={getTextColor(isDarkMode)}>
                           <PortableText
                             value={qa.question}
                             components={components}
@@ -1176,11 +1226,11 @@ export default function ArticlePage({ params }: PageProps) {
                       <div className="space-y-4 pl-4">
                         {qa.answers && qa.answers.map((answer: any, ansIdx: number) => (
                           <div key={ansIdx} className="space-y-2">
-                            <div className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <div className={`각주폰트-민부리 font-bold ${getTextColor(isDarkMode, 'muted')}`}>
                               {answer.person}
                             </div>
                             {answer.answer && Array.isArray(answer.answer) && answer.answer.length > 0 && (
-                              <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                              <div className={getTextColor(isDarkMode)}>
                                 <PortableText
                                   value={answer.answer}
                                   components={components}
@@ -1200,11 +1250,11 @@ export default function ArticlePage({ params }: PageProps) {
                 <div className="space-y-6">
                   {article.conversation.map((turn: any, idx: number) => (
                     <div key={idx} className="space-y-2">
-                      <div className={`각주폰트-민부리 font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <div className={`각주폰트-민부리 font-bold ${getTextColor(isDarkMode, 'muted')}`}>
                         {turn.speaker}
                       </div>
                       {turn.text && Array.isArray(turn.text) && turn.text.length > 0 && (
-                        <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                        <div className={getTextColor(isDarkMode)}>
                           <PortableText
                             value={turn.text}
                             components={components}
@@ -1222,7 +1272,7 @@ export default function ArticlePage({ params }: PageProps) {
                   {article.qaList.map((qa: any, idx: number) => (
                     <div key={idx} className="space-y-4">
                       {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
-                        <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                        <div className={getTextColor(isDarkMode)}>
                           <PortableText
                             value={qa.question}
                             components={components}
@@ -1230,7 +1280,7 @@ export default function ArticlePage({ params }: PageProps) {
                         </div>
                       )}
                       {qa.answer && Array.isArray(qa.answer) && qa.answer.length > 0 && (
-                        <div className={isDarkMode ? 'text-white' : 'text-black'}>
+                        <div className={getTextColor(isDarkMode)}>
                           <PortableText
                             value={qa.answer}
                             components={components}
@@ -1247,16 +1297,16 @@ export default function ArticlePage({ params }: PageProps) {
 
             {/* 추가 섹션 (참고문헌, 이미지 출처 등) */}
             {article.additionalSections && article.additionalSections.length > 0 && (
-              <div className={`mt-12 space-y-8 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+              <div className={`mt-12 space-y-8 ${getTextColor(isDarkMode)}`}>
                 {article.additionalSections.map((section: any, idx: number) => (
-                  <div key={idx} className={`pt-8 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                  <div key={idx} className={`pt-8 border-t ${getBorderColor(isDarkMode)}`}>
                     {/* 섹션 제목 */}
-                    <h3 className={`text-lg font-bold mb-4 각주폰트-민부리 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                    <h3 className={`text-lg font-bold mb-4 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
                       {section.title}
                     </h3>
 
                     {/* 섹션 내용 */}
-                    <div className={`각주폰트-민부리 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <div className={`각주폰트-민부리 ${getTextColor(isDarkMode, 'muted')}`}>
                       <PortableText value={section.content} components={components} />
                     </div>
                   </div>
@@ -1272,19 +1322,19 @@ export default function ArticlePage({ params }: PageProps) {
             {/* 각주 세부 텍스트 - 오른쪽 상단 고정 (스크롤 가능) */}
             {hasFootnotesInContent && footnotesList.length > 0 && (
               <div className="w-[180px] mb-auto" style={{ maxHeight: 'calc(100vh - 20rem)', overflowY: 'auto' }}>
-                <div className={`각주폰트-민부리 leading-relaxed text-left space-y-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <div className={`각주폰트-민부리 leading-relaxed text-left space-y-2 ${getTextColor(isDarkMode, 'muted')}`}>
                   {footnotesList.map((footnote, idx) => (
                     <div key={idx} className="mb-3">
                       <button
                         onClick={() => toggleFootnote(footnote.number)}
-                        className={`mr-2 cursor-pointer hover:opacity-70 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                        className={`mr-2 cursor-pointer hover:opacity-70 transition-opacity ${getTextColor(isDarkMode, 'muted')}`}
                       >
                         [{footnote.number}]
                       </button>
                       {expandedFootnotes[footnote.number] && (
                         <>
                           <br />
-                          <span>{footnote.text}</span>
+                          <span>{renderFootnoteWithLinks(footnote.text)}</span>
                         </>
                       )}
                     </div>
@@ -1298,7 +1348,7 @@ export default function ArticlePage({ params }: PageProps) {
               {article?.nextArticle ? (
                 <Link
                   href={`/articles/${article.nextArticle.slug}`}
-                  className={`group flex flex-col items-start gap-1 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`group flex flex-col items-start gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
                 >
                   <svg
                     className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
@@ -1314,7 +1364,7 @@ export default function ArticlePage({ params }: PageProps) {
                   </div>
                 </Link>
               ) : (
-                <div className={`각주폰트-민부리 w-[180px] ${isDarkMode ? 'text-gray-500' : 'text-gray-300'}`}>
+                <div className={`각주폰트-민부리 w-[180px] ${getTextColor(isDarkMode, 'subtle')}`}>
                   <br /> 다음 글 없음
                 </div>
               )}
@@ -1326,7 +1376,7 @@ export default function ArticlePage({ params }: PageProps) {
 
       {/* 하단 고정 네비게이션 - 모바일만 */}
       {showNavigation && (
-        <div className={`md:hidden fixed bottom-0 left-0 right-0 border-t shadow-lg z-50 transition-colors duration-300 pb-1 ${isDarkMode ? 'bg-[#171717] border-gray-700' : 'bg-white border-gray-200'}`}>
+        <div className={`md:hidden fixed bottom-0 left-0 right-0 border-t shadow-lg z-50 transition-colors duration-300 pb-1 ${getBgColor(isDarkMode)} ${getBorderColor(isDarkMode, 'light')}`}>
           <div className="max-w-[1400px] mx-auto px-5 py-3">
             <div className="grid grid-cols-3 gap-4 items-center">
               {/* 이전 아티클 */}
@@ -1334,7 +1384,7 @@ export default function ArticlePage({ params }: PageProps) {
                 {article?.prevArticle ? (
                   <Link
                     href={`/articles/${article.prevArticle.slug}`}
-                    className={`group flex items-center gap-1.5 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                    className={`group flex items-center gap-1.5 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
                   >
                     <svg
                       className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform"
@@ -1347,7 +1397,7 @@ export default function ArticlePage({ params }: PageProps) {
                     <span className="각주폰트-민부리">이전</span>
                   </Link>
                 ) : (
-                  <div className={`각주폰트-민부리 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>이전 글 없음</div>
+                  <div className={`각주폰트-민부리 ${getTextColor(isDarkMode, 'subtle')}`}>이전 글 없음</div>
                 )}
               </div>
 
@@ -1355,7 +1405,7 @@ export default function ArticlePage({ params }: PageProps) {
               <div className="col-span-1 flex justify-center">
                 <Link
                   href="/"
-                  className={`flex items-center 각주폰트-민부리 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                  className={`flex items-center 각주폰트-민부리 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
                 >
                   돌아가기
                 </Link>
@@ -1366,7 +1416,7 @@ export default function ArticlePage({ params }: PageProps) {
                 {article?.nextArticle ? (
                   <Link
                     href={`/articles/${article.nextArticle.slug}`}
-                    className={`group flex items-center justify-end gap-1.5 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                    className={`group flex items-center justify-end gap-1.5 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
                   >
                     <span className="각주폰트-민부리">다음</span>
                     <svg
@@ -1379,7 +1429,7 @@ export default function ArticlePage({ params }: PageProps) {
                     </svg>
                   </Link>
                 ) : (
-                  <div className={`각주폰트-민부리 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>다음 글 없음</div>
+                  <div className={`각주폰트-민부리 ${getTextColor(isDarkMode, 'subtle')}`}>다음 글 없음</div>
                 )}
               </div>
             </div>
@@ -1418,7 +1468,7 @@ export default function ArticlePage({ params }: PageProps) {
               <div className="각주폰트-민부리 text-black">
                 <span className="font-bold">[{mobileFootnotePopup.number}]</span>
                 <div className="mt-1 leading-relaxed">
-                  {mobileFootnotePopup.text}
+                  {renderFootnoteWithLinks(mobileFootnotePopup.text)}
                 </div>
               </div>
             </div>
