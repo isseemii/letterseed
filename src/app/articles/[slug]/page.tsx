@@ -2,12 +2,13 @@
 
 import { PortableText } from '@portabletext/react'
 import Link from 'next/link'
+import Image from 'next/image'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useDarkMode } from '@/contexts/DarkModeContext'
 import imageUrlBuilder from '@sanity/image-url'
 import { client } from '@/lib/sanity'
 import { getTextColor, getBgColor, getBorderColor, getHoverTextColor, getLinkColor } from '@/lib/DarkModeUtils'
-import { LAYOUT } from '@/lib/constants'
+import { LAYOUT, CAPTION_STYLES } from '@/lib/constants'
 
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
@@ -128,10 +129,14 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
                 key={index}
                 className="w-full flex-shrink-0"
               >
-                <img
+                <Image
                   src={url}
                   alt={value.images[index]?.alt || `이미지 ${index + 1}`}
+                  width={1200}
+                  height={800}
                   className="w-full h-auto"
+                  sizes="80vw"
+                  unoptimized
                 />
               </div>
             ))}
@@ -204,14 +209,14 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
 
       {/* 현재 이미지 캡션 */}
       {value.images[currentIndex]?.caption && (
-        <p className={`캡션-민부리 mt-2 md:mt-3 text-center ${getTextColor(isDarkMode, 'subtle')}`}>
+        <p className={`${CAPTION_STYLES.DEFAULT} ${getTextColor(isDarkMode, 'subtle')}`}>
           {value.images[currentIndex].caption}
         </p>
       )}
 
       {/* 슬라이더 전체 캡션 */}
       {value.sliderCaption && (
-        <p className={`캡션-민부리 mt-2 md:mt-3 text-center ${getTextColor(isDarkMode, 'subtle')}`}>
+        <p className={`${CAPTION_STYLES.DEFAULT} ${getTextColor(isDarkMode, 'subtle')}`}>
           {value.sliderCaption}
         </p>
       )}
@@ -223,7 +228,7 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 overflow-hidden transition-all hover:scale-105 ${
+              className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 overflow-hidden transition-all hover:scale-105 relative ${
                 index === currentIndex
                   ? isDarkMode
                     ? 'scale-105'
@@ -233,11 +238,13 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
                   : 'opacity-60 hover:opacity-80'
               }`}
             >
-              <img
+              <Image
                 src={url}
                 alt={`썸네일 ${index + 1}`}
+                width={80}
+                height={80}
                 className="w-full h-full object-cover"
-                style={{ aspectRatio: '1 / 1' }}
+                unoptimized
               />
             </button>
           ))}
@@ -693,13 +700,19 @@ export default function ArticlePage({ params }: PageProps) {
 
         return (
           <div className="my-8">
-            <img
-              src={imageUrl}
-              alt={value.alt || ''}
-              className="w-[80%] h-auto mx-auto"
-            />
+            <div className="w-[80%] mx-auto">
+              <Image
+                src={imageUrl}
+                alt={value.alt || ''}
+                width={1200}
+                height={800}
+                className="w-full h-auto"
+                sizes="80vw"
+                unoptimized
+              />
+            </div>
             {value.caption && (
-              <p className={`w-[75%] mx-auto 캡션-민부리 mt-3 md:mt-4 text-center ${getTextColor(isDarkMode, 'subtle')}`}>
+              <p className={`w-[75%] mx-auto ${CAPTION_STYLES.IMAGE} ${getTextColor(isDarkMode, 'subtle')}`}>
                 {value.caption}
               </p>
             )}
@@ -726,13 +739,17 @@ export default function ArticlePage({ params }: PageProps) {
 
               return (
                 <div key={index}>
-                  <img
+                  <Image
                     src={imageUrl}
                     alt={image.alt || ''}
+                    width={800}
+                    height={600}
                     className="w-full h-auto"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    unoptimized
                   />
                   {image.caption && (
-                    <p className={`각주폰트-민부리 mt-2 text-center ${getTextColor(isDarkMode, 'subtle')}`}>
+                    <p className={`${CAPTION_STYLES.GRID} ${getTextColor(isDarkMode, 'subtle')}`}>
                       {image.caption}
                     </p>
                   )}
@@ -1045,11 +1062,15 @@ export default function ArticlePage({ params }: PageProps) {
                               </div>
                             )}
                             {response.image && (
-                              <div className="my-6">
-                                <img
+                              <div className="my-6 w-full">
+                                <Image
                                   src={urlFor(response.image).url() || ''}
                                   alt={response.image.alt || ''}
+                                  width={1200}
+                                  height={800}
                                   className="w-full h-auto"
+                                  sizes="100vw"
+                                  unoptimized
                                 />
                               </div>
                             )}
@@ -1188,17 +1209,21 @@ export default function ArticlePage({ params }: PageProps) {
                         </div>
                       )}
                       {response.image && (
-                        <div className="my-6">
-                          <img
+                        <div className="my-6 w-full">
+                          <Image
                             src={urlFor(response.image).url() || ''}
                             alt={response.image.alt || ''}
+                            width={1200}
+                            height={800}
                             className="w-full h-auto"
+                            sizes="100vw"
+                            unoptimized
                           />
                         </div>
                       )}
                       {response.references && Array.isArray(response.references) && response.references.length > 0 && (
-                        <div className={`각주폰트-민부리 mt-4 ${getTextColor(isDarkMode, 'subtle')}`}>
-                          <div className="font-bold mb-2">참고문헌</div>
+                        <div className={`각주폰트-민부리 mt-4 pl-[40%] ${getTextColor(isDarkMode, 'subtle')}`}>
+                          <div className="각주폰트-민부리 font-bold">참고문헌</div>
                           <PortableText
                             value={response.references}
                             components={components}
