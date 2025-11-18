@@ -35,33 +35,6 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
       .filter((url: string | null) => url !== null)
   }, [value?.images, urlFor])
 
-  // 조건부 return은 hooks 호출 후에
-  if (!value?.images || !Array.isArray(value.images) || imageUrls.length < 2) return null
-
-  const goToNext = () => {
-    if (isTransitioning) return
-    setDirection('right')
-    setIsTransitioning(true)
-    setCurrentIndex((prev) => (prev + 1) % imageUrls.length)
-    setTimeout(() => setIsTransitioning(false), 500)
-  }
-
-  const goToPrevious = () => {
-    if (isTransitioning) return
-    setDirection('left')
-    setIsTransitioning(true)
-    setCurrentIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length)
-    setTimeout(() => setIsTransitioning(false), 500)
-  }
-
-  const goToSlide = (index: number) => {
-    if (isTransitioning) return
-    setDirection(index > currentIndex ? 'right' : 'left')
-    setIsTransitioning(true)
-    setCurrentIndex(index)
-    setTimeout(() => setIsTransitioning(false), 500)
-  }
-
   // 자동 재생
   useEffect(() => {
     if (!value.autoplay || imageUrls.length < 2) return
@@ -111,6 +84,33 @@ const ImageSlider = ({ value, isDarkMode, urlFor }: { value: any; isDarkMode: bo
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [imageUrls.length, isTransitioning])
+
+  // 조건부 return은 모든 hooks 호출 후에
+  if (!value?.images || !Array.isArray(value.images) || imageUrls.length < 2) return null
+
+  const goToNext = () => {
+    if (isTransitioning) return
+    setDirection('right')
+    setIsTransitioning(true)
+    setCurrentIndex((prev) => (prev + 1) % imageUrls.length)
+    setTimeout(() => setIsTransitioning(false), 500)
+  }
+
+  const goToPrevious = () => {
+    if (isTransitioning) return
+    setDirection('left')
+    setIsTransitioning(true)
+    setCurrentIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length)
+    setTimeout(() => setIsTransitioning(false), 500)
+  }
+
+  const goToSlide = (index: number) => {
+    if (isTransitioning) return
+    setDirection(index > currentIndex ? 'right' : 'left')
+    setIsTransitioning(true)
+    setCurrentIndex(index)
+    setTimeout(() => setIsTransitioning(false), 500)
+  }
 
   return (
     <div className="my-8 md:my-12">
