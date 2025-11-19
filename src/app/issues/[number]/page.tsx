@@ -44,7 +44,7 @@ export default function IssuePage({ params }: PageProps) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="mb-4">호를 찾을 수 없습니다.</p>
-          <Link href="/" className="text-blue-600 underline">
+          <Link href="/" className="text-blue-600 underline decoration-dotted">
             홈으로 돌아가기
           </Link>
         </div>

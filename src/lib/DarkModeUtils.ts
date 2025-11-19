@@ -1,9 +1,11 @@
 /**
  * 다크모드에 따른 텍스트 색상 클래스 반환
  */
-export function getTextColor(isDarkMode: boolean, variant: 'default' | 'muted' | 'subtle' = 'default'): string {
+export function getTextColor(isDarkMode: boolean, variant: 'default' | 'muted' | 'subtle' | 'link' = 'default'): string {
   if (isDarkMode) {
     switch (variant) {
+      case 'link':
+        return 'text-blue-300 border-b border-dotted border-blue-300';
       case 'muted':
         return 'text-gray-300';
       case 'subtle':
@@ -13,6 +15,8 @@ export function getTextColor(isDarkMode: boolean, variant: 'default' | 'muted' |
     }
   } else {
     switch (variant) {
+      case 'link':
+        return 'text-blue-600 border-b border-dotted border-blue-600 hover:opacity-80';
       case 'muted':
         return 'text-gray-800';
       case 'subtle':

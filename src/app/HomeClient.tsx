@@ -24,12 +24,16 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
   // 후원/파트너 이미지 크기 클래스명
   const sponsorImageClassName = "w-36 lg:w-40"
 
-  // 크레딧 토글 함수
+  // 크레딧 토글 함수 - 한 번에 하나만 열리도록
   const toggleCredits = (issueId: string) => {
-    setExpandedCredits(prev => ({
-      ...prev,
-      [issueId]: !prev[issueId]
-    }))
+    setExpandedCredits(prev => {
+      // 이미 열려있으면 닫기, 아니면 다른 것들 모두 닫고 이 것만 열기
+      if (prev[issueId]) {
+        return {}
+      } else {
+        return { [issueId]: true }
+      }
+    })
   }
 
   // Subsection 토글 함수
@@ -208,8 +212,8 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
                 <div
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedIssue === issue._id
-                      ? 'max-h-[5000px] opacity-100'
-                      : 'max-h-0 opacity-0'
+                    ? 'max-h-[5000px] opacity-100'
+                    : 'max-h-0 opacity-0'
                     }`}
                 >
                   <div className="pb-4 pl-11 space-y-6">
@@ -291,8 +295,8 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                     {subsubsection.articles && subsubsection.articles.length > 0 && (
                                                       <div
                                                         className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedSubsections[subsubsection._id]
-                                                            ? 'max-h-[1000px] opacity-100'
-                                                            : 'max-h-0 opacity-0'
+                                                          ? 'max-h-[1000px] opacity-100'
+                                                          : 'max-h-0 opacity-0'
                                                           }`}
                                                       >
                                                         <div className="space-y-1.5 pl-4">
@@ -393,8 +397,8 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                     {subsubsection.articles && subsubsection.articles.length > 0 && (
                                                       <div
                                                         className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedSubsections[subsubsection._id]
-                                                            ? 'max-h-[1000px] opacity-100'
-                                                            : 'max-h-0 opacity-0'
+                                                          ? 'max-h-[1000px] opacity-100'
+                                                          : 'max-h-0 opacity-0'
                                                           }`}
                                                       >
                                                         <div className="space-y-1.5 pl-4">
@@ -505,8 +509,8 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
                         <div
                           className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedCredits[issue._id]
-                              ? 'max-h-[1000px] opacity-100'
-                              : 'max-h-0 opacity-0'
+                            ? 'max-h-[1000px] opacity-100'
+                            : 'max-h-0 opacity-0'
                             }`}
                         >
                           <div className="각주폰트-민부리">
@@ -679,17 +683,40 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
           {/* 목차 */}
           <div className="grid grid-cols-5 gap-8 pb-12 lg:pt-12">
-            <div className="col-span-1"></div>
+            {/* 첫 번째 컬럼: 크레딧 표시 영역 - 첫 번째 호와 높이 맞춤 */}
+            <div className="col-span-1">
+              <div className="mb-26"></div>
+              {issues.map((issue) => (
+                issue.credits && issue.credits.length > 0 && (
+                  <div
+                    key={`desktop-credits-${issue._id}`}
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedCredits[issue._id]
+                      ? 'max-h-[1000px] opacity-100'
+                      : 'max-h-0 opacity-0'
+                      }`}
+                  >
+                    <div className="space-y-1 각주폰트-민부리">
+                      <PortableText value={issue.credits} components={creditsComponents} />
+                    </div>
+                  </div>
+                )
+              ))}
+            </div>
 
             {issues.map((issue) => (
               <div key={issue._id} className="col-span-1 space-y-4">
                 <div className="mb-6">
-                  <p className={`각주폰트-민부리 font-bold mb-1 ${getTextColor(isDarkMode)}`}>
-                    {issue.number}
-                  </p>
-                  <p className={`본문폰트 mb-4 ${getTextColor(isDarkMode)}`}>
-                    {issue.title}
-                  </p>
+                  <button
+                    onClick={() => toggleCredits(issue._id)}
+                    className={`text-left w-full cursor-pointer transition-colors ${getTextColor(isDarkMode)} ${isDarkMode ? 'hover:text-gray-300' : 'hover:text-gray-600'}`}
+                  >
+                    <p className={`각주폰트-민부리 font-bold mb-1`}>
+                      {issue.number}
+                    </p>
+                    <p className={`본문폰트 mb-4`}>
+                      {issue.title}
+                    </p>
+                  </button>
                 </div>
 
                 {issue.sections && issue.sections.length > 0 ? (
@@ -780,8 +807,8 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                 {subsubsection.articles && subsubsection.articles.length > 0 && (
                                                   <div
                                                     className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedSubsections[subsubsection._id]
-                                                        ? 'max-h-[1000px] opacity-100'
-                                                        : 'max-h-0 opacity-0'
+                                                      ? 'max-h-[1000px] opacity-100'
+                                                      : 'max-h-0 opacity-0'
                                                       }`}
                                                   >
                                                     <div className="space-y-1.5">
@@ -988,53 +1015,17 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 )}
               </div>
             ))}
-
-            {/* ✨ 호별 크레딧 섹션 - 토글 형식 */}
-            <div className="col-span-1"></div>
-            {issues.map((issue) => (
-              <div key={`desktop-credits-${issue._id}`} className="col-span-1 space-y-2 각주폰트-민부리">
-                {issue.credits && issue.credits.length > 0 && (
-                  <>
-                    <button
-                      onClick={() => toggleCredits(issue._id)}
-                      className={`flex items-center gap-0 각주폰트-민부리 transition-colors ${isDarkMode ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
-                    >
-                      <span>{issue.number}호 크레딧</span>
-                      <svg
-                        className="w-3.5 h-3.5 hover:translate-x-0.5 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5l7 7-7 7" />
-                      </svg>
-                    </button>
-
-                    <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedCredits[issue._id]
-                          ? 'max-h-[1000px] opacity-100'
-                          : 'max-h-0 opacity-0'
-                        }`}
-                    >
-                      <div className="space-y-1">
-                        <PortableText value={issue.credits} components={creditsComponents} />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
           </div>
         </div>
 
-        <hr className={`border-t mb-12 ${getBorderColor(isDarkMode)}`} />
+        {/* <hr className={`border-t mb-12 ${isDarkMode ? 'border-white' : 'border-black'}`} /> */}
 
         {/* 데스크톱 크레딧 섹션 */}
-        <div className={`hidden lg:block 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
+        <div className={`hidden lg:block ${getTextColor(isDarkMode)}`}>
           {/* 학회 크레딧 섹션 */}
           <div className="grid grid-cols-5 gap-8 pb-12 ">
             <div className="col-span-1">
-              <div className="space-y-1">
+              <div className="본문폰트 space-y-1">
                 <p>
                   한국타이포그라피학회는 글자와 타이포그래피를 연구하기 위해 2008년 창립되었다. 『글짜씨』는 학회에서 2009년 12월부터 발간한 타이포그래피 학술지다.
                 </p>
@@ -1047,7 +1038,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
             <div className="col-span-1"></div>
 
-            <div className="col-span-1 space-y-[0.25em]">
+            <div className="각주폰트-민부리 col-span-1 space-y-[0.25em]">
               <span className="block">회장: 심우진</span>
               <span className="block">부회장: 김수은, 민구홍</span>
               <span className="block">사무총장: 박혜지</span>
@@ -1057,7 +1048,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
               <span className="block">감사: 노영권</span>
             </div>
 
-            <div className="col-span-1 space-y-[0.25em]">
+            <div className="각주폰트-민부리 col-span-1 space-y-[0.25em]">
               <span className="block">논문편집위원장: 이병학</span>
               <span className="block">논문편집위원: 박수진, 석재원, 이지원, 정희숙, 하주현</span>
               <span className="block">연구윤리위원장: 조주은</span>
@@ -1075,14 +1066,14 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
               <span className="block">글꼴창작지원사업심의위원: 구모아, 노영권, 박부미, 장수영, 정태영</span>
             </div>
 
-            <div className="col-span-1 space-y-[0.25em]">
+            <div className="각주폰트-민부리 col-span-1 space-y-[0.25em]">
               <span className="block">사무국장: 이름, 홍유림</span>
               <span className="block">홍보국장: 강인구</span>
               <span className="block">출판국장: 문민주, 김도연, 황세미</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-8 pb-12 font-bold">
+          <div className="각주폰트-민부리 grid grid-cols-5 gap-8 pb-12">
             <div className="col-span-2"></div>
             <div className="col-span-1 space-y-4">
               <div className="space-y-4">

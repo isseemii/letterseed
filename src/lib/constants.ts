@@ -32,6 +32,7 @@ export const SPACING = {
 
 /**
  * 캡션 스타일 클래스
+ * @deprecated Use TYPOGRAPHY.caption from '@/lib/typography' instead
  */
 export const CAPTION_STYLES = {
   DEFAULT: '캡션-민부리 mt-2 md:mt-3 text-center',
