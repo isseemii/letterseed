@@ -3,7 +3,7 @@
 import { PortableText } from '@portabletext/react'
 import Link from 'next/link'
 import Image from 'next/image'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useDarkMode } from '@/contexts/DarkModeContext'
 import imageUrlBuilder from '@sanity/image-url'
 import { client } from '@/lib/sanity'
@@ -426,7 +426,7 @@ export default function ArticlePage({ params }: PageProps) {
 
   // 텍스트에서 URL을 하이퍼링크로 변환하는 함수 (각주, 캡션 등에 사용)
   const renderTextWithLinks = useMemo(() => {
-    return (text: string) => {
+    const renderText = (text: string) => {
       if (!text) return text
 
       // URL 패턴 매칭 (http://, https://, www.로 시작하는 URL)
@@ -468,11 +468,13 @@ export default function ArticlePage({ params }: PageProps) {
       
       return parts.length > 0 ? <>{parts}</> : text
     }
+    renderText.displayName = 'RenderTextWithLinks'
+    return renderText
   }, [isDarkMode])
 
   // React children에서 텍스트 노드를 찾아 URL을 링크로 변환하는 함수
   const processChildrenWithLinks = useMemo(() => {
-    return (children: React.ReactNode): React.ReactNode => {
+    const processChildren = (children: React.ReactNode): React.ReactNode => {
       return React.Children.map(children, (child, index) => {
         // 텍스트 노드인 경우
         if (typeof child === 'string') {
@@ -530,6 +532,8 @@ export default function ArticlePage({ params }: PageProps) {
         return child
       })
     }
+    processChildren.displayName = 'ProcessChildrenWithLinks'
+    return processChildren
   }, [isDarkMode])
 
   // Intersection Observer로 각주 텍스트가 화면에 들어오는지 감지
@@ -631,7 +635,7 @@ export default function ArticlePage({ params }: PageProps) {
   }
 
   // 아티클 정렬 함수
-  const sortArticles = (articles: any[]): any[] => {
+  const sortArticles = useCallback((articles: any[]): any[] => {
     return [...articles].sort((a, b) => {
       const pathA = getSectionPath(a.section)
       const pathB = getSectionPath(b.section)
@@ -648,7 +652,7 @@ export default function ArticlePage({ params }: PageProps) {
       const orderB = b.order ?? 0
       return orderA - orderB
     })
-  }
+  }, [])
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -696,7 +700,7 @@ export default function ArticlePage({ params }: PageProps) {
         setLoading(false)
       })
     })
-  }, [params])
+  }, [params, sortArticles])
 
   // 아티클 바깥 스크롤을 아티클 스크롤로 전달
   useEffect(() => {
@@ -1093,7 +1097,7 @@ export default function ArticlePage({ params }: PageProps) {
         )
       }
     }
-  }), [isDarkMode, processChildrenWithLinks, urlFor])
+  }), [isDarkMode, processChildrenWithLinks])
 
   if (loading) {
     return (
