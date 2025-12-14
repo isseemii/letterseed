@@ -1149,7 +1149,7 @@ export default function ArticlePage({ params }: PageProps) {
                   href={`/articles/${article.prevArticle.slug}`}
                   className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${getTextColor(isDarkMode, 'muted')} ${getHoverTextColor(isDarkMode)}`}
                 >
-                  <svg
+                  {/* <svg
                     className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
                     fill="none"
                     stroke="currentColor"
@@ -1157,7 +1157,7 @@ export default function ArticlePage({ params }: PageProps) {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l-7 7 7 7" />
-                  </svg>
+                  </svg> */}
                   <div className="text-right w-[180px]">
                     <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2 text-right`}>{article.prevArticle.title}</div>
                   </div>
