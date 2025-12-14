@@ -16,7 +16,7 @@
     "@tailwindcss/postcss": "^4.1.7",
     "clsx": "^2.1.1",
     "jquery": "^3.7.1",
-    "next": "^15.3.3",
+    "next": "15.3.8",
     "next-sanity": "^11.5.5",
     "postcss": "^8.5.3",
     "react": "^19.0.0",
