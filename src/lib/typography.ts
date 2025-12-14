@@ -33,8 +33,8 @@ export const TYPOGRAPHY = {
   },
   // 질문
   h6: {
-    direct: '본문폰트-민부리 pl-[40%]',
-    portable: '본문폰트-민부리 pl-[40%]',
+    direct: '본문폰트-민부리 pl-[30%] md:pl-[40%]',
+    portable: '본문폰트-민부리 pl-[30%] md:pl-[40%]',
   },
 
   // 본문 스타일

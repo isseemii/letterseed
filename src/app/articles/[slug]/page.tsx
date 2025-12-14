@@ -1128,14 +1128,14 @@ export default function ArticlePage({ params }: PageProps) {
                 href="/"
                 className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${getTextColor(isDarkMode, 'muted')} ${getHoverTextColor(isDarkMode)}`}
               >
-                <svg
+                {/* <svg
                   className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
+                </svg> */}
                 <div className="text-right">
                   <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-1`}>돌아가기</div>
                 </div>
@@ -1528,7 +1528,7 @@ export default function ArticlePage({ params }: PageProps) {
           <aside className="hidden md:flex md:flex-col md:items-start md:h-full md:py-6">
             {/* 각주 세부 텍스트 - 오른쪽 상단 고정 (스크롤 가능) */}
             {hasFootnotesInContent && footnotesList.length > 0 && (
-              <div className="w-[180px] mb-auto" style={{ maxHeight: 'calc(100vh - 20rem)', overflowY: 'auto' }}>
+              <div className="w-[180px] mb-auto scrollbar-hide" style={{ maxHeight: 'calc(100vh - 20rem)', overflowY: 'auto' }}>
                 <div className={`${getFootnoteClasses('text')} leading-relaxed text-left space-y-2 ${getTextColor(isDarkMode, 'muted')}`}>
                   {footnotesList.map((footnote, idx) => (
                     <div key={idx} className="mb-4">
