@@ -10,6 +10,7 @@ import { client } from '@/lib/sanity'
 import { getTextColor, getBgColor, getBorderColor, getHoverTextColor, getLinkColor } from '@/lib/DarkModeUtils'
 import { LAYOUT, CAPTION_STYLES } from '@/lib/constants'
 import { getTypographyClasses, getHeadingClasses, getBodyClasses, getCaptionClasses, TYPOGRAPHY, getFootnoteClasses } from '@/lib/typography'
+import Timeline from '@/components/timeline'
 
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
@@ -536,42 +537,7 @@ export default function ArticlePage({ params }: PageProps) {
     return processChildren
   }, [isDarkMode])
 
-  // Intersection Observer로 각주 텍스트가 화면에 들어오는지 감지
-  useEffect(() => {
-    if (!article?.content || !hasFootnotesInContent) return
-
-    const observers: IntersectionObserver[] = []
-    const footnoteElements = document.querySelectorAll('[data-footnote-number]')
-
-    footnoteElements.forEach((element) => {
-      const footnoteNumber = parseInt(element.getAttribute('data-footnote-number') || '0')
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              // 화면에 들어오면 자동으로 펼치기
-              setExpandedFootnotes(prev => ({
-                ...prev,
-                [footnoteNumber]: true
-              }))
-            }
-          })
-        },
-        {
-          threshold: 0.1, // 10% 이상 보이면 감지
-          rootMargin: '0px'
-        }
-      )
-
-      observer.observe(element)
-      observers.push(observer)
-    })
-
-    return () => {
-      observers.forEach(observer => observer.disconnect())
-    }
-  }, [article?.content, hasFootnotesInContent])
+  // Intersection Observer 제거 - 각주는 처음에 모두 닫힌 상태로 시작
 
   // 스크롤 이벤트 핸들러 - 1초 이상 멈춰있을 때 네비게이션 표시
   useEffect(() => {
@@ -747,9 +713,87 @@ export default function ArticlePage({ params }: PageProps) {
   }, [article])
 
   // Portable Text Components
-  const components = useMemo(() => ({
-    types: {
-      image: ({ value }: any) => {
+  const components = useMemo(() => {
+    // Table 컴포넌트를 별도로 정의 (재귀 참조 방지를 위해)
+    const TableComponent = ({ value }: any) => {
+      if (!value?.rows || !Array.isArray(value.rows)) return null
+
+      // components를 직접 참조하지 않고, 필요한 부분만 재사용
+      const tableContentComponents = {
+        block: {
+          normal: ({ children }: any) => <p className={`${getBodyClasses('normal')} ${getTextColor(isDarkMode)}`}>{children}</p>,
+          h2: ({ children }: any) => <h2 className={`${getTypographyClasses('h2', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h2>,
+          h3: ({ children }: any) => <h3 className={`${getTypographyClasses('h3', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h3>,
+          h4: ({ children }: any) => <h4 className={`${getTypographyClasses('h4', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h4>,
+          h5: ({ children }: any) => <h5 className={`${getTypographyClasses('h5', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h5>,
+          h6: ({ children }: any) => <h6 className={`${getTypographyClasses('h6', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h6>,
+          blockquote: ({ children }: any) => <blockquote className={`${getTypographyClasses('blockquote', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</blockquote>,
+        },
+        marks: {
+          strong: ({ children }: any) => <strong className={getTextColor(isDarkMode)}>{children}</strong>,
+          em: ({ children }: any) => <em className={getTextColor(isDarkMode)}>{children}</em>,
+          underline: ({ children }: any) => <u className={`underline decoration-dotted underline-offset-[6px] ${getTextColor(isDarkMode)}`}>{children}</u>,
+        },
+      }
+
+      return (
+        <div className="my-8 border-t border-b border-gray-300 dark:border-gray-700">
+          {value.rows.map((row: any, index: number) => (
+            <div
+              key={index}
+              className="grid grid-cols-[200px_1fr] gap-4 py-4 border-b border-gray-200 dark:border-gray-800 last:border-b-0"
+            >
+              <div className={`font-semibold ${getTextColor(isDarkMode)}`}>
+                {row.label}
+              </div>
+              <div className={getTextColor(isDarkMode)}>
+                <PortableText
+                  value={row.content}
+                  components={tableContentComponents}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    return {
+      types: {
+        timelineBlock: ({ value }: any) => {
+          return (
+            <div className="my-16">
+              <Timeline />
+              {value?.caption && (
+                <p className={`${CAPTION_STYLES.DEFAULT} ${getTextColor(isDarkMode, 'subtle')} text-center mt-4`}>
+                  {renderTextWithLinks(value.caption)}
+                </p>
+              )}
+            </div>
+          )
+        },
+        tableBlock: ({ value }: any) => {
+          if (!value?.rows || !Array.isArray(value.rows)) return null
+
+          return (
+            <div className="my-8 border-t border-b border-gray-300 dark:border-gray-700">
+              {value.rows.map((row: any, index: number) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-[200px_1fr] gap-4 py-4 border-b border-gray-200 dark:border-gray-800 last:border-b-0"
+                >
+                  <div className={`font-semibold ${getTextColor(isDarkMode)}`}>
+                    {row.cells?.[0] || ''}
+                  </div>
+                  <div className={getTextColor(isDarkMode)}>
+                    {row.cells?.[1] || ''}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        },
+        image: ({ value }: any) => {
         if (!value || !value.asset) {
           return null
         }
@@ -831,7 +875,8 @@ export default function ArticlePage({ params }: PageProps) {
       },
       imageSlider: ({ value }: any) => {
         return <ImageSlider value={value} isDarkMode={isDarkMode} urlFor={urlFor} renderTextWithLinks={renderTextWithLinks} />
-      }
+      },
+      table: TableComponent,
     },
     block: {
       h2: ({ children }: any) => (
@@ -898,17 +943,17 @@ export default function ArticlePage({ params }: PageProps) {
       blockquote: ({ children }: any) => (
         <blockquote
           style={{
-            lineHeight: '1.68',
-            borderLeft: isDarkMode ? '0.4em solid white' : '0.4em solid black',
-            paddingLeft: '1.5em',
-            margin: '32px 0',
-          }}
-          className={`${getTypographyClasses('blockquote', 'portable')} ${getTextColor(isDarkMode)}`}
-        >
-          {children}
-        </blockquote>
-      )
-    },
+            borderLeft: isDarkMode ? '0.2em solid white' : '0.2em solid black',
+            paddingLeft: '1em',
+            marginLeft: '2em',
+            marginBottom: '1em',
+            }}
+            className={`${getTypographyClasses('blockquote', 'portable')} ${getTextColor(isDarkMode)}`}
+          >
+            {children}
+          </blockquote>
+        )
+      },
     marks: {
       link: ({ children, value }: any) => {
         const rel = value?.href && !value.href.startsWith('/') ? 'noreferrer noopener' : undefined
@@ -979,7 +1024,8 @@ export default function ArticlePage({ params }: PageProps) {
         </ol>
       )
     }
-  }), [footnotesList, isDarkMode])
+    }
+  }, [isDarkMode, renderTextWithLinks, footnotesList])
 
   // 추가섹션 전용 components (각주 스타일 사용, 텍스트 내 URL 자동 링크 변환)
   const additionalSectionComponents = useMemo(() => ({
@@ -1147,9 +1193,9 @@ export default function ArticlePage({ params }: PageProps) {
               {article?.prevArticle ? (
                 <Link
                   href={`/articles/${article.prevArticle.slug}`}
-                  className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${getTextColor(isDarkMode, 'muted')} ${getHoverTextColor(isDarkMode)}`}
+                  className={`group flex flex-col items-end gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
                 >
-                  {/* <svg
+                  <svg
                     className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
                     fill="none"
                     stroke="currentColor"
@@ -1157,7 +1203,7 @@ export default function ArticlePage({ params }: PageProps) {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l-7 7 7 7" />
-                  </svg> */}
+                  </svg>
                   <div className="text-right w-[180px]">
                     <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2 text-right`}>{article.prevArticle.title}</div>
                   </div>
@@ -1528,7 +1574,19 @@ export default function ArticlePage({ params }: PageProps) {
           <aside className="hidden md:flex md:flex-col md:items-start md:h-full md:py-6">
             {/* 각주 세부 텍스트 - 오른쪽 상단 고정 (스크롤 가능) */}
             {hasFootnotesInContent && footnotesList.length > 0 && (
-              <div className="w-[180px] mb-auto scrollbar-hide" style={{ maxHeight: 'calc(100vh - 20rem)', overflowY: 'auto' }}>
+              <div 
+                className="w-[180px] mb-auto overflow-y-auto pr-2 footnote-scrollbar" 
+                style={{ 
+                  maxHeight: 'calc(100vh - 20rem)',
+                  overscrollBehavior: 'contain',
+                  willChange: 'scroll-position',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+                onWheel={(e) => {
+                  // 마우스 휠 이벤트가 각주 박스 내에서만 작동하도록
+                  e.stopPropagation()
+                }}
+              >
                 <div className={`${getFootnoteClasses('text')} leading-relaxed text-left space-y-2 ${getTextColor(isDarkMode, 'muted')}`}>
                   {footnotesList.map((footnote, idx) => (
                     <div key={idx} className="mb-4">

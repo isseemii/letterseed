@@ -390,6 +390,68 @@ export default defineType({
                     },
                   },
                 },
+                {
+                  type: 'object',
+                  name: 'table',
+                  title: '표',
+                  fields: [
+                    {
+                      name: 'rows',
+                      type: 'array',
+                      title: '행',
+                      of: [
+                        {
+                          type: 'object',
+                          name: 'tableRow',
+                          title: '행',
+                          fields: [
+                            {
+                              name: 'label',
+                              type: 'string',
+                              title: '라벨',
+                              validation: (Rule) => Rule.required(),
+                            },
+                            {
+                              name: 'content',
+                              type: 'array',
+                              title: '내용',
+                              of: [
+                                createBlockDefinition('standard', 'full', true),
+                              ],
+                              validation: (Rule) => Rule.required(),
+                            },
+                          ],
+                          preview: {
+                            select: {
+                              label: 'label',
+                              content: 'content',
+                            },
+                            prepare({ label, content }: any) {
+                              const firstBlock = content?.[0]
+                              const preview = firstBlock?.children?.[0]?.text || ''
+                              return {
+                                title: label || '(라벨 없음)',
+                                subtitle: preview.substring(0, 50) + (preview.length > 50 ? '...' : ''),
+                              }
+                            },
+                          },
+                        },
+                      ],
+                      validation: (Rule) => Rule.min(1),
+                    },
+                  ],
+                  preview: {
+                    select: {
+                      rows: 'rows',
+                    },
+                    prepare({ rows }: any) {
+                      return {
+                        title: `표 (${rows?.length || 0}행)`,
+                        subtitle: rows?.[0]?.label || '',
+                      }
+                    },
+                  },
+                },
               ],
               hidden: ({parent}: any) => parent?.blockType !== 'standard',
             },
@@ -808,6 +870,10 @@ export default defineType({
       type: 'array',
       of: [
         createBlockDefinition('withQuestion', 'full', true),
+        // 타이포그래피 연표
+        {type: 'timelineBlock'},
+        // 표
+        {type: 'tableBlock'},
         // 단일 이미지
         {
           type: 'image',

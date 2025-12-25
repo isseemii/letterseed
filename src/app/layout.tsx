@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <Providers>
           {children}
         </Providers>

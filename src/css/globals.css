@@ -155,7 +155,7 @@
   /* 본문 민부리 */
   .본문폰트-민부리 {
     font-family: var(--font-ko-sans);
-    font-size: 0.94em;
+    font-size: 1.05em;
     line-height: 1.76em;
     letter-spacing: 0.02em;
   }
@@ -163,8 +163,8 @@
   @media (max-width: 768px) {
     .본문폰트-민부리 {
       font-family: var(--font-ko-sans);
-      font-size: 0.97em;
-      line-height: 1.7em;
+      font-size: 1.05em;
+      line-height: 1.76em;
       letter-spacing: 0.02em;
     }
   }
@@ -248,5 +248,46 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
+  }
+
+  /* 각주 박스 스크롤바 스타일 */
+  .footnote-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+  }
+
+  .footnote-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .footnote-scrollbar::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+  }
+
+  .footnote-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+  }
+
+  .footnote-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
+
+  /* 다크모드 각주 박스 스크롤바 */
+  .dark .footnote-scrollbar {
+    scrollbar-color: #4a5568 #1a202c;
+  }
+
+  .dark .footnote-scrollbar::-webkit-scrollbar-track {
+    background: #1a202c;
+  }
+
+  .dark .footnote-scrollbar::-webkit-scrollbar-thumb {
+    background: #4a5568;
+  }
+
+  .dark .footnote-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #718096;
   }
 }
