@@ -11,6 +11,7 @@ import { getTextColor, getBgColor, getBorderColor, getHoverTextColor, getLinkCol
 import { LAYOUT, CAPTION_STYLES } from '@/lib/constants'
 import { getTypographyClasses, getHeadingClasses, getBodyClasses, getCaptionClasses, TYPOGRAPHY, getFootnoteClasses } from '@/lib/typography'
 import Timeline from '@/components/timeline'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
@@ -413,6 +414,7 @@ export default function ArticlePage({ params }: PageProps) {
 
   // 각주 토글 함수
   const toggleFootnote = (number: number) => {
+    // 펼침/접힘 토글
     setExpandedFootnotes(prev => ({
       ...prev,
       [number]: !prev[number]
@@ -421,9 +423,17 @@ export default function ArticlePage({ params }: PageProps) {
     // 각주 원텍스트 위치로 스크롤
     const footnoteElement = document.querySelector(`[data-footnote-number="${number}"]`)
     if (footnoteElement) {
-      footnoteElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const rect = footnoteElement.getBoundingClientRect()
+      const absoluteTop = window.pageYOffset + rect.top
+      const offset = window.innerHeight / 2 - rect.height / 2 // 화면 중앙
+      
+      window.scrollTo({
+        top: absoluteTop - offset,
+        behavior: 'smooth'
+      })
     }
   }
+  
 
   // 텍스트에서 URL을 하이퍼링크로 변환하는 함수 (각주, 캡션 등에 사용)
   const renderTextWithLinks = useMemo(() => {
@@ -518,8 +528,16 @@ export default function ArticlePage({ params }: PageProps) {
           return parts.length > 1 ? <>{parts}</> : child
         }
         
-        // React 요소인 경우 children을 재귀적으로 처리
+        // React 요소인 경우 - list 관련 요소는 건드리지 않음
         if (React.isValidElement(child)) {
+          const childType = child.type as any
+          const typeName = typeof childType === 'string' ? childType : childType?.displayName || childType?.name
+          
+          // ul, ol, li 태그는 복제하지 않고 그대로 반환
+          if (typeName === 'ul' || typeName === 'ol' || typeName === 'li') {
+            return child
+          }
+          
           const props = child.props as any
           if (props?.children) {
             return React.cloneElement(child, {
@@ -537,7 +555,6 @@ export default function ArticlePage({ params }: PageProps) {
     return processChildren
   }, [isDarkMode])
 
-  // Intersection Observer 제거 - 각주는 처음에 모두 닫힌 상태로 시작
 
   // 스크롤 이벤트 핸들러 - 1초 이상 멈춰있을 때 네비게이션 표시
   useEffect(() => {
@@ -627,18 +644,10 @@ export default function ArticlePage({ params }: PageProps) {
         if (data && data.allArticlesInIssue) {
           // 같은 호의 모든 아티클을 섹션 계층 구조로 정렬
           const sortedArticles = sortArticles(data.allArticlesInIssue)
-          
-          // 디버깅: 정렬된 아티클 목록 확인
-          console.log('정렬된 아티클:', sortedArticles.map((a: any) => ({
-            title: a.title,
-            path: getSectionPath(a.section),
-            order: a.order
-          })))
+        
           
           // 현재 아티클의 인덱스 찾기
           const currentIndex = sortedArticles.findIndex((a: any) => a._id === data._id)
-          
-          console.log('현재 아티클 인덱스:', currentIndex, '제목:', data.title)
           
           // 이전/다음 아티클 찾기
           if (currentIndex > 0) {
@@ -646,7 +655,6 @@ export default function ArticlePage({ params }: PageProps) {
               title: sortedArticles[currentIndex - 1].title,
               slug: sortedArticles[currentIndex - 1].slug
             }
-            console.log('이전 글:', data.prevArticle.title)
           } else {
             data.prevArticle = null
           }
@@ -656,7 +664,6 @@ export default function ArticlePage({ params }: PageProps) {
               title: sortedArticles[currentIndex + 1].title,
               slug: sortedArticles[currentIndex + 1].slug
             }
-            console.log('다음 글:', data.nextArticle.title)
           } else {
             data.nextArticle = null
           }
@@ -667,50 +674,6 @@ export default function ArticlePage({ params }: PageProps) {
       })
     })
   }, [params, sortArticles])
-
-  // 아티클 바깥 스크롤을 아티클 스크롤로 전달
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const articleElement = document.querySelector('article')
-    if (!articleElement) return
-
-    const handleWheel = (e: WheelEvent) => {
-      // 아티클 영역 내부에서 발생한 스크롤은 기본 동작 유지
-      const target = e.target as HTMLElement
-      if (articleElement.contains(target)) {
-        return
-      }
-
-      // 아티클이 스크롤 가능한 상태인지 확인
-      const isScrollable = articleElement.scrollHeight > articleElement.clientHeight
-      if (!isScrollable) return
-
-      // 스크롤 가능 범위 확인
-      const isAtTop = articleElement.scrollTop <= 0
-      const isAtBottom = articleElement.scrollTop >= articleElement.scrollHeight - articleElement.clientHeight - 1
-
-      // 위로 스크롤하려는데 이미 맨 위에 있으면 기본 동작 허용
-      if (e.deltaY < 0 && isAtTop) {
-        return
-      }
-
-      // 아래로 스크롤하려는데 이미 맨 아래에 있으면 기본 동작 허용
-      if (e.deltaY > 0 && isAtBottom) {
-        return
-      }
-
-      // 아티클 스크롤로 전달
-      e.preventDefault()
-      articleElement.scrollTop += e.deltaY
-    }
-
-    window.addEventListener('wheel', handleWheel, { passive: false })
-
-    return () => {
-      window.removeEventListener('wheel', handleWheel)
-    }
-  }, [article])
 
   // Portable Text Components
   const components = useMemo(() => {
@@ -969,20 +932,25 @@ export default function ArticlePage({ params }: PageProps) {
           </a>
         )
       },
-      footnote: ({ children, value }: any) => {
-        // 각주 번호 찾기 (footnotesList에서 텍스트로 매칭)
-        const footnote = footnotesList.find(f => f.text === value?.text)
+      footnote: ({ children, value, markKey }: any) => {
+        // 각주 번호 찾기 - value._key, markKey, 또는 text로 매칭
+        const footnote = footnotesList.find(f => 
+          (value?._key && f.markKey === value._key) ||
+          (markKey && f.markKey === markKey) || 
+          (value?.text && f.text === value.text)
+        )
         const footnoteNumber = footnote?.number || 0
 
         const handleFootnoteClick = (e: React.MouseEvent) => {
           e.preventDefault()
 
-          // 모바일에서는 팝업 표시, 데스크톱에서는 사이드바 각주 토글
-          if (typeof window !== 'undefined') {
+          if (typeof window !== 'undefined' && footnoteNumber > 0) {
             const isMobile = window.innerWidth < 768
-            if (isMobile && footnoteNumber > 0 && footnote) {
+            if (isMobile && footnote) {
+              // 모바일: 팝업 표시
               setMobileFootnotePopup({ number: footnoteNumber, text: footnote.text })
-            } else if (!isMobile && footnoteNumber > 0) {
+            } else {
+              // 데스크톱: 사이드바 각주 토글 + 스크롤은 하지 않음
               setExpandedFootnotes(prev => ({
                 ...prev,
                 [footnoteNumber]: !prev[footnoteNumber]
@@ -991,9 +959,13 @@ export default function ArticlePage({ params }: PageProps) {
           }
         }
 
+        if (footnoteNumber === 0) {
+          return <span className="text-red-500">{children}</span>
+        }
+
         return (
           <span
-            data-footnote-number={footnoteNumber || undefined}
+            data-footnote-number={footnoteNumber}
             onClick={handleFootnoteClick}
             className={`cursor-pointer border-b border-dotted ${isDarkMode ? 'text-blue-300 border-blue-300 hover:text-blue-200' : 'text-blue-600 border-blue-600 hover:text-blue-700'}`}
           >
@@ -1102,46 +1074,24 @@ export default function ArticlePage({ params }: PageProps) {
       underline: ({ children }: any) => <u className={`underline decoration-dotted underline-offset-[2px] ${getTextColor(isDarkMode, 'muted')}`}>{children}</u>,
     },
     list: {
-      bullet: ({ children }: any) => {
-        const processedChildren = processChildrenWithLinks(children)
-        return (
-          <ul className={`space-y-2 ${getTextColor(isDarkMode, 'muted')}`}>
-            {processedChildren}
-          </ul>
-        )
-      },
-      number: ({ children }: any) => {
-        const processedChildren = processChildrenWithLinks(children)
-        const childrenArray = React.Children.toArray(processedChildren)
-        return (
-          <ol className={`space-y-2 list-none ${getTextColor(isDarkMode, 'muted')}`}>
-            {childrenArray.map((child: any, index: number) => {
-              // child가 이미 <li>인 경우 클론해서 className 추가
-              if (React.isValidElement(child) && child.type === 'li') {
-                const props = child.props as any
-                return React.cloneElement(child, {
-                  ...props,
-                  key: child.key || index,
-                  className: `flex ${props.className || ''}`,
-                  children: (
-                    <>
-                      <span className="mr-2">{index + 1}.</span>
-                      <span className="flex-1">{props.children}</span>
-                    </>
-                  )
-                } as any)
-              }
-              // child가 <li>가 아닌 경우 (예외 처리)
-              return (
-                <li key={index} className="flex">
-                  <span className="mr-2">{index + 1}.</span>
-                  <span className="flex-1">{child}</span>
-                </li>
-              )
-            })}
-          </ol>
-        )
-      }
+      bullet: ({ children }: any) => (
+        <ul className={`space-y-2 list-disc ml-6 ${getTextColor(isDarkMode, 'muted')}`}>
+          {children}
+        </ul>
+      ),
+      number: ({ children }: any) => (
+        <ol className={`space-y-2 list-decimal ml-6 ${getTextColor(isDarkMode, 'muted')}`}>
+          {children}
+        </ol>
+      )
+    },
+    listItem: {
+      bullet: ({ children }: any) => (
+        <li className={getTextColor(isDarkMode, 'muted')}>{children}</li>
+      ),
+      number: ({ children }: any) => (
+        <li className={getTextColor(isDarkMode, 'muted')}>{children}</li>
+      )
     }
   }), [isDarkMode, processChildrenWithLinks])
 
@@ -1162,62 +1112,53 @@ export default function ArticlePage({ params }: PageProps) {
   }
 
   return (
-    <div className={`h-screen overflow-hidden transition-colors duration-300 ${getBgColor(isDarkMode)}`}>
-      <div className="h-full max-w-[1400px] mx-auto px-4 pt-2 pb-8 md:px-6 md:pt-5 md:pb-6">
-        <div className="h-full grid grid-cols-1 md:grid-cols-[200px_1fr_200px] gap-4 md:gap-16">
+    <div className={`min-h-screen transition-colors duration-300 ${getBgColor(isDarkMode)}`}>
+      {/* 왼쪽 고정 네비게이션 */}
+      <div className="hidden xl:block fixed left-0 top-0 h-screen w-[300px] px-6 py-10 z-10">
+        <div className="flex flex-col items-end justify-between h-full">
+          {/* 돌아가기 - 상단 */}
+          <div className="flex justify-end">
+            <Link
+              href="/"
+              className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${getTextColor(isDarkMode, 'muted')} ${getHoverTextColor(isDarkMode)}`}
+            >
+              <div className="text-right">
+                <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-1`}>돌아가기</div>
+              </div>
+            </Link>
+          </div>
 
-          {/* 왼쪽: 돌아가기 버튼 + 이전 아티클 */}
-          <div className="hidden md:flex md:flex-col md:items-end md:justify-between md:h-full md:py-6">
-            {/* 돌아가기 - 왼쪽 상단 고정 */}
-            <div className="flex justify-end">
+          {/* 이전 아티클 - 하단 */}
+          <div className="flex justify-end">
+            {article?.prevArticle ? (
               <Link
-                href="/"
-                className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${getTextColor(isDarkMode, 'muted')} ${getHoverTextColor(isDarkMode)}`}
+                href={`/articles/${article.prevArticle.slug}`}
+                className={`group flex flex-col items-end gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
               >
-                {/* <svg
+                <svg
                   className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg> */}
-                <div className="text-right">
-                  <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-1`}>돌아가기</div>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l-7 7 7 7" />
+                </svg>
+                <div className="text-right w-[300px]">
+                  <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2 text-right`}>{article.prevArticle.title}</div>
                 </div>
               </Link>
-            </div>
-
-            {/* 이전 아티클 - 왼쪽 하단 고정 */}
-            <div className="flex justify-end">
-              {article?.prevArticle ? (
-                <Link
-                  href={`/articles/${article.prevArticle.slug}`}
-                  className={`group flex flex-col items-end gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
-                >
-                  <svg
-                    className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l-7 7 7 7" />
-                  </svg>
-                  <div className="text-right w-[180px]">
-                    <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2 text-right`}>{article.prevArticle.title}</div>
-                  </div>
-                </Link>
-              ) : (
-                <div className={`${TYPOGRAPHY.ui.navLink} text-right w-[180px] ${getTextColor(isDarkMode, 'subtle')}`}>
-                  <br /> 이전 글 없음
-                </div>
-              )}
-            </div>
+            ) : (
+              <div className={`${TYPOGRAPHY.ui.navLink} text-right w-[300px] ${getTextColor(isDarkMode, 'subtle')}`}>
+                <br /> 이전 글 없음
+              </div>
+            )}
           </div>
+        </div>
+      </div>
 
-          {/* 중앙: 아티클 본문 */}
-          <article className="max-w-[800px] mx-auto mt-6 w-full overflow-y-auto h-full scrollbar-hide">
+      {/* 중앙: 아티클 본문 */}
+        <article className="max-w-[730px] mx-auto px-4 xl:px-0 pt-6 pb-6 md:pt-10 md:pb-10">
             {/* 호수, 섹션 */}
             <div className={`text-center mb-1 md:text-left md:indent-[0.2em] ${TYPOGRAPHY.meta.issueSection} ${getTextColor(isDarkMode)}`}>
               {article.issue.number} · {article.section.title}
@@ -1570,78 +1511,88 @@ export default function ArticlePage({ params }: PageProps) {
             )}
           </article>
 
-          {/* 오른쪽: 각주 세부 텍스트 (각주가 있을 때) + 다음 아티클 */}
-          <aside className="hidden md:flex md:flex-col md:items-start md:h-full md:py-6">
-            {/* 각주 세부 텍스트 - 오른쪽 상단 고정 (스크롤 가능) */}
-            {hasFootnotesInContent && footnotesList.length > 0 && (
-              <div 
-                className="w-[180px] mb-auto overflow-y-auto pr-2 footnote-scrollbar" 
-                style={{ 
-                  maxHeight: 'calc(100vh - 20rem)',
-                  overscrollBehavior: 'contain',
-                  willChange: 'scroll-position',
-                  WebkitOverflowScrolling: 'touch'
-                }}
-                onWheel={(e) => {
-                  // 마우스 휠 이벤트가 각주 박스 내에서만 작동하도록
-                  e.stopPropagation()
-                }}
-              >
+      {/* 오른쪽 고정 사이드바: 각주 + 다음 아티클 */}
+      <div className="hidden xl:block fixed right-0 top-0 h-screen w-[300px] px-6 py-10 z-10">
+        <div className={`flex flex-col items-start h-full ${hasFootnotesInContent && footnotesList.length > 0 ? 'justify-between' : 'justify-end'}`}>
+          {/* 각주 세부 텍스트 - 상단 (스크롤 가능) */}
+          {hasFootnotesInContent && footnotesList.length > 0 && (
+            <div 
+              className="w-[150px] mb-auto overflow-y-auto pr-2 scrollbar-thin" 
+              style={{ 
+                maxHeight: 'calc(100vh - 20rem)',
+              }}
+            >
                 <div className={`${getFootnoteClasses('text')} leading-relaxed text-left space-y-2 ${getTextColor(isDarkMode, 'muted')}`}>
-                  {footnotesList.map((footnote, idx) => (
-                    <div key={idx} className="mb-4">
-                      <button
-                        onClick={() => toggleFootnote(footnote.number)}
-                        className={`mr-2 mb-1 cursor-pointer hover:opacity-70 transition-opacity ${getTextColor(isDarkMode, 'muted')}`}
-                      >
-                        [{footnote.number}]
-                      </button>
-                      {expandedFootnotes[footnote.number] && (
-                        <>
-                          <br />
-                          <span>{renderTextWithLinks(footnote.text)}</span>
-                        </>
-                      )}
-                    </div>
-                  ))}
+                  {footnotesList.map((footnote, idx) => {
+                    const isExpanded = expandedFootnotes[footnote.number] || false
+                    
+                    const handleFootnoteNumberClick = () => {
+                      toggleFootnote(footnote.number)
+                    }
+                    
+                    return (
+                      <div key={idx} className="mb-4 overflow-hidden">
+                        <button
+                          onClick={handleFootnoteNumberClick}
+                          className={`mr-2 mb-1 cursor-pointer hover:opacity-70 transition-opacity ${getTextColor(isDarkMode, 'muted')}`}
+                        >
+                          [{footnote.number}]
+                        </button>
+                        <AnimatePresence initial={false}>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ 
+                                duration: 0.3,
+                                ease: [0.4, 0.0, 0.2, 1]
+                              }}
+                              style={{ overflow: 'hidden' }}
+                            >
+                              <span className="block mt-1">{renderTextWithLinks(footnote.text)}</span>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )}
 
-            {/* 다음 아티클 - 오른쪽 하단 고정 (항상 하단에 위치) */}
-            <div className="flex justify-start mt-auto">
-              {article?.nextArticle ? (
-                <Link
-                  href={`/articles/${article.nextArticle.slug}`}
-                  className={`group flex flex-col items-start gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
+          {/* 다음 아티클 - 하단 */}
+          <div className="flex justify-start">
+            {article?.nextArticle ? (
+              <Link
+                href={`/articles/${article.nextArticle.slug}`}
+                className={`group flex flex-col items-start gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
+              >
+                <svg
+                  className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5l7 7-7 7" />
-                  </svg>
-                  <div className="text-left w-[180px]">
-                    <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2`}>{article.nextArticle.title}</div>
-                  </div>
-                </Link>
-              ) : (
-                <div className={`${TYPOGRAPHY.ui.navLink} w-[180px] ${getTextColor(isDarkMode, 'subtle')}`}>
-                  <br /> 다음 글 없음
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5l7 7-7 7" />
+                </svg>
+                <div className="text-left w-[150px]">
+                  <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2`}>{article.nextArticle.title}</div>
                 </div>
-              )}
-            </div>
-          </aside>
-
+              </Link>
+            ) : (
+              <div className={`${TYPOGRAPHY.ui.navLink} w-[300px] ${getTextColor(isDarkMode, 'subtle')}`}>
+                <br /> 다음 글 없음
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* 하단 고정 네비게이션 - 모바일만 */}
       {showNavigation && (
-        <div className={`md:hidden fixed bottom-0 left-0 right-0 border-t shadow-lg z-50 transition-colors duration-300 pb-1 ${getBgColor(isDarkMode)} ${getBorderColor(isDarkMode, 'light')}`}>
+        <div className={`xl:hidden fixed bottom-0 left-0 right-0 border-t shadow-lg z-50 transition-colors duration-300 pb-1 h-[53px] ${getBgColor(isDarkMode)} ${getBorderColor(isDarkMode, 'light')}`}>
           <div className="max-w-[1400px] mx-auto px-5 py-3">
             <div className="grid grid-cols-3 gap-4 items-center">
               {/* 이전 아티클 */}

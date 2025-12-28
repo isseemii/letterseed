@@ -9,6 +9,7 @@ export const client = createClient({
   perspective: 'published',
   token: process.env.NEXT_PUBLIC_SANITY_TOKEN,
   requestTagPrefix: 'app',
+  ignoreBrowserTokenWarning: true,
 })
 
 // 이미지 URL 생성 함수

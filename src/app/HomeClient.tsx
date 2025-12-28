@@ -12,7 +12,6 @@ const builder = imageUrlBuilder(client as any)
 const urlFor = (source: any) => builder.image(source).url()
 
 export default function HomeClient({ initialIssues }: { initialIssues: any[] }) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const [expandedCredits, setExpandedCredits] = useState<{ [key: string]: boolean }>({})
   // Subsection 토글 상태 추가
@@ -53,78 +52,6 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
         </p>
       ),
     },
-  }
-
-  // 아티클에서 미리보기용 이미지 URL 하나 무작위로 고르는 함수
-  const pickRandomImageUrl = (article: any): string | null => {
-    const urls: string[] = []
-
-    // 1) article.images 배열
-    if (Array.isArray(article?.images)) {
-      for (const img of article.images) {
-        const direct = img?.url || img?.asset?.url
-        if (typeof direct === 'string') {
-          urls.push(direct)
-          continue
-        }
-        const ref = img?.asset?._ref || img?._ref
-        if (typeof ref === 'string') {
-          urls.push(urlFor({ _type: 'image', asset: { _ref: ref } }))
-        }
-      }
-    }
-
-    // 2) Portable Text body 안의 image 블록
-    if (Array.isArray(article?.body)) {
-      for (const block of article.body) {
-        if (block?._type === 'image') {
-          const direct = block?.asset?.url
-          if (typeof direct === 'string') {
-            urls.push(direct)
-            continue
-          }
-          const ref = block?.asset?._ref || block?._ref
-          if (typeof ref === 'string') {
-            urls.push(urlFor({ _type: 'image', asset: { _ref: ref } }))
-          }
-        }
-      }
-    }
-
-    // 2-1) Portable Text content 안의 image 블록
-    if (Array.isArray(article?.content)) {
-      for (const block of article.content) {
-        if (block?._type === 'image') {
-          const direct = block?.asset?.url
-          if (typeof direct === 'string') {
-            urls.push(direct)
-            continue
-          }
-          const ref = block?.asset?._ref || block?._ref
-          if (typeof ref === 'string') {
-            urls.push(urlFor({ _type: 'image', asset: { _ref: ref } }))
-          }
-        }
-      }
-    }
-
-    // 3) 썸네일 필드
-    const thumbDirect = article?.thumbnail?.url || article?.thumbnail?.asset?.url
-    if (typeof thumbDirect === 'string') {
-      urls.push(thumbDirect)
-    } else {
-      const thumbRef = article?.thumbnail?.asset?._ref || article?.thumbnail?._ref
-      if (typeof thumbRef === 'string') {
-        urls.push(urlFor({ _type: 'image', asset: { _ref: thumbRef } }))
-      }
-    }
-
-    if (urls.length === 0) {
-      return null
-    }
-
-    const i = Math.floor(Math.random() * urls.length)
-    return urls[i]
   }
 
   const toggleIssue = (issueId: string) => {
@@ -741,8 +668,6 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                         <Link
                                           href={`/articles/${article.slug?.current || article._id}`}
                                           className={`block 본문폰트 transition ${getTextColor(isDarkMode)}`}
-                                          onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                          onMouseLeave={() => setPreviewUrl(null)}
                                         >
                                           {article.title || '제목 없음'}
                                         </Link>
@@ -750,14 +675,12 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                         <Link
                                           href={`/articles/${article.slug?.current || article._id}`}
                                           className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)}`}
-                                          onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                          onMouseLeave={() => setPreviewUrl(null)}
                                         >
                                           <span className="group-hover:opacity-0 transition-opacity">
                                             {article.title || '제목 없음'}
                                           </span>
                                           {article.author && (
-                                            <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <span className={`absolute left-0 right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                               {article.author}
                                             </span>
                                           )}
@@ -817,14 +740,12 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                           <Link
                                                             href={`/articles/${article.slug?.current || article._id}`}
                                                             className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)}`}
-                                                            onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                                            onMouseLeave={() => setPreviewUrl(null)}
                                                           >
                                                             <span className="group-hover:opacity-0 transition-opacity">
                                                               {article.title || '제목 없음'}
                                                             </span>
                                                             {article.author && (
-                                                              <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                              <span className={`absolute left-0 right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                                 {article.author}
                                                               </span>
                                                             )}
@@ -848,14 +769,12 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                   href={`/articles/${article.slug?.current || article._id}`}
                                                   className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)
                                                     }`}
-                                                  onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                                  onMouseLeave={() => setPreviewUrl(null)}
                                                 >
                                                   <span className="group-hover:opacity-0 transition-opacity">
                                                     {article.title || '제목 없음'}
                                                   </span>
                                                   {article.author && (
-                                                    <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                    <span className={`absolute left-0 right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                       {article.author}
                                                     </span>
                                                   )}
@@ -915,14 +834,12 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                           href={`/articles/${article.slug?.current || article._id}`}
                                                           className={`block 본문폰트 transition relative ml-8 ${getTextColor(isDarkMode)
                                                             }`}
-                                                          onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                                          onMouseLeave={() => setPreviewUrl(null)}
                                                         >
                                                           <span className="group-hover:opacity-0 transition-opacity">
                                                             {article.title || '제목 없음'}
                                                           </span>
                                                           {article.author && (
-                                                            <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                            <span className={`absolute left-0 right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                               {article.author}
                                                             </span>
                                                           )}
@@ -945,14 +862,12 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                   href={`/articles/${article.slug?.current || article._id}`}
                                                   className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)
                                                     }`}
-                                                  onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                                  onMouseLeave={() => setPreviewUrl(null)}
                                                 >
                                                   <span className="group-hover:opacity-0 transition-opacity">
                                                     {article.title || '제목 없음'}
                                                   </span>
                                                   {article.author && (
-                                                    <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                    <span className={`absolute left-0 right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                                       {article.author}
                                                     </span>
                                                   )}
@@ -976,8 +891,6 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                         <Link
                                           href={`/articles/${article.slug?.current || article._id}`}
                                           className={`block 본문폰트 transition ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-black hover:text-gray-600'}`}
-                                          onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                          onMouseLeave={() => setPreviewUrl(null)}
                                         >
                                           {article.title || '제목 없음'}
                                         </Link>
@@ -985,14 +898,12 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                         <Link
                                           href={`/articles/${article.slug?.current || article._id}`}
                                           className={`block 본문폰트 transition relative ${getTextColor(isDarkMode)}`}
-                                          onMouseEnter={() => setPreviewUrl(pickRandomImageUrl(article))}
-                                          onMouseLeave={() => setPreviewUrl(null)}
                                         >
                                           <span className="group-hover:opacity-0 transition-opacity">
                                             {article.title || '제목 없음'}
                                           </span>
                                           {article.author && (
-                                            <span className={`absolute left-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <span className={`absolute left-0 right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity truncate ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                               {article.author}
                                             </span>
                                           )}
