@@ -156,7 +156,7 @@
   /* 본문 민부리 */
   .본문폰트-민부리 {
     font-family: var(--font-ko-sans);
-    font-size: 1.05em;
+    font-size: 0.95em;
     line-height: 1.76em;
     letter-spacing: 0.02em;
   }
@@ -164,7 +164,7 @@
   @media (max-width: 768px) {
     .본문폰트-민부리 {
       font-family: var(--font-ko-sans);
-      font-size: 1.05em;
+      font-size: 0.95em;
       line-height: 1.76em;
       letter-spacing: 0.02em;
     }

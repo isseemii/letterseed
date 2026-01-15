@@ -10,8 +10,16 @@ import { client } from '@/lib/sanity'
 import { getTextColor, getBgColor, getBorderColor, getHoverTextColor, getLinkColor } from '@/lib/DarkModeUtils'
 import { LAYOUT, CAPTION_STYLES } from '@/lib/constants'
 import { getTypographyClasses, getHeadingClasses, getBodyClasses, getCaptionClasses, TYPOGRAPHY, getFootnoteClasses } from '@/lib/typography'
+import { createPortableTextComponents, createAdditionalSectionComponents } from '@/lib/portableTextComponents'
 import Timeline from '@/components/timeline'
 import { motion, AnimatePresence } from 'framer-motion'
+import {
+  ResponseRenderer,
+  InterviewQARenderer,
+  ConversationRenderer,
+  QAListRenderer,
+  getImageUrl,
+} from '@/components/article/ContentRenderers'
 
 const builder = imageUrlBuilder(client)
 const urlFor = (source: any) => builder.image(source)
@@ -675,29 +683,55 @@ export default function ArticlePage({ params }: PageProps) {
     })
   }, [params, sortArticles])
 
+  // 인터뷰 Q&A 전용 components (질문: 본문폰트-민부리, 답변: 본문폰트-부리)
+  const interviewQAComponents = useMemo(() => {
+    return createPortableTextComponents(
+      'interviewQAQuestion',
+      isDarkMode,
+      footnotesList,
+      setMobileFootnotePopup,
+      setExpandedFootnotes,
+      renderTextWithLinks
+    )
+  }, [isDarkMode, footnotesList, renderTextWithLinks])
+
+  // 답변 전용 components (본문폰트-부리)
+  const answerComponents = useMemo(() => {
+    return createPortableTextComponents(
+      'interviewQAAnswer',
+      isDarkMode,
+      footnotesList,
+      setMobileFootnotePopup,
+      setExpandedFootnotes,
+      renderTextWithLinks
+    )
+  }, [isDarkMode, footnotesList, renderTextWithLinks])
+
   // Portable Text Components
   const components = useMemo(() => {
+    // 기본 components 생성
+    const baseComponents = createPortableTextComponents(
+      'standard',
+      isDarkMode,
+      footnotesList,
+      setMobileFootnotePopup,
+      setExpandedFootnotes,
+      renderTextWithLinks
+    )
+
     // Table 컴포넌트를 별도로 정의 (재귀 참조 방지를 위해)
     const TableComponent = ({ value }: any) => {
       if (!value?.rows || !Array.isArray(value.rows)) return null
 
-      // components를 직접 참조하지 않고, 필요한 부분만 재사용
-      const tableContentComponents = {
-        block: {
-          normal: ({ children }: any) => <p className={`${getBodyClasses('normal')} ${getTextColor(isDarkMode)}`}>{children}</p>,
-          h2: ({ children }: any) => <h2 className={`${getTypographyClasses('h2', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h2>,
-          h3: ({ children }: any) => <h3 className={`${getTypographyClasses('h3', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h3>,
-          h4: ({ children }: any) => <h4 className={`${getTypographyClasses('h4', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h4>,
-          h5: ({ children }: any) => <h5 className={`${getTypographyClasses('h5', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h5>,
-          h6: ({ children }: any) => <h6 className={`${getTypographyClasses('h6', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</h6>,
-          blockquote: ({ children }: any) => <blockquote className={`${getTypographyClasses('blockquote', 'portable')} ${getTextColor(isDarkMode)}`}>{children}</blockquote>,
-        },
-        marks: {
-          strong: ({ children }: any) => <strong className={getTextColor(isDarkMode)}>{children}</strong>,
-          em: ({ children }: any) => <em className={getTextColor(isDarkMode)}>{children}</em>,
-          underline: ({ children }: any) => <u className={`underline decoration-dotted underline-offset-[6px] ${getTextColor(isDarkMode)}`}>{children}</u>,
-        },
-      }
+      // 테이블 내용용 components 생성
+      const tableContentComponents = createPortableTextComponents(
+        'tableContent',
+        isDarkMode,
+        footnotesList,
+        setMobileFootnotePopup,
+        setExpandedFootnotes,
+        renderTextWithLinks
+      )
 
       return (
         <div className="my-8 border-t border-b border-gray-300 dark:border-gray-700">
@@ -761,16 +795,7 @@ export default function ArticlePage({ params }: PageProps) {
           return null
         }
 
-        // asset이 _ref 형태인 경우 이미지 URL 생성
-        let imageUrl: string
-        if (value.asset._ref) {
-          imageUrl = urlFor(value).url() || ''
-        } else if (value.asset.url) {
-          imageUrl = value.asset.url
-        } else {
-          return null
-        }
-
+        const imageUrl = getImageUrl(value, urlFor)
         if (!imageUrl) {
           return null
         }
@@ -802,14 +827,7 @@ export default function ArticlePage({ params }: PageProps) {
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
             {value.images.map((image: any, index: number) => {
-              let imageUrl: string | null = null
-
-              if (image?.asset?._ref) {
-                imageUrl = urlFor(image).url() || null
-              } else if (image?.asset?.url) {
-                imageUrl = image.asset.url
-              }
-
+              const imageUrl = getImageUrl(image, urlFor)
               if (!imageUrl) {
                 return null
               }
@@ -841,259 +859,39 @@ export default function ArticlePage({ params }: PageProps) {
       },
       table: TableComponent,
     },
-    block: {
-      h2: ({ children }: any) => (
-        <h2
-          className={`${getTypographyClasses('h2', 'portable')} ${getTextColor(isDarkMode)}`}
-        >
-          {children}
-        </h2>
-      ),
-      h3: ({ children }: any) => (
-        <h3 
-          className={`${getTypographyClasses('h3', 'portable')} ${getTextColor(isDarkMode)}`}
-        >
-          {children}
-        </h3>
-      ),
-      h4: ({ children }: any) => (
-        <h4
-          className={`${getTypographyClasses('h4', 'portable')} ${getTextColor(isDarkMode)}`}
-        >
-          {children}
-        </h4>
-      ),
-      h5: ({ children }: any) => (
-        <h5
-          className={`${getTypographyClasses('h5', 'portable')} ${getTextColor(isDarkMode)}`}
-        >
-          {children}
-        </h5>
-      ),
-      h6: ({ children }: any) => (
-        <h6
-          className={`${getTypographyClasses('h6', 'portable')} ${getTextColor(isDarkMode)}`}
-        >
-          {children}
-        </h6>
-      ),
-      normal: ({ children }: any) => {
-        // children이 React 요소인지 확인하고, block 요소가 포함되어 있는지 체크
-        const hasBlockElements = React.Children.toArray(children).some((child: any) => {
-          if (React.isValidElement(child)) {
-            const type = child.type
-            if (typeof type === 'string' && (type === 'div' || type === 'img')) {
-              return true
-            }
-            const props = child.props as any
-            if (props?.className?.includes('my-8')) {
-              return true
-            }
-          }
-          return false
-        })
-
-        // block 요소가 있으면 div로, 없으면 p로 렌더링
-        const Tag = hasBlockElements ? 'div' : 'p'
-        return (
-          <Tag
-            className={`${getBodyClasses('normal')} ${getTextColor(isDarkMode)}`}
-          >
-            {children}
-          </Tag>
-        )
-      },
-      blockquote: ({ children }: any) => (
-        <blockquote
-          style={{
-            borderLeft: isDarkMode ? '0.2em solid white' : '0.2em solid black',
-            paddingLeft: '1em',
-            marginLeft: '2em',
-            marginBottom: '1em',
-            }}
-            className={`${getTypographyClasses('blockquote', 'portable')} ${getTextColor(isDarkMode)}`}
-          >
-            {children}
-          </blockquote>
-        )
-      },
-    marks: {
-      link: ({ children, value }: any) => {
-        const rel = value?.href && !value.href.startsWith('/') ? 'noreferrer noopener' : undefined
-        const borderColor = isDarkMode ? 'border-blue-300' : 'border-blue-600'
-        return (
-          <a
-            href={value?.href || '#'}
-            rel={rel}
-            target={value?.href?.startsWith('/') ? '_self' : '_blank'}
-            className={`${getLinkColor(isDarkMode)} border-b border-dotted ${borderColor}`}
-          >
-            {children}
-          </a>
-        )
-      },
-      footnote: ({ children, value, markKey }: any) => {
-        // 각주 번호 찾기 - value._key, markKey, 또는 text로 매칭
-        const footnote = footnotesList.find(f => 
-          (value?._key && f.markKey === value._key) ||
-          (markKey && f.markKey === markKey) || 
-          (value?.text && f.text === value.text)
-        )
-        const footnoteNumber = footnote?.number || 0
-
-        const handleFootnoteClick = (e: React.MouseEvent) => {
-          e.preventDefault()
-
-          if (typeof window !== 'undefined' && footnoteNumber > 0) {
-            const isMobile = window.innerWidth < 768
-            if (isMobile && footnote) {
-              // 모바일: 팝업 표시
-              setMobileFootnotePopup({ number: footnoteNumber, text: footnote.text })
-            } else {
-              // 데스크톱: 사이드바 각주 토글 + 스크롤은 하지 않음
-              setExpandedFootnotes(prev => ({
-                ...prev,
-                [footnoteNumber]: !prev[footnoteNumber]
-              }))
-            }
-          }
-        }
-
-        if (footnoteNumber === 0) {
-          return <span className="text-red-500">{children}</span>
-        }
-
-        return (
-          <span
-            data-footnote-number={footnoteNumber}
-            onClick={handleFootnoteClick}
-            className={`cursor-pointer border-b border-dotted ${isDarkMode ? 'text-blue-300 border-blue-300 hover:text-blue-200' : 'text-blue-600 border-blue-600 hover:text-blue-700'}`}
-          >
-            {children}
-          </span>
-        )
-      },
-      strong: ({ children }: any) => <strong className={getTextColor(isDarkMode)}>{children}</strong>,
-      em: ({ children }: any) => <em className={getTextColor(isDarkMode)}>{children}</em>,
-      underline: ({ children }: any) => <u className={`underline decoration-dotted underline-offset-[6px] ${getTextColor(isDarkMode)}`}>{children}</u>,
-      sup: ({ children }: any) => <sup className={getTextColor(isDarkMode)}>{children}</sup>,
-      sub: ({ children }: any) => <sub className={getTextColor(isDarkMode)}>{children}</sub>,
-      indent: ({ children }: any) => (
-        <span className={`inline-block pl-[2em] md:pl-[2em] ${getTextColor(isDarkMode)}`}>
-          {children}
-        </span>
-      ),
-    },
-    list: {
-      bullet: ({ children }: any) => (
-        <ul style={{ marginLeft: '24px', marginTop: '16px', marginBottom: '16px' }} className={getTextColor(isDarkMode)}>
-          {children}
-        </ul>
-      ),
-      number: ({ children }: any) => (
-        <ol style={{ marginLeft: '24px', marginTop: '16px', marginBottom: '16px' }} className={getTextColor(isDarkMode)}>
-          {children}
-        </ol>
-      )
-    }
+    // baseComponents의 block, marks, list를 사용
+    ...baseComponents,
     }
   }, [isDarkMode, renderTextWithLinks, footnotesList])
 
   // 추가섹션 전용 components (각주 스타일 사용, 텍스트 내 URL 자동 링크 변환)
-  const additionalSectionComponents = useMemo(() => ({
-    types: {
-      image: ({ value }: any) => {
-        if (!value || !value.asset) {
-          return null
-        }
-        const imageUrl = urlFor(value).width(800).height(600).url()
-        return (
-          <div className="my-8">
-            <Image
-              src={imageUrl}
-              alt={value.alt || ''}
-              width={800}
-              height={600}
-              className="w-full h-auto"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              unoptimized
-            />
-          </div>
-        )
-      }
-    },
-    block: {
-      normal: ({ children }: any) => {
-        // children에서 텍스트 내 URL을 링크로 변환
-        const processedChildren = processChildrenWithLinks(children)
-        
-        // children이 React 요소인지 확인하고, block 요소가 포함되어 있는지 체크
-        const hasBlockElements = React.Children.toArray(processedChildren).some((child: any) => {
-          if (React.isValidElement(child)) {
-            const type = child.type
-            if (typeof type === 'string' && (type === 'div' || type === 'img')) {
-              return true
-            }
-            const props = child.props as any
-            if (props?.className?.includes('my-8')) {
-              return true
-            }
+  const additionalSectionComponents = useMemo(() => {
+    const base = createAdditionalSectionComponents(isDarkMode, processChildrenWithLinks)
+    return {
+      ...base,
+      types: {
+        image: ({ value }: any) => {
+          if (!value || !value.asset) {
+            return null
           }
-          return false
-        })
-
-        // block 요소가 있으면 div로, 없으면 p로 렌더링
-        // 각주 스타일 사용 (본문 스타일 제거)
-        const Tag = hasBlockElements ? 'div' : 'p'
-        return (
-          <Tag
-            className={`space-y-4 ${getTextColor(isDarkMode, 'muted')}`}
-          >
-            {processedChildren}
-          </Tag>
-        )
-      },
-    },
-    marks: {
-      link: ({ children, value }: any) => {
-        const rel = value?.href && !value.href.startsWith('/') ? 'noreferrer noopener' : undefined
-        const borderColor = isDarkMode ? 'border-blue-300' : 'border-blue-600'
-        return (
-          <a
-            href={value?.href || '#'}
-            rel={rel}
-            target={value?.href?.startsWith('/') ? '_self' : '_blank'}
-            className={`${getLinkColor(isDarkMode)} border-b border-dotted ${borderColor}`}
-          >
-            {children}
-          </a>
-        )
-      },
-      strong: ({ children }: any) => <strong className={getTextColor(isDarkMode, 'muted')}>{children}</strong>,
-      em: ({ children }: any) => <em className={getTextColor(isDarkMode, 'muted')}>{children}</em>,
-      underline: ({ children }: any) => <u className={`underline decoration-dotted underline-offset-[2px] ${getTextColor(isDarkMode, 'muted')}`}>{children}</u>,
-    },
-    list: {
-      bullet: ({ children }: any) => (
-        <ul className={`space-y-2 list-disc ml-6 ${getTextColor(isDarkMode, 'muted')}`}>
-          {children}
-        </ul>
-      ),
-      number: ({ children }: any) => (
-        <ol className={`space-y-2 list-decimal ml-6 ${getTextColor(isDarkMode, 'muted')}`}>
-          {children}
-        </ol>
-      )
-    },
-    listItem: {
-      bullet: ({ children }: any) => (
-        <li className={getTextColor(isDarkMode, 'muted')}>{children}</li>
-      ),
-      number: ({ children }: any) => (
-        <li className={getTextColor(isDarkMode, 'muted')}>{children}</li>
-      )
+          const imageUrl = urlFor(value).width(800).height(600).url()
+          return (
+            <div className="my-8">
+              <Image
+                src={imageUrl}
+                alt={value.alt || ''}
+                width={800}
+                height={600}
+                className="w-full h-auto"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                unoptimized
+              />
+            </div>
+          )
+        }
+      }
     }
-  }), [isDarkMode, processChildrenWithLinks])
+  }, [isDarkMode, processChildrenWithLinks])
 
   if (loading) {
     return (
@@ -1229,10 +1027,10 @@ export default function ArticlePage({ params }: PageProps) {
                                 />
                               </div>
                             )}
-                            {response.image && (
+                            {response.image && getImageUrl(response.image, urlFor) && (
                               <div className="my-6 w-full">
                                 <Image
-                                  src={urlFor(response.image).url() || ''}
+                                  src={getImageUrl(response.image, urlFor) || ''}
                                   alt={response.image.alt || ''}
                                   width={1200}
                                   height={800}
@@ -1259,33 +1057,14 @@ export default function ArticlePage({ params }: PageProps) {
                     return (
                       <div key={blockIdx} className="space-y-12">
                         {block.interviewQAContent.map((qa: any, idx: number) => (
-                          <div key={idx} className="space-y-6">
-                            {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
-                              <div className={getTextColor(isDarkMode)}>
-                                <PortableText
-                                  value={qa.question}
-                                  components={components}
-                                />
-                              </div>
-                            )}
-                            <div className="space-y-4 pl-4">
-                              {qa.answers && qa.answers.map((answer: any, ansIdx: number) => (
-                                <div key={ansIdx} className="space-y-2">
-                                  <div className={`${TYPOGRAPHY.ui.speaker}  ${getTextColor(isDarkMode, 'muted')}`}>
-                                    {answer.person}
-                                  </div>
-                                  {answer.answer && Array.isArray(answer.answer) && answer.answer.length > 0 && (
-                                    <div className={getTextColor(isDarkMode)}>
-                                      <PortableText
-                                        value={answer.answer}
-                                        components={components}
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                          <InterviewQARenderer
+                            key={idx}
+                            qa={qa}
+                            idx={idx}
+                            isDarkMode={isDarkMode}
+                            interviewQAComponents={interviewQAComponents}
+                            answerComponents={answerComponents}
+                          />
                         ))}
                       </div>
                     )
@@ -1293,19 +1072,13 @@ export default function ArticlePage({ params }: PageProps) {
                     return (
                       <div key={blockIdx} className="space-y-6">
                         {block.conversationContent.map((turn: any, idx: number) => (
-                          <div key={idx} className="space-y-2">
-                            <div className={`${TYPOGRAPHY.ui.speaker}  ${getTextColor(isDarkMode, 'muted')}`}>
-                              {turn.speaker}
-                            </div>
-                            {turn.text && Array.isArray(turn.text) && turn.text.length > 0 && (
-                              <div className={getTextColor(isDarkMode)}>
-                                <PortableText
-                                  value={turn.text}
-                                  components={components}
-                                />
-                              </div>
-                            )}
-                          </div>
+                          <ConversationRenderer
+                            key={idx}
+                            turn={turn}
+                            idx={idx}
+                            isDarkMode={isDarkMode}
+                            components={components}
+                          />
                         ))}
                       </div>
                     )
@@ -1313,24 +1086,13 @@ export default function ArticlePage({ params }: PageProps) {
                     return (
                       <div key={blockIdx} className="space-y-8">
                         {block.qaListContent.map((qa: any, idx: number) => (
-                          <div key={idx} className="space-y-4">
-                            {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
-                              <div className={getTextColor(isDarkMode)}>
-                                <PortableText
-                                  value={qa.question}
-                                  components={components}
-                                />
-                              </div>
-                            )}
-                            {qa.answer && Array.isArray(qa.answer) && qa.answer.length > 0 && (
-                              <div className={getTextColor(isDarkMode)}>
-                                <PortableText
-                                  value={qa.answer}
-                                  components={components}
-                                />
-                              </div>
-                            )}
-                          </div>
+                          <QAListRenderer
+                            key={idx}
+                            qa={qa}
+                            idx={idx}
+                            isDarkMode={isDarkMode}
+                            components={components}
+                          />
                         ))}
                       </div>
                     )
@@ -1352,91 +1114,33 @@ export default function ArticlePage({ params }: PageProps) {
 
                   {/* 응답 모음 */}
                   {article.responses && Array.isArray(article.responses) && article.responses.length > 0 && (
-                <div className="space-y-12">
-                  {article.responses.map((response: any, idx: number) => (
-                    <div key={idx} className="space-y-4">
-                      <div className="flex flex-col md:flex-row md:items-center md:space-x-2">
-                        <span className={`font-bold ${TYPOGRAPHY.ui.speaker} mb-1 md:mb-0 ${getTextColor(isDarkMode, 'muted')}`}>
-                          {response.year}
-                        </span>
-                        <div className={`flex items-center ${TYPOGRAPHY.ui.speaker} ${getTextColor(isDarkMode)}`}>
-                          <span>{response.title} · {response.author }</span>
-                        </div>
-                      </div>
-                      {response.content && Array.isArray(response.content) && response.content.length > 0 && (
-                        <div className={getTextColor(isDarkMode)}>
-                          <PortableText
-                            value={response.content}
-                            components={components}
-                          />
-                        </div>
-                      )}
-                      {response.image && (
-                        <div className="my-6 w-full">
-                          <Image
-                            src={urlFor(response.image).url() || ''}
-                            alt={response.image.alt || ''}
-                            width={1200}
-                            height={800}
-                            className="w-full h-auto"
-                            sizes="100vw"
-                            unoptimized
-                          />
-                        </div>
-                      )}
-                      {response.references && Array.isArray(response.references) && response.references.length > 0 && (
-                        <div className={`ml-[10%] mt-8 mb-16 md:ml-[40%] md:mt-12 md:mb-24 ${getTextColor(isDarkMode)}`}>
-                          <div className={`${getTextColor(isDarkMode)}`}>
-                            {/* 섹션 제목 */}
-                            <div className={`mb-4 ${TYPOGRAPHY.ui.referenceTitle} ${getTextColor(isDarkMode)}`}>
-                              참고문헌
-                            </div>
-                            {/* 섹션 내용 */}
-                            <div className={` ${getFootnoteClasses('text')} ${getTextColor(isDarkMode, 'muted')}`}>
-                              <PortableText
-                                value={response.references}
-                                components={additionalSectionComponents}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                    <div className="space-y-12">
+                      {article.responses.map((response: any, idx: number) => (
+                        <ResponseRenderer
+                          key={idx}
+                          response={response}
+                          idx={idx}
+                          isDarkMode={isDarkMode}
+                          urlFor={urlFor}
+                          components={components}
+                          additionalSectionComponents={additionalSectionComponents}
+                        />
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
 
               {/* 인터뷰 Q&A */}
               {article.interviewQA && Array.isArray(article.interviewQA) && article.interviewQA.length > 0 && (
                 <div className="space-y-12">
                   {article.interviewQA.map((qa: any, idx: number) => (
-                    <div key={idx} className="space-y-6">
-                      {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
-                        <div className={getTextColor(isDarkMode)}>
-                          <PortableText
-                            value={qa.question}
-                            components={components}
-                          />
-                        </div>
-                      )}
-                      <div className="space-y-4 pl-4">
-                        {qa.answers && qa.answers.map((answer: any, ansIdx: number) => (
-                          <div key={ansIdx} className="space-y-2">
-                            <div className={`${TYPOGRAPHY.ui.speaker}  ${getTextColor(isDarkMode, 'muted')}`}>
-                              {answer.person}
-                            </div>
-                            {answer.answer && Array.isArray(answer.answer) && answer.answer.length > 0 && (
-                              <div className={getTextColor(isDarkMode)}>
-                                <PortableText
-                                  value={answer.answer}
-                                  components={components}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <InterviewQARenderer
+                      key={idx}
+                      qa={qa}
+                      idx={idx}
+                      isDarkMode={isDarkMode}
+                      interviewQAComponents={interviewQAComponents}
+                      answerComponents={answerComponents}
+                    />
                   ))}
                 </div>
               )}
@@ -1445,19 +1149,13 @@ export default function ArticlePage({ params }: PageProps) {
               {article.conversation && Array.isArray(article.conversation) && article.conversation.length > 0 && (
                 <div className="space-y-6">
                   {article.conversation.map((turn: any, idx: number) => (
-                    <div key={idx} className="space-y-2">
-                      <div className={`${TYPOGRAPHY.ui.speaker}  ${getTextColor(isDarkMode, 'muted')}`}>
-                        {turn.speaker}
-                      </div>
-                      {turn.text && Array.isArray(turn.text) && turn.text.length > 0 && (
-                        <div className={getTextColor(isDarkMode)}>
-                          <PortableText
-                            value={turn.text}
-                            components={components}
-                          />
-                        </div>
-                      )}
-                    </div>
+                    <ConversationRenderer
+                      key={idx}
+                      turn={turn}
+                      idx={idx}
+                      isDarkMode={isDarkMode}
+                      components={components}
+                    />
                   ))}
                 </div>
               )}
@@ -1466,24 +1164,13 @@ export default function ArticlePage({ params }: PageProps) {
               {article.qaList && Array.isArray(article.qaList) && article.qaList.length > 0 && (
                 <div className="space-y-8">
                   {article.qaList.map((qa: any, idx: number) => (
-                    <div key={idx} className="space-y-4">
-                      {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
-                        <div className={`ml-[40%] 본문폰트-민부리 ${getTextColor(isDarkMode)}`}>
-                          <PortableText
-                            value={qa.question}
-                            components={components}
-                          />
-                        </div>
-                      )}
-                      {qa.answer && Array.isArray(qa.answer) && qa.answer.length > 0 && (
-                        <div className={`${getTextColor(isDarkMode)}`}>
-                          <PortableText
-                            value={qa.answer}
-                            components={components}
-                          />
-                        </div>
-                      )}
-                    </div>
+                    <QAListRenderer
+                      key={idx}
+                      qa={qa}
+                      idx={idx}
+                      isDarkMode={isDarkMode}
+                      components={components}
+                    />
                   ))}
                 </div>
               )}

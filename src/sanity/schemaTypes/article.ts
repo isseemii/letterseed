@@ -1,9 +1,5 @@
 import {defineField, defineType} from 'sanity'
 
-// ========================================
-// 공통 스타일 및 마크 정의
-// ========================================
-
 // 제목 스타일 정의 (명확한 매핑)
 const headingStyles = [
   {title: '제목 1 (H2)', value: 'h2'},
@@ -161,14 +157,6 @@ export default defineType({
       title: '글쓴이',
       type: 'string',
     }),
-    // defineField({
-    //   name: 'authorBio',
-    //   title: '글쓴이 소개',
-    //   type: 'text',
-    //   rows: 2,
-    // }),
-    
-    // ✨ 아티클 타입 선택 (선택 사항 - 여러 타입을 조합할 수 있음)
     defineField({
       name: 'articleType',
       title: '아티클 타입 (참고용)',
@@ -221,10 +209,10 @@ export default defineType({
               options: {
                 list: [
                   {title: '일반 본문', value: 'standard'},
-                  {title: '응답 모음', value: 'responses'},
-                  {title: '인터뷰 Q&A', value: 'interviewQA'},
+                  {title: '26호 응답 모음', value: 'responses'},
+                  {title: '여러명 Q&A', value: 'interviewQA'},
                   {title: '대화', value: 'conversation'},
-                  {title: 'Q&A', value: 'qaList'},
+                  {title: '기본 Q&A', value: 'qaList'},
                 ],
                 layout: 'radio',
               },
