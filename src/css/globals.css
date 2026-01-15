@@ -54,6 +54,7 @@
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
+  --breakpoint-sidebar: 1510px;
   --breakpoint-2xl: 1448px;
 
   --spacing-grid52: clamp(2rem, 4vw, 5rem);
@@ -289,5 +290,21 @@
 
   .dark .footnote-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #718096;
+  }
+
+  /* 1510px breakpoint 유틸리티 클래스 */
+  .sidebar-block {
+    display: none;
+  }
+  .sidebar-hidden {
+    display: block;
+  }
+  @media (min-width: 1510px) {
+    .sidebar-block {
+      display: block !important;
+    }
+    .sidebar-hidden {
+      display: none !important;
+    }
   }
 }

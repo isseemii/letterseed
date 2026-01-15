@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        'sidebar': '1510px', // 사이드바가 나타나는 최소 너비
+      },
       fontFamily: {
         'ko-sans': ['AGCJHMS', '-apple-system', 'BlinkMacSystemFont', 'Malgun Gothic', '맑은 고딕', 'sans-serif'],
         'ko-serif': ['AGCJHS', 'Apple SD Gothic Neo', 'Noto Sans KR', 'serif'],

@@ -1114,7 +1114,7 @@ export default function ArticlePage({ params }: PageProps) {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${getBgColor(isDarkMode)}`}>
       {/* 왼쪽 고정 네비게이션 */}
-      <div className="hidden xl:block fixed left-0 top-0 h-screen w-[300px] px-6 py-10 z-10">
+      <div className="sidebar-block fixed left-0 top-0 h-screen w-[365px] px-6 py-10 z-10">
         <div className="flex flex-col items-end justify-between h-full">
           {/* 돌아가기 - 상단 */}
           <div className="flex justify-end">
@@ -1158,7 +1158,7 @@ export default function ArticlePage({ params }: PageProps) {
       </div>
 
       {/* 중앙: 아티클 본문 */}
-        <article className="max-w-[730px] mx-auto px-4 xl:px-0 pt-6 pb-6 md:pt-10 md:pb-10">
+        <article className="max-w-[720px] mx-auto px-4 xl:px-0 pt-6 pb-6 md:pt-10 md:pb-10">
             {/* 호수, 섹션 */}
             <div className={`text-center mb-1 md:text-left md:indent-[0.2em] ${TYPOGRAPHY.meta.issueSection} ${getTextColor(isDarkMode)}`}>
               {article.issue.number} · {article.section.title}
@@ -1512,12 +1512,12 @@ export default function ArticlePage({ params }: PageProps) {
           </article>
 
       {/* 오른쪽 고정 사이드바: 각주 + 다음 아티클 */}
-      <div className="hidden xl:block fixed right-0 top-0 h-screen w-[300px] px-6 py-10 z-10">
+      <div className="sidebar-block fixed right-0 top-0 h-screen w-[365px] px-6 py-10 z-10">
         <div className={`flex flex-col items-start h-full ${hasFootnotesInContent && footnotesList.length > 0 ? 'justify-between' : 'justify-end'}`}>
           {/* 각주 세부 텍스트 - 상단 (스크롤 가능) */}
           {hasFootnotesInContent && footnotesList.length > 0 && (
             <div 
-              className="w-[150px] mb-auto overflow-y-auto pr-2 scrollbar-thin" 
+              className="w-[300px] mb-auto overflow-y-auto pr-2 scrollbar-hide" 
               style={{ 
                 maxHeight: 'calc(100vh - 20rem)',
               }}
@@ -1591,67 +1591,75 @@ export default function ArticlePage({ params }: PageProps) {
       </div>
 
       {/* 하단 고정 네비게이션 - 모바일만 */}
-      {showNavigation && (
-        <div className={`xl:hidden fixed bottom-0 left-0 right-0 border-t shadow-lg z-50 transition-colors duration-300 pb-1 h-[53px] ${getBgColor(isDarkMode)} ${getBorderColor(isDarkMode, 'light')}`}>
-          <div className="max-w-[1400px] mx-auto px-5 py-3">
-            <div className="grid grid-cols-3 gap-4 items-center">
-              {/* 이전 아티클 */}
-              <div className="col-span-1">
-                {article?.prevArticle ? (
-                  <Link
-                    href={`/articles/${article.prevArticle.slug}`}
-                    className={`group flex items-center gap-1.5 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
-                  >
-                    <svg
-                      className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+      <AnimatePresence>
+        {showNavigation && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
+            className={`sidebar-hidden fixed bottom-0 left-0 right-0 border-t shadow-lg z-50 transition-colors duration-300 pb-1 h-[53px] ${getBgColor(isDarkMode)} ${getBorderColor(isDarkMode, 'light')}`}
+          >
+            <div className="max-w-[1400px] mx-auto px-5 py-3">
+              <div className="grid grid-cols-3 gap-4 items-center">
+                {/* 이전 아티클 */}
+                <div className="col-span-1">
+                  {article?.prevArticle ? (
+                    <Link
+                      href={`/articles/${article.prevArticle.slug}`}
+                      className={`group flex items-center gap-1.5 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    <span className={TYPOGRAPHY.ui.navLink}>이전</span>
-                  </Link>
-                ) : (
-                  <div className={`${TYPOGRAPHY.ui.navLink} ${getTextColor(isDarkMode, 'subtle')}`}>이전 글 없음</div>
-                )}
-              </div>
+                      <svg
+                        className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7m0 0l7-7m-7 7h18" />
+                      </svg>
+                      <span className={TYPOGRAPHY.ui.navLink}>이전</span>
+                    </Link>
+                  ) : (
+                    <div className={`${TYPOGRAPHY.ui.navLink} ${getTextColor(isDarkMode, 'subtle')}`}>이전 글 없음</div>
+                  )}
+                </div>
 
-              {/* 돌아가기 */}
-              <div className="col-span-1 flex justify-center">
-                <Link
-                  href="/"
-                  className={`flex items-center ${TYPOGRAPHY.ui.navLink} transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
-                >
-                  돌아가기
-                </Link>
-              </div>
-
-              {/* 다음 아티클 */}
-              <div className="col-span-1 text-right">
-                {article?.nextArticle ? (
+                {/* 돌아가기 */}
+                <div className="col-span-1 flex justify-center">
                   <Link
-                    href={`/articles/${article.nextArticle.slug}`}
-                    className={`group flex items-center justify-end gap-1.5 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
+                    href="/"
+                    className={`flex items-center ${TYPOGRAPHY.ui.navLink} transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
                   >
-                    <span className={TYPOGRAPHY.ui.navLink}>다음</span>
-                    <svg
-                      className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
+                    돌아가기
                   </Link>
-                ) : (
-                  <div className={`${TYPOGRAPHY.ui.navLink} ${getTextColor(isDarkMode, 'subtle')}`}>다음 글 없음</div>
-                )}
+                </div>
+
+                {/* 다음 아티클 */}
+                <div className="col-span-1 text-right">
+                  {article?.nextArticle ? (
+                    <Link
+                      href={`/articles/${article.nextArticle.slug}`}
+                      className={`group flex items-center justify-end gap-1.5 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
+                    >
+                      <span className={TYPOGRAPHY.ui.navLink}>다음</span>
+                      <svg
+                        className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </Link>
+                  ) : (
+                    <div className={`${TYPOGRAPHY.ui.navLink} ${getTextColor(isDarkMode, 'subtle')}`}>다음 글 없음</div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 모바일 각주 팝업 */}
       {mobileFootnotePopup && (

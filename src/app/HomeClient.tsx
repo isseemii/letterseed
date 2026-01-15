@@ -515,9 +515,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                   후원
                 </h3>
                 <div className="flex flex-col gap-8">
-                  <img src="/img/sp/01_sp/sp-01-ahngraphics.gif" alt="안그라픽스" className="w-36" />
-                  <img src="/img/sp/01_sp/sp-02-doosungpaper.gif" alt="두성종이" className="w-36" />
-                  <img src="/img/sp/01_sp/sp-03-coloso.gif" alt="콜로소" className="w-36" />
+                  <img src="/img/sp/01_sp/sp-01-ahngraphics.svg" alt="안그라픽스" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <img src="/img/sp/01_sp/sp-02-doosungpaper.svg" alt="두성종이" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <img src="/img/sp/01_sp/sp-03-coloso.svg" alt="콜로소" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                 </div>
               </div>
               <div className="col-span-2">
@@ -526,18 +526,18 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
                   {/* 울트라블랙 */}
-                  <img src="/img/sp/02_pt/1/pt-01-happybean.gif" alt="해피빈" className="w-36" />
-                  <img src="/img/sp/02_pt/1/pt-06-woowa.gif" alt="우아한형제들" className="w-36" />
-                  <img src="/img/sp/02_pt/1/pt-14-adobe.gif" alt="아도비" className="w-36" />
+                  <img src="/img/sp/02_pt/pt-01-happybean.svg" alt="해피빈" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <img src="/img/sp/02_pt/pt-06-woowa.svg" alt="우아한형제들" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <img src="/img/sp/02_pt/pt-14-adobe.svg" alt="아도비" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 블랙 */}
-                  <img src="/img/sp/02_pt/2/pt-12-visang.gif" alt="비상" className="w-36" />
+                  <img src="/img/sp/02_pt/pt-12-visang.svg" alt="비상" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 볼드 */}
-                  <img src="/img/sp/02_pt/3/pt-11-samwon.png" alt="삼원종이" className="w-36" />
-                  <img src="/img/sp/02_pt/3/pt-15-morisawakorea.png" alt="모리사워코리아" className="w-36" />
+                  <img src="/img/sp/02_pt/pt-11-samwon.svg" alt="삼원종이" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <img src="/img/sp/02_pt/pt-15-morisawakorea.svg" alt="모리사워코리아" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 레귤러 */}
-                  <img src="/img/sp/02_pt/4/pt-10-innoiz.gif" alt="인노이즈" className="w-36" />
+                  <img src="/img/sp/02_pt/pt-10-innoiz.svg" alt="인노이즈" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 공익위반제보 */}
-                  <img src="/img/sp/02_pt/5/link-01-munhwa.png" alt="문화체육관광부" className="w-36" />
+                  <img src="/img/sp/02_pt/link-01-munhwa.svg" alt="문화체육관광부" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                 </div>
               </div>
             </div>
@@ -655,7 +655,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                           {section.title}
                         </p>
 
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {/* 26호는 아티클 먼저, 다른 호는 하위섹션 먼저 */}
                           {issue.number === 26 ? (
                             <>
@@ -884,7 +884,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
                               {/* ✨ 다른 호: Section의 직속 articles (토글 없이 일반 링크) */}
                               {section.articles && section.articles.length > 0 && (
-                                <div className="space-y-1.5">
+                                <div className="space-y-2">
                                   {section.articles.map((article: any, idx: number) => (
                                     <div key={`${article._id || idx}`} className="group">
                                       {section.title === '인터뷰' ? (
