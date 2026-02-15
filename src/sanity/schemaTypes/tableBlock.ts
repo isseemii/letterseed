@@ -1,4 +1,4 @@
-export default {
+const tableBlock = {
   name: 'tableBlock',
   type: 'object',
   title: 'Table',
@@ -21,3 +21,5 @@ export default {
     }
   ]
 }
+
+export default tableBlock

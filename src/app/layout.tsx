@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "../css/globals.css";
 import { Providers } from "@/components/Providers";
 
@@ -14,6 +14,10 @@ export const metadata: Metadata = {
     description: "한국타이포그라피학회 학술지",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({

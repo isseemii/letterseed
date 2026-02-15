@@ -9,11 +9,13 @@ import Image from 'next/image'
 import { PortableTextComponents } from '@portabletext/react'
 import { getTextColor } from '@/lib/DarkModeUtils'
 import { TYPOGRAPHY, getHeadingClasses, getFootnoteClasses } from '@/lib/typography'
+import { toPortableValue } from '@/lib/sanityTypeGuards'
+import type { ConversationTurn, InterviewQAItem, QAListItem, ResponseItem, SanityImage, UrlForFn } from './types'
 
 /**
  * 이미지 URL 생성 헬퍼 함수
  */
-export const getImageUrl = (image: any, urlFor: any): string | null => {
+export const getImageUrl = (image: SanityImage | undefined, urlFor: UrlForFn): string | null => {
   if (!image || !image.asset) return null
   
   if (image.asset._ref) {
@@ -35,10 +37,10 @@ export const ResponseRenderer = ({
   components,
   additionalSectionComponents,
 }: {
-  response: any
+  response: ResponseItem
   idx: number
   isDarkMode: boolean
-  urlFor: any
+  urlFor: UrlForFn
   components: PortableTextComponents
   additionalSectionComponents: PortableTextComponents
 }) => {
@@ -57,7 +59,7 @@ export const ResponseRenderer = ({
       {response.content && Array.isArray(response.content) && response.content.length > 0 && (
         <div className={getTextColor(isDarkMode)}>
           <PortableText
-            value={response.content}
+            value={toPortableValue(response.content)}
             components={components}
           />
         </div>
@@ -83,7 +85,7 @@ export const ResponseRenderer = ({
             </div>
             <div className={`${getFootnoteClasses('text')} ${getTextColor(isDarkMode, 'muted')}`}>
               <PortableText
-                value={response.references}
+                value={toPortableValue(response.references)}
                 components={additionalSectionComponents}
               />
             </div>
@@ -104,7 +106,7 @@ export const InterviewQARenderer = ({
   interviewQAComponents,
   answerComponents,
 }: {
-  qa: any
+  qa: InterviewQAItem
   idx: number
   isDarkMode: boolean
   interviewQAComponents: PortableTextComponents
@@ -115,13 +117,13 @@ export const InterviewQARenderer = ({
       {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
         <div className={getTextColor(isDarkMode)}>
           <PortableText
-            value={qa.question}
+            value={toPortableValue(qa.question)}
             components={interviewQAComponents}
           />
         </div>
       )}
       <div className="space-y-4 pl-4">
-        {qa.answers && qa.answers.map((answer: any, ansIdx: number) => (
+        {qa.answers && qa.answers.map((answer, ansIdx: number) => (
           <div key={ansIdx} className="space-y-2">
             <div className={`${TYPOGRAPHY.ui.speaker} ${getTextColor(isDarkMode, 'muted')}`}>
               {answer.person}
@@ -129,7 +131,7 @@ export const InterviewQARenderer = ({
             {answer.answer && Array.isArray(answer.answer) && answer.answer.length > 0 && (
               <div className={getTextColor(isDarkMode)}>
                 <PortableText
-                  value={answer.answer}
+                  value={toPortableValue(answer.answer)}
                   components={answerComponents}
                 />
               </div>
@@ -150,7 +152,7 @@ export const ConversationRenderer = ({
   isDarkMode,
   components,
 }: {
-  turn: any
+  turn: ConversationTurn
   idx: number
   isDarkMode: boolean
   components: PortableTextComponents
@@ -163,7 +165,7 @@ export const ConversationRenderer = ({
       {turn.text && Array.isArray(turn.text) && turn.text.length > 0 && (
         <div className={getTextColor(isDarkMode)}>
           <PortableText
-            value={turn.text}
+            value={toPortableValue(turn.text)}
             components={components}
           />
         </div>
@@ -181,7 +183,7 @@ export const QAListRenderer = ({
   isDarkMode,
   components,
 }: {
-  qa: any
+  qa: QAListItem
   idx: number
   isDarkMode: boolean
   components: PortableTextComponents
@@ -191,7 +193,7 @@ export const QAListRenderer = ({
       {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
         <div className={`ml-[40%] 본문폰트-민부리 ${getTextColor(isDarkMode)}`}>
           <PortableText
-            value={qa.question}
+            value={toPortableValue(qa.question)}
             components={components}
           />
         </div>
@@ -199,7 +201,7 @@ export const QAListRenderer = ({
       {qa.answer && Array.isArray(qa.answer) && qa.answer.length > 0 && (
         <div className={getTextColor(isDarkMode)}>
           <PortableText
-            value={qa.answer}
+            value={toPortableValue(qa.answer)}
             components={components}
           />
         </div>

@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# letterseed-next
 
-## Getting Started
+한국타이포그라피학회 학술지 웹 아카이브 프로젝트입니다.  
+`Next.js(App Router)` + `Sanity Studio` 기반으로 운영됩니다.
 
-First, run the development server:
+## Tech Stack
+
+- Next.js 15
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- Sanity CMS (`next-sanity`, `sanity`)
+
+## Requirements
+
+- Node.js 20+
+- npm 10+
+
+## Environment Variables
+
+`.env.local` 예시:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id
+NEXT_PUBLIC_SANITY_DATASET=production
+NEXT_PUBLIC_SANITY_API_VERSION=2025-10-17
+SANITY_API_READ_TOKEN=your_server_read_token
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+주의:
+- `SANITY_API_READ_TOKEN`은 서버 전용입니다. `NEXT_PUBLIC_*`로 선언하지 않습니다.
+- 토큰은 최소 권한(read)으로 발급하세요.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Run
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+- 웹: `http://localhost:3000`
+- Sanity Studio: `http://localhost:3000/studio`
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev`: 개발 서버
+- `npm run build`: 프로덕션 빌드
+- `npm run start`: 프로덕션 서버 실행
+- `npm run lint`: ESLint 실행
+- `npm run typecheck`: TypeScript 타입 검사
+- `npm run test`: 최소 테스트 기반(현재 `typecheck`)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## CI
 
-## Deploy on Vercel
+GitHub Actions에서 아래 순서로 품질 게이트를 실행합니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. `npm ci`
+2. `npm run lint`
+3. `npm run typecheck`
+4. `npm run build`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+CI에서 빌드를 통과하려면 Repository `Variables/Secrets`에 아래 값을 설정해야 합니다.
+
+- Variables: `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`, `NEXT_PUBLIC_SANITY_API_VERSION`
+- Secret: `SANITY_API_READ_TOKEN`
+
+## Content Model
+
+- `issue`: 호 정보
+- `section`: 섹션(계층 구조 지원)
+- `article`: 아티클 본문/타입별 블록
+
+Studio의 "섹션 (호별)" 메뉴는 이슈 문서를 기준으로 동적으로 생성됩니다.

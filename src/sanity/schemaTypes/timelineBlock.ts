@@ -1,4 +1,4 @@
-export default {
+const timelineBlock = {
   name: 'timelineBlock',
   type: 'object',
   title: '타이포그래피 연표',
@@ -23,6 +23,7 @@ export default {
   }
 }
 
+export default timelineBlock
 
 
 

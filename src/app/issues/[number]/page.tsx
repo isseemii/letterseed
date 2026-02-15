@@ -1,8 +1,7 @@
 'use client'
 
-import { client } from '@/lib/sanity'
-import { issueWithSectionsQuery, issuesListQuery } from '@/lib/queries'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 interface PageProps {
@@ -17,22 +16,38 @@ export default function IssuePage({ params }: PageProps) {
 
   useEffect(() => {
     params.then((resolvedParams) => {
-      const issueNumber = parseInt(resolvedParams.number)
-      
-      Promise.all([
-        client.fetch(issueWithSectionsQuery, { number: issueNumber }),
-        client.fetch(issuesListQuery)
-      ]).then(([issueData, issuesData]) => {
-        setIssue(issueData)
-        setAllIssues(issuesData)
-        setLoading(false)
-      })
+      const issueNumber = Number.parseInt(resolvedParams.number, 10)
+      fetch(`/api/issues/${issueNumber}`)
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch issue data')
+          return res.json()
+        })
+        .then((data) => {
+          setIssue(data.issue ?? null)
+          setAllIssues(Array.isArray(data.issues) ? data.issues : [])
+          setLoading(false)
+        })
+        .catch(() => {
+          setIssue(null)
+          setAllIssues([])
+          setLoading(false)
+        })
     })
   }, [params])
 
   if (loading) {
     return (
-      <img src="/img/logo2.gif" alt="글짜씨" className="min-h-screen flex items-center justify-center" />
+      <div className="min-h-screen flex items-center justify-center">
+        <Image
+          src="/img/logo2.gif"
+          alt="글짜씨"
+          width={192}
+          height={72}
+          className="w-32 md:w-48 h-auto"
+          unoptimized
+          priority
+        />
+      </div>
       // <div className="min-h-screen flex items-center justify-center">
       //   로딩 중...
       // </div>

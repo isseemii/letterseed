@@ -172,3 +172,68 @@ export const articleWithNavigationQuery = `
     }
   }
 `
+
+// 아티클 상세 + 같은 호 전체 아티클(클라이언트 내 계층 정렬용)
+export const articleWithHierarchyNavigationQuery = `
+  *[_type == "article" && slug.current == $slug][0]{
+    _id,
+    title,
+    author,
+    authorBio,
+    articleType,
+    introduction,
+    contentBlocks,
+    content,
+    responses,
+    interviewQA,
+    conversation,
+    qaList,
+    additionalSections,
+    order,
+    "issue": issue->{
+      _id,
+      number,
+      title,
+      credits
+    },
+    "section": section->{
+      _id,
+      title,
+      slug,
+      order,
+      "parentSection": parentSection->{
+        _id,
+        title,
+        slug,
+        order,
+        "parentSection": parentSection->{
+          _id,
+          title,
+          slug,
+          order
+        }
+      }
+    },
+    "allArticlesInIssue": *[
+      _type == "article" &&
+      issue._ref == ^.issue._ref
+    ] {
+      _id,
+      title,
+      "slug": slug.current,
+      order,
+      "section": section->{
+        _id,
+        order,
+        "parentSection": parentSection->{
+          _id,
+          order,
+          "parentSection": parentSection->{
+            _id,
+            order
+          }
+        }
+      }
+    }
+  }
+`

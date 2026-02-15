@@ -1,268 +1,31 @@
 'use client'
 
 import { PortableText } from '@portabletext/react'
-import Link from 'next/link'
 import Image from 'next/image'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useDarkMode } from '@/contexts/DarkModeContext'
 import imageUrlBuilder from '@sanity/image-url'
 import { client } from '@/lib/sanity'
-import { getTextColor, getBgColor, getBorderColor, getHoverTextColor, getLinkColor } from '@/lib/DarkModeUtils'
+import { getTextColor, getBgColor, getBorderColor, getLinkColor } from '@/lib/DarkModeUtils'
 import { LAYOUT, CAPTION_STYLES } from '@/lib/constants'
 import { getTypographyClasses, getHeadingClasses, getBodyClasses, getCaptionClasses, TYPOGRAPHY, getFootnoteClasses } from '@/lib/typography'
 import { createPortableTextComponents, createAdditionalSectionComponents } from '@/lib/portableTextComponents'
+import { getElementTypeName, isSanityImageSource, toPortableValue } from '@/lib/sanityTypeGuards'
 import Timeline from '@/components/timeline'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ResponseRenderer,
-  InterviewQARenderer,
-  ConversationRenderer,
-  QAListRenderer,
   getImageUrl,
 } from '@/components/article/ContentRenderers'
+import { ContentBlockRenderer } from '@/components/article/ContentBlockRenderer'
+import { ARTICLE_CONTENT_BLOCK_TYPES, ARTICLE_CONTENT_MATRIX, isContentBlockType } from '@/components/article/articleContentMatrix'
+import { ArticleImageSlider } from '@/components/article/ArticleImageSlider'
+import { ArticleLeftSidebar, ArticleMobileBottomNavigation, ArticleRightSidebar } from '@/components/article/ArticleNavigation'
+import { MobileFootnotePopup } from '@/components/article/MobileFootnotePopup'
+import type { ArticleAdditionalSection, ArticleContentBlock, ArticleInIssueRef, ArticlePageData, ArticleSectionPathRef, FootnoteItem } from '@/components/article/types'
 
 const builder = imageUrlBuilder(client)
-const urlFor = (source: any) => builder.image(source)
-
-// 이미지 슬라이더 컴포넌트
-const ImageSlider = ({ value, isDarkMode, urlFor, renderTextWithLinks }: { value: any; isDarkMode: boolean; urlFor: any; renderTextWithLinks: (text: string) => React.ReactNode }) => {
-  // Hooks는 항상 같은 순서로 호출되어야 하므로 조건부 return 전에 호출
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [direction, setDirection] = useState<'left' | 'right'>('right')
-  const [isTransitioning, setIsTransitioning] = useState(false)
-
-  // 이미지 URL 배열 생성
-  const imageUrls = useMemo(() => {
-    if (!value?.images || !Array.isArray(value.images)) return []
-    return value.images
-      .map((image: any) => {
-        if (image?.asset?._ref) {
-          return urlFor(image).url() || null
-        } else if (image?.asset?.url) {
-          return image.asset.url
-        }
-        return null
-      })
-      .filter((url: string | null) => url !== null)
-  }, [value?.images, urlFor])
-
-  // 자동 재생
-  useEffect(() => {
-    if (!value.autoplay || imageUrls.length < 2) return
-    
-    const interval = setInterval(() => {
-      setDirection('right')
-      setIsTransitioning(true)
-      setCurrentIndex((prev) => {
-        const newIndex = (prev + 1) % imageUrls.length
-        setTimeout(() => setIsTransitioning(false), 500)
-        return newIndex
-      })
-    }, 3000) // 3초마다
-    
-    return () => {
-      clearInterval(interval)
-    }
-  }, [value.autoplay, imageUrls.length])
-
-  // 키보드 네비게이션
-  useEffect(() => {
-    if (imageUrls.length < 2) return
-    
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isTransitioning) return
-      if (e.key === 'ArrowLeft') {
-        setDirection('left')
-        setIsTransitioning(true)
-        setCurrentIndex((prev) => {
-          const newIndex = (prev - 1 + imageUrls.length) % imageUrls.length
-          setTimeout(() => setIsTransitioning(false), 500)
-          return newIndex
-        })
-      } else if (e.key === 'ArrowRight') {
-        setDirection('right')
-        setIsTransitioning(true)
-        setCurrentIndex((prev) => {
-          const newIndex = (prev + 1) % imageUrls.length
-          setTimeout(() => setIsTransitioning(false), 500)
-          return newIndex
-        })
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [imageUrls.length, isTransitioning])
-
-  // 조건부 return은 모든 hooks 호출 후에
-  if (!value?.images || !Array.isArray(value.images) || imageUrls.length < 2) return null
-
-  const goToNext = () => {
-    if (isTransitioning) return
-    setDirection('right')
-    setIsTransitioning(true)
-    setCurrentIndex((prev) => (prev + 1) % imageUrls.length)
-    setTimeout(() => setIsTransitioning(false), 500)
-  }
-
-  const goToPrevious = () => {
-    if (isTransitioning) return
-    setDirection('left')
-    setIsTransitioning(true)
-    setCurrentIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length)
-    setTimeout(() => setIsTransitioning(false), 500)
-  }
-
-  const goToSlide = (index: number) => {
-    if (isTransitioning) return
-    setDirection(index > currentIndex ? 'right' : 'left')
-    setIsTransitioning(true)
-    setCurrentIndex(index)
-    setTimeout(() => setIsTransitioning(false), 500)
-  }
-
-  return (
-    <div className="my-16 md:my-24">
-      {/* 메인 이미지 */}
-      <div className="relative group w-full">
-        <div className="relative overflow-hidden w-[80%] mx-auto">
-          {/* 슬라이드 컨테이너 */}
-          <div
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{
-              transform: `translateX(-${currentIndex * 100}%)`,
-            }}
-          >
-            {imageUrls.map((url: string, index: number) => (
-              <div
-                key={index}
-                className="w-full flex-shrink-0"
-              >
-                <Image
-                  src={url}
-                  alt={value.images[index]?.alt || `이미지 ${index + 1}`}
-                  width={1200}
-                  height={800}
-                  className="w-full h-auto"
-                  sizes="80vw"
-                  unoptimized
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* 이전/다음 버튼 - 이미지 바깥 양옆 여백에 위치 */}
-        {imageUrls.length > 1 && (
-          <>
-            <button
-              onClick={goToPrevious}
-              className={`hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center z-10 ${getTextColor(isDarkMode)}`}
-              aria-label="이전 이미지"
-            >
-              <svg
-                className="w-5 h-5 md:w-6 md:h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
-              onClick={goToNext}
-              className={`hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 flex items-center justify-center z-10 ${getTextColor(isDarkMode)}`}
-              aria-label="다음 이미지"
-            >
-              <svg
-                className="w-5 h-5 md:w-6 md:h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </>
-        )}
-
-        {/* 인디케이터 - 이미지 슬라이더 버튼과 동일한 스타일 */}
-        {imageUrls.length > 1 && (
-          <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-20 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-            {imageUrls.map((_: any, index: number) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-2 h-2 md:w-2 md:h-2 rounded-full border-2 transition-all duration-300 ${
-                  index === currentIndex
-                    ? isDarkMode
-                      ? 'border-white'
-                      : 'border-black'
-                    : isDarkMode
-                    ? 'border-white/40 hover:border-white/80'
-                    : 'border-black/40 hover:border-black/80'
-                }`}
-                aria-label={`이미지 ${index + 1}로 이동`}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* 이미지 카운터 (데스크톱에서 표시) */}
-        {imageUrls.length > 1 && (
-          <div className={`hidden md:block absolute top-[-1] right-1 px-3 ${TYPOGRAPHY.ui.imageCounter} ${getTextColor(isDarkMode)}`}>
-            {currentIndex + 1} / {imageUrls.length}
-          </div>
-        )}
-      </div>
-
-      {/* 현재 이미지 캡션 */}
-      {value.images[currentIndex]?.caption && (
-        <p className={`${CAPTION_STYLES.DEFAULT} ${getTextColor(isDarkMode, 'subtle')}`}>
-          {renderTextWithLinks(value.images[currentIndex].caption)}
-        </p>
-      )}
-
-      {/* 슬라이더 전체 캡션 */}
-      {value.sliderCaption && (
-        <p className={`${CAPTION_STYLES.DEFAULT} ${getTextColor(isDarkMode, 'subtle')}`}>
-          {renderTextWithLinks(value.sliderCaption)}
-        </p>
-      )}
-
-      {/* 썸네일 (showThumbnails가 true일 때) - 고정 크기로 통일 */}
-      {value.showThumbnails && imageUrls.length > 1 && (
-        <div className="mt-2 md:mt-4 flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide justify-center">
-          {imageUrls.map((url: string, index: number) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 overflow-hidden transition-all hover:scale-105 relative ${
-                index === currentIndex
-                  ? isDarkMode
-                    ? 'scale-105'
-                    : 'scale-105'
-                  : isDarkMode
-                  ? 'opacity-60 hover:opacity-80'
-                  : 'opacity-60 hover:opacity-80'
-              }`}
-            >
-              <Image
-                src={url}
-                alt={`썸네일 ${index + 1}`}
-                width={80}
-                height={80}
-                className="w-full h-full object-cover"
-                unoptimized
-              />
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
+const urlFor = (source: unknown) => {
+  if (!isSanityImageSource(source)) return builder.image({})
+  return builder.image(source as Record<string, unknown>)
 }
 
 const articleWithNavigationQuery = `
@@ -334,91 +97,103 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
+type PortableMarkDef = { _key?: string; _type?: string; text?: string }
+type PortableChild = { marks?: string[] }
+type PortableBlock = { _type?: string; markDefs?: PortableMarkDef[]; children?: PortableChild[] }
+
+const hasFootnotes = (content: unknown[]): boolean => {
+  if (!content || !Array.isArray(content)) return false
+
+  return content.some((block) => {
+    const b = block as PortableBlock
+    return (
+      b._type === 'block' &&
+      b.markDefs &&
+      Array.isArray(b.markDefs) &&
+      b.markDefs.some((def) => def._type === 'footnote')
+    )
+  }
+  )
+}
+
+const extractFootnotes = (content: unknown[]): FootnoteItem[] => {
+  if (!content || !Array.isArray(content)) return []
+
+  const footnotes: FootnoteItem[] = []
+  const usedKeys = new Set<string>()
+  let footnoteNumber = 1
+
+  const allMarkDefs: PortableMarkDef[] = []
+  content.forEach((block) => {
+    const b = block as PortableBlock
+    if (b._type === 'block' && b.markDefs && Array.isArray(b.markDefs)) {
+      b.markDefs.forEach((def) => {
+        if (def._type === 'footnote' && def.text) {
+          allMarkDefs.push(def)
+        }
+      })
+    }
+  })
+
+  content.forEach((block) => {
+    const b = block as PortableBlock
+    if (b._type === 'block' && b.children) {
+      b.children.forEach((child) => {
+        if (child.marks && Array.isArray(child.marks)) {
+          child.marks.forEach((markKey: string) => {
+            if (markKey && typeof markKey === 'string' && !usedKeys.has(markKey)) {
+              const footnoteDef = allMarkDefs.find((def) => def._key === markKey)
+              if (footnoteDef && footnoteDef.text) {
+                footnotes.push({ number: footnoteNumber++, text: footnoteDef.text, markKey })
+                usedKeys.add(markKey)
+              }
+            }
+          })
+        }
+      })
+    }
+  })
+
+  return footnotes
+}
+
 export default function ArticlePage({ params }: PageProps) {
-  const [article, setArticle] = useState<any>(null)
+  const [article, setArticle] = useState<ArticlePageData | null>(null)
   const [loading, setLoading] = useState(true)
   const [slug, setSlug] = useState<string>('')
   const [showNavigation, setShowNavigation] = useState(false)
   const [expandedFootnotes, setExpandedFootnotes] = useState<{ [key: number]: boolean }>({})
-  const [mobileFootnotePopup, setMobileFootnotePopup] = useState<{ number: number; text: string } | null>(null)
+  const [mobileFootnotePopup, setMobileFootnotePopup] = useState<Pick<FootnoteItem, 'number' | 'text'> | null>(null)
   const { isDarkMode, toggleDarkMode } = useDarkMode()
 
-  // 본문에 각주가 있는지 확인하는 함수
-  const hasFootnotes = (content: any): boolean => {
-    if (!content || !Array.isArray(content)) return false
-
-    // markDefs에 footnote 타입이 있는지 확인
-    const hasFootnoteDefs = content.some((block: any) =>
-      block._type === 'block' &&
-      block.markDefs &&
-      Array.isArray(block.markDefs) &&
-      block.markDefs.some((def: any) => def._type === 'footnote')
-    )
-
-    return hasFootnoteDefs
-  }
-
-  // 본문에서 모든 각주 텍스트를 추출하는 함수
-  const extractFootnotes = (content: any): Array<{ number: number; text: string; markKey?: string }> => {
-    if (!content || !Array.isArray(content)) return []
-
-    const footnotes: Array<{ number: number; text: string; markKey?: string }> = []
-    const usedKeys = new Set<string>()
-    let footnoteNumber = 1
-
-    // 모든 블록에서 markDefs 수집
-    const allMarkDefs: Array<{ _key: string; _type: string; text?: string }> = []
-    content.forEach((block: any) => {
-      if (block._type === 'block' && block.markDefs && Array.isArray(block.markDefs)) {
-        block.markDefs.forEach((def: any) => {
-          if (def._type === 'footnote' && def.text) {
-            allMarkDefs.push(def)
-          }
-        })
-      }
-    })
-
-    // 각 블록의 children에서 각주 마크 찾기
-    content.forEach((block: any) => {
-      if (block._type === 'block' && block.children) {
-        block.children.forEach((child: any) => {
-          if (child.marks && Array.isArray(child.marks)) {
-            child.marks.forEach((markKey: string) => {
-              if (markKey && typeof markKey === 'string' && !usedKeys.has(markKey)) {
-                const footnoteDef = allMarkDefs.find((def: any) => def._key === markKey)
-                if (footnoteDef && footnoteDef.text) {
-                  footnotes.push({ number: footnoteNumber++, text: footnoteDef.text, markKey })
-                  usedKeys.add(markKey)
-                }
-              }
-            })
-          }
-        })
-      }
-    })
-
-    return footnotes
-  }
-
   // 각주 추출 (introduction, content, responses, interviewQA, conversation, qaList, additionalSections에서)
-  const allContentForFootnotes = [
-    ...(article?.introduction || []),
-    ...(article?.content || []),
-    ...(article?.responses?.flatMap((r: any) => r.content || []) || []),
-    ...(article?.responses?.flatMap((r: any) => r.references || []) || []),
-    ...(article?.interviewQA?.flatMap((qa: any) => [
-      ...(qa.question || []),
-      ...(qa.answers?.flatMap((a: any) => a.answer || []) || [])
-    ]) || []),
-    ...(article?.conversation?.flatMap((c: any) => c.text || []) || []),
-    ...(article?.qaList?.flatMap((qa: any) => [
-      ...(qa.question || []),
-      ...(qa.answer || [])
-    ]) || []),
-    ...(article?.additionalSections?.flatMap((s: any) => s.content || []) || [])
-  ]
-  const hasFootnotesInContent = allContentForFootnotes.length > 0 ? hasFootnotes(allContentForFootnotes) : false
-  const footnotesList = allContentForFootnotes.length > 0 ? extractFootnotes(allContentForFootnotes) : []
+  const allContentForFootnotes = useMemo<unknown[]>(
+    () => [
+      ...(article?.introduction || []),
+      ...(article?.content || []),
+      ...(article?.responses?.flatMap((r: { content?: unknown[] }) => r.content || []) || []),
+      ...(article?.responses?.flatMap((r: { references?: unknown[] }) => r.references || []) || []),
+      ...(article?.interviewQA?.flatMap((qa: { question?: unknown[]; answers?: Array<{ answer?: unknown[] }> }) => [
+        ...(qa.question || []),
+        ...(qa.answers?.flatMap((a) => a.answer || []) || [])
+      ]) || []),
+      ...(article?.conversation?.flatMap((c: { text?: unknown[] }) => c.text || []) || []),
+      ...(article?.qaList?.flatMap((qa: { question?: unknown[]; answer?: unknown[] }) => [
+        ...(qa.question || []),
+        ...(qa.answer || [])
+      ]) || []),
+      ...(article?.additionalSections?.flatMap((s: ArticleAdditionalSection) => s.content || []) || []),
+    ],
+    [article]
+  )
+  const hasFootnotesInContent = useMemo(
+    () => (allContentForFootnotes.length > 0 ? hasFootnotes(allContentForFootnotes) : false),
+    [allContentForFootnotes]
+  )
+  const footnotesList = useMemo(
+    () => (allContentForFootnotes.length > 0 ? extractFootnotes(allContentForFootnotes) : []),
+    [allContentForFootnotes]
+  )
 
   // 각주 토글 함수
   const toggleFootnote = (number: number) => {
@@ -538,21 +313,20 @@ export default function ArticlePage({ params }: PageProps) {
         
         // React 요소인 경우 - list 관련 요소는 건드리지 않음
         if (React.isValidElement(child)) {
-          const childType = child.type as any
-          const typeName = typeof childType === 'string' ? childType : childType?.displayName || childType?.name
+          const typeName = getElementTypeName(child.type)
           
           // ul, ol, li 태그는 복제하지 않고 그대로 반환
           if (typeName === 'ul' || typeName === 'ol' || typeName === 'li') {
             return child
           }
           
-          const props = child.props as any
+          const props = child.props as { children?: React.ReactNode; className?: string }
           if (props?.children) {
-            return React.cloneElement(child, {
+            return React.cloneElement(child as React.ReactElement<{ children?: React.ReactNode; className?: string }>, {
               ...props,
               children: processChildrenWithLinks(props.children),
               key: child.key || index
-            } as any)
+            })
           }
         }
         
@@ -595,10 +369,10 @@ export default function ArticlePage({ params }: PageProps) {
 
   // 섹션 계층 구조를 고려한 정렬 함수
   // 반환값: [최상위 섹션 order, 하위 섹션 order, 하하위 섹션 order]
-  const getSectionPath = (section: any): number[] => {
+  const getSectionPath = (section?: ArticleSectionPathRef): number[] => {
     if (!section) return [999999, 999999, 999999] // 섹션이 없으면 맨 뒤로
     
-    const getOrder = (s: any) => s?.order ?? 999999
+    const getOrder = (s?: ArticleSectionPathRef) => s?.order ?? 999999
     
     // 섹션 계층 구조 파악
     if (section.parentSection?.parentSection) {
@@ -626,7 +400,7 @@ export default function ArticlePage({ params }: PageProps) {
   }
 
   // 아티클 정렬 함수
-  const sortArticles = useCallback((articles: any[]): any[] => {
+  const sortArticles = useCallback((articles: ArticleInIssueRef[]): ArticleInIssueRef[] => {
     return [...articles].sort((a, b) => {
       const pathA = getSectionPath(a.section)
       const pathB = getSectionPath(b.section)
@@ -648,14 +422,19 @@ export default function ArticlePage({ params }: PageProps) {
   useEffect(() => {
     params.then((resolvedParams) => {
       setSlug(resolvedParams.slug)
-      client.fetch(articleWithNavigationQuery, { slug: resolvedParams.slug }).then((data) => {
+      fetch(`/api/articles/${resolvedParams.slug}`)
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch article data')
+          return res.json()
+        })
+        .then(({ article: data }: { article: ArticlePageData }) => {
         if (data && data.allArticlesInIssue) {
           // 같은 호의 모든 아티클을 섹션 계층 구조로 정렬
           const sortedArticles = sortArticles(data.allArticlesInIssue)
         
           
           // 현재 아티클의 인덱스 찾기
-          const currentIndex = sortedArticles.findIndex((a: any) => a._id === data._id)
+          const currentIndex = sortedArticles.findIndex((a) => a._id === data._id)
           
           // 이전/다음 아티클 찾기
           if (currentIndex > 0) {
@@ -678,6 +457,10 @@ export default function ArticlePage({ params }: PageProps) {
         }
         
         setArticle(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setArticle(null)
         setLoading(false)
       })
     })
@@ -720,7 +503,7 @@ export default function ArticlePage({ params }: PageProps) {
     )
 
     // Table 컴포넌트를 별도로 정의 (재귀 참조 방지를 위해)
-    const TableComponent = ({ value }: any) => {
+    const TableComponent = ({ value }: { value: { rows?: Array<{ label?: string; content?: unknown[] }> } }) => {
       if (!value?.rows || !Array.isArray(value.rows)) return null
 
       // 테이블 내용용 components 생성
@@ -735,7 +518,7 @@ export default function ArticlePage({ params }: PageProps) {
 
       return (
         <div className="my-8 border-t border-b border-gray-300 dark:border-gray-700">
-          {value.rows.map((row: any, index: number) => (
+          {value.rows.map((row, index: number) => (
             <div
               key={index}
               className="grid grid-cols-[200px_1fr] gap-4 py-4 border-b border-gray-200 dark:border-gray-800 last:border-b-0"
@@ -745,7 +528,7 @@ export default function ArticlePage({ params }: PageProps) {
               </div>
               <div className={getTextColor(isDarkMode)}>
                 <PortableText
-                  value={row.content}
+                  value={toPortableValue(row.content)}
                   components={tableContentComponents}
                 />
               </div>
@@ -757,7 +540,7 @@ export default function ArticlePage({ params }: PageProps) {
 
     return {
       types: {
-        timelineBlock: ({ value }: any) => {
+        timelineBlock: ({ value }: { value: { caption?: string } }) => {
           return (
             <div className="my-16">
               <Timeline />
@@ -769,12 +552,12 @@ export default function ArticlePage({ params }: PageProps) {
             </div>
           )
         },
-        tableBlock: ({ value }: any) => {
+        tableBlock: ({ value }: { value: { rows?: Array<{ cells?: string[] }> } }) => {
           if (!value?.rows || !Array.isArray(value.rows)) return null
 
           return (
             <div className="my-8 border-t border-b border-gray-300 dark:border-gray-700">
-              {value.rows.map((row: any, index: number) => (
+              {value.rows.map((row, index: number) => (
                 <div
                   key={index}
                   className="grid grid-cols-[200px_1fr] gap-4 py-4 border-b border-gray-200 dark:border-gray-800 last:border-b-0"
@@ -790,7 +573,7 @@ export default function ArticlePage({ params }: PageProps) {
             </div>
           )
         },
-        image: ({ value }: any) => {
+        image: ({ value }: { value: { asset?: unknown; alt?: string; caption?: string } }) => {
         if (!value || !value.asset) {
           return null
         }
@@ -821,12 +604,12 @@ export default function ArticlePage({ params }: PageProps) {
           </div>
         )
       },
-      imageGrid: ({ value }: any) => {
+      imageGrid: ({ value }: { value: { images?: Array<{ asset?: unknown; alt?: string; caption?: string }> } }) => {
         if (!value?.images || !Array.isArray(value.images)) return null
 
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
-            {value.images.map((image: any, index: number) => {
+            {value.images.map((image, index: number) => {
               const imageUrl = getImageUrl(image, urlFor)
               if (!imageUrl) {
                 return null
@@ -854,8 +637,8 @@ export default function ArticlePage({ params }: PageProps) {
           </div>
         )
       },
-      imageSlider: ({ value }: any) => {
-        return <ImageSlider value={value} isDarkMode={isDarkMode} urlFor={urlFor} renderTextWithLinks={renderTextWithLinks} />
+      imageSlider: ({ value }: { value: unknown }) => {
+        return <ArticleImageSlider value={value} isDarkMode={isDarkMode} urlFor={urlFor} renderTextWithLinks={renderTextWithLinks} />
       },
       table: TableComponent,
     },
@@ -870,7 +653,7 @@ export default function ArticlePage({ params }: PageProps) {
     return {
       ...base,
       types: {
-        image: ({ value }: any) => {
+        image: ({ value }: { value: { asset?: unknown; alt?: string } }) => {
           if (!value || !value.asset) {
             return null
           }
@@ -893,10 +676,39 @@ export default function ArticlePage({ params }: PageProps) {
     }
   }, [isDarkMode, processChildrenWithLinks])
 
+  const normalizedContentBlocks = useMemo(() => {
+    if (!article) return []
+
+    if (Array.isArray(article.contentBlocks) && article.contentBlocks.length > 0) {
+      return article.contentBlocks
+    }
+
+    const blocks: ArticleContentBlock[] = []
+    ARTICLE_CONTENT_BLOCK_TYPES.forEach((type) => {
+      const matrix = ARTICLE_CONTENT_MATRIX[type]
+      const legacyFieldData = article?.[matrix.legacyField]
+      if (Array.isArray(legacyFieldData) && legacyFieldData.length > 0) {
+        blocks.push({
+          blockType: type,
+          [matrix.blockField]: legacyFieldData,
+        })
+      }
+    })
+    return blocks
+  }, [article])
+
   if (loading) {
     return (
       <div className={`min-h-screen flex items-start md:items-center justify-center pt-[40vh] md:pt-0 ${getBgColor(isDarkMode)}`}>
-        <img src={isDarkMode ? "/img/logo2-i.gif" : "/img/logo2.gif"} alt="글짜씨" className="w-32 lg:w-48" />
+        <Image
+          src={isDarkMode ? "/img/logo2-i.gif" : "/img/logo2.gif"}
+          alt="글짜씨"
+          width={192}
+          height={72}
+          className="w-32 lg:w-48 h-auto"
+          unoptimized
+          priority
+        />
       </div>
     )
   }
@@ -911,49 +723,7 @@ export default function ArticlePage({ params }: PageProps) {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${getBgColor(isDarkMode)}`}>
-      {/* 왼쪽 고정 네비게이션 */}
-      <div className="sidebar-block fixed left-0 top-0 h-screen w-[365px] px-6 py-10 z-10">
-        <div className="flex flex-col items-end justify-between h-full">
-          {/* 돌아가기 - 상단 */}
-          <div className="flex justify-end">
-            <Link
-              href="/"
-              className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${getTextColor(isDarkMode, 'muted')} ${getHoverTextColor(isDarkMode)}`}
-            >
-              <div className="text-right">
-                <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-1`}>돌아가기</div>
-              </div>
-            </Link>
-          </div>
-
-          {/* 이전 아티클 - 하단 */}
-          <div className="flex justify-end">
-            {article?.prevArticle ? (
-              <Link
-                href={`/articles/${article.prevArticle.slug}`}
-                className={`group flex flex-col items-end gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
-              >
-                <svg
-                  className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l-7 7 7 7" />
-                </svg>
-                <div className="text-right w-[300px]">
-                  <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2 text-right`}>{article.prevArticle.title}</div>
-                </div>
-              </Link>
-            ) : (
-              <div className={`${TYPOGRAPHY.ui.navLink} text-right w-[300px] ${getTextColor(isDarkMode, 'subtle')}`}>
-                <br /> 이전 글 없음
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <ArticleLeftSidebar isDarkMode={isDarkMode} article={article} />
 
       {/* 중앙: 아티클 본문 */}
         <article className="max-w-[720px] mx-auto px-4 xl:px-0 pt-6 pb-6 md:pt-10 md:pb-10">
@@ -987,201 +757,32 @@ export default function ArticlePage({ params }: PageProps) {
               </div>
             )}
 
-            {/* 본문 - contentBlocks 우선, 없으면 기존 필드들 렌더링 */}
+            {/* 본문 블록 렌더링 (contentBlocks + legacy 통합) */}
             <div className={`mb-8 md:mb-16 space-y-12 ${getTextColor(isDarkMode)}`}>
-              {/* ✨ 통합 컨텐츠 블록 (순서 자유 배치) */}
-              {article.contentBlocks && Array.isArray(article.contentBlocks) && article.contentBlocks.length > 0 ? (
-                article.contentBlocks.map((block: any, blockIdx: number) => {
-                  if (block.blockType === 'standard' && block.standardContent) {
-                    return (
-                      <div key={blockIdx}>
-                        <PortableText
-                          value={block.standardContent}
-                          components={components}
-                        />
-                      </div>
-                    )
-                  } else if (block.blockType === 'responses' && block.responsesContent) {
-                    return (
-                      <div key={blockIdx} className="space-y-12">
-                        {block.responsesContent.map((response: any, idx: number) => (
-                          <div key={idx} className="space-y-4">
-                            <div className="flex items-baseline gap-4">
-                              <span className={`${getTypographyClasses('h3', 'portable')} ${getTextColor(isDarkMode, 'muted')}`}>
-                                {response.year}
-                              </span>
-                              <div className={`${getHeadingClasses(3)} ${getTextColor(isDarkMode)}`}>
-                                {response.title}
-                              </div>
-                              {response.author && (
-                                <span className={`${getTypographyClasses('h3', 'portable')} ${getTextColor(isDarkMode, 'subtle')}`}>
-                                  {response.author}
-                                </span>
-                              )}
-                            </div>
-                            {response.content && Array.isArray(response.content) && response.content.length > 0 && (
-                              <div className={getTextColor(isDarkMode)}>
-                                <PortableText
-                                  value={response.content}
-                                  components={components}
-                                />
-                              </div>
-                            )}
-                            {response.image && getImageUrl(response.image, urlFor) && (
-                              <div className="my-6 w-full">
-                                <Image
-                                  src={getImageUrl(response.image, urlFor) || ''}
-                                  alt={response.image.alt || ''}
-                                  width={1200}
-                                  height={800}
-                                  className="w-full h-auto"
-                                  sizes="100vw"
-                                  unoptimized
-                                />
-                              </div>
-                            )}
-                            {response.references && Array.isArray(response.references) && response.references.length > 0 && (
-                              <div className={`${TYPOGRAPHY.ui.referenceTitle} mt-4 ${getTextColor(isDarkMode, 'subtle')}`}>
-                                <div className=" mb-1">참고문헌</div>
-                                <PortableText
-                                  value={response.references}
-                                  components={components}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )
-                  } else if (block.blockType === 'interviewQA' && block.interviewQAContent) {
-                    return (
-                      <div key={blockIdx} className="space-y-12">
-                        {block.interviewQAContent.map((qa: any, idx: number) => (
-                          <InterviewQARenderer
-                            key={idx}
-                            qa={qa}
-                            idx={idx}
-                            isDarkMode={isDarkMode}
-                            interviewQAComponents={interviewQAComponents}
-                            answerComponents={answerComponents}
-                          />
-                        ))}
-                      </div>
-                    )
-                  } else if (block.blockType === 'conversation' && block.conversationContent) {
-                    return (
-                      <div key={blockIdx} className="space-y-6">
-                        {block.conversationContent.map((turn: any, idx: number) => (
-                          <ConversationRenderer
-                            key={idx}
-                            turn={turn}
-                            idx={idx}
-                            isDarkMode={isDarkMode}
-                            components={components}
-                          />
-                        ))}
-                      </div>
-                    )
-                  } else if (block.blockType === 'qaList' && block.qaListContent) {
-                    return (
-                      <div key={blockIdx} className="space-y-8">
-                        {block.qaListContent.map((qa: any, idx: number) => (
-                          <QAListRenderer
-                            key={idx}
-                            qa={qa}
-                            idx={idx}
-                            isDarkMode={isDarkMode}
-                            components={components}
-                          />
-                        ))}
-                      </div>
-                    )
-                  }
-                  return null
-                })
-              ) : (
-                <>
-                  {/* 기존 필드들 (하위 호환성) */}
-                  {/* 일반 본문 */}
-                  {article.content && Array.isArray(article.content) && article.content.length > 0 && (
-                    <div>
-                      <PortableText
-                        value={article.content}
-                        components={components}
-                      />
-                    </div>
-                  )}
-
-                  {/* 응답 모음 */}
-                  {article.responses && Array.isArray(article.responses) && article.responses.length > 0 && (
-                    <div className="space-y-12">
-                      {article.responses.map((response: any, idx: number) => (
-                        <ResponseRenderer
-                          key={idx}
-                          response={response}
-                          idx={idx}
-                          isDarkMode={isDarkMode}
-                          urlFor={urlFor}
-                          components={components}
-                          additionalSectionComponents={additionalSectionComponents}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-              {/* 인터뷰 Q&A */}
-              {article.interviewQA && Array.isArray(article.interviewQA) && article.interviewQA.length > 0 && (
-                <div className="space-y-12">
-                  {article.interviewQA.map((qa: any, idx: number) => (
-                    <InterviewQARenderer
-                      key={idx}
-                      qa={qa}
-                      idx={idx}
+              {normalizedContentBlocks.map((block: ArticleContentBlock, blockIdx: number) => {
+                if (isContentBlockType(block.blockType)) {
+                  return (
+                    <ContentBlockRenderer
+                      key={blockIdx}
+                      block={block}
+                      blockIdx={blockIdx}
                       isDarkMode={isDarkMode}
+                      components={components}
                       interviewQAComponents={interviewQAComponents}
                       answerComponents={answerComponents}
+                      urlFor={urlFor}
                     />
-                  ))}
-                </div>
-              )}
-
-              {/* 대화 */}
-              {article.conversation && Array.isArray(article.conversation) && article.conversation.length > 0 && (
-                <div className="space-y-6">
-                  {article.conversation.map((turn: any, idx: number) => (
-                    <ConversationRenderer
-                      key={idx}
-                      turn={turn}
-                      idx={idx}
-                      isDarkMode={isDarkMode}
-                      components={components}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Q&A */}
-              {article.qaList && Array.isArray(article.qaList) && article.qaList.length > 0 && (
-                <div className="space-y-8">
-                  {article.qaList.map((qa: any, idx: number) => (
-                    <QAListRenderer
-                      key={idx}
-                      qa={qa}
-                      idx={idx}
-                      isDarkMode={isDarkMode}
-                      components={components}
-                    />
-                  ))}
-                </div>
-              )}
-                </>
-              )}
+                  )
+                }
+                console.warn(`Unknown content block type: ${block.blockType}`)
+                return null
+              })}
             </div>
 
             {/* 추가 섹션 (참고문헌, 이미지 출처 등) */}
             {article.additionalSections && article.additionalSections.length > 0 && (
               <div className={`ml-[10%] mt-8 mb-16 md:ml-[40%] md:mt-12 md:mb-24 space-y-8 ${getTextColor(isDarkMode)}`}>
-                {article.additionalSections.map((section: any, idx: number) => (
+                {article.additionalSections.map((section: ArticleAdditionalSection, idx: number) => (
                   <div key={idx} className={`${getBorderColor(isDarkMode)}`}>
                     {/* 섹션 제목 */}
                     <div className={`mb-4 ${TYPOGRAPHY.ui.speaker} ${getTextColor(isDarkMode)}`}>
@@ -1198,194 +799,21 @@ export default function ArticlePage({ params }: PageProps) {
             )}
           </article>
 
-      {/* 오른쪽 고정 사이드바: 각주 + 다음 아티클 */}
-      <div className="sidebar-block fixed right-0 top-0 h-screen w-[365px] px-6 py-10 z-10">
-        <div className={`flex flex-col items-start h-full ${hasFootnotesInContent && footnotesList.length > 0 ? 'justify-between' : 'justify-end'}`}>
-          {/* 각주 세부 텍스트 - 상단 (스크롤 가능) */}
-          {hasFootnotesInContent && footnotesList.length > 0 && (
-            <div 
-              className="w-[300px] mb-auto overflow-y-auto pr-2 scrollbar-hide" 
-              style={{ 
-                maxHeight: 'calc(100vh - 20rem)',
-              }}
-            >
-                <div className={`${getFootnoteClasses('text')} leading-relaxed text-left space-y-2 ${getTextColor(isDarkMode, 'muted')}`}>
-                  {footnotesList.map((footnote, idx) => {
-                    const isExpanded = expandedFootnotes[footnote.number] || false
-                    
-                    const handleFootnoteNumberClick = () => {
-                      toggleFootnote(footnote.number)
-                    }
-                    
-                    return (
-                      <div key={idx} className="mb-4 overflow-hidden">
-                        <button
-                          onClick={handleFootnoteNumberClick}
-                          className={`mr-2 mb-1 cursor-pointer hover:opacity-70 transition-opacity ${getTextColor(isDarkMode, 'muted')}`}
-                        >
-                          [{footnote.number}]
-                        </button>
-                        <AnimatePresence initial={false}>
-                          {isExpanded && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ 
-                                duration: 0.3,
-                                ease: [0.4, 0.0, 0.2, 1]
-                              }}
-                              style={{ overflow: 'hidden' }}
-                            >
-                              <span className="block mt-1">{renderTextWithLinks(footnote.text)}</span>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-          {/* 다음 아티클 - 하단 */}
-          <div className="flex justify-start">
-            {article?.nextArticle ? (
-              <Link
-                href={`/articles/${article.nextArticle.slug}`}
-                className={`group flex flex-col items-start gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
-              >
-                <svg
-                  className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5l7 7-7 7" />
-                </svg>
-                <div className="text-left w-[150px]">
-                  <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2`}>{article.nextArticle.title}</div>
-                </div>
-              </Link>
-            ) : (
-              <div className={`${TYPOGRAPHY.ui.navLink} w-[300px] ${getTextColor(isDarkMode, 'subtle')}`}>
-                <br /> 다음 글 없음
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 하단 고정 네비게이션 - 모바일만 */}
-      <AnimatePresence>
-        {showNavigation && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
-            className={`sidebar-hidden fixed bottom-0 left-0 right-0 border-t shadow-lg z-50 transition-colors duration-300 pb-1 h-[53px] ${getBgColor(isDarkMode)} ${getBorderColor(isDarkMode, 'light')}`}
-          >
-            <div className="max-w-[1400px] mx-auto px-5 py-3">
-              <div className="grid grid-cols-3 gap-4 items-center">
-                {/* 이전 아티클 */}
-                <div className="col-span-1">
-                  {article?.prevArticle ? (
-                    <Link
-                      href={`/articles/${article.prevArticle.slug}`}
-                      className={`group flex items-center gap-1.5 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
-                    >
-                      <svg
-                        className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7m0 0l7-7m-7 7h18" />
-                      </svg>
-                      <span className={TYPOGRAPHY.ui.navLink}>이전</span>
-                    </Link>
-                  ) : (
-                    <div className={`${TYPOGRAPHY.ui.navLink} ${getTextColor(isDarkMode, 'subtle')}`}>이전 글 없음</div>
-                  )}
-                </div>
-
-                {/* 돌아가기 */}
-                <div className="col-span-1 flex justify-center">
-                  <Link
-                    href="/"
-                    className={`flex items-center ${TYPOGRAPHY.ui.navLink} transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
-                  >
-                    돌아가기
-                  </Link>
-                </div>
-
-                {/* 다음 아티클 */}
-                <div className="col-span-1 text-right">
-                  {article?.nextArticle ? (
-                    <Link
-                      href={`/articles/${article.nextArticle.slug}`}
-                      className={`group flex items-center justify-end gap-1.5 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
-                    >
-                      <span className={TYPOGRAPHY.ui.navLink}>다음</span>
-                      <svg
-                        className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
-                    </Link>
-                  ) : (
-                    <div className={`${TYPOGRAPHY.ui.navLink} ${getTextColor(isDarkMode, 'subtle')}`}>다음 글 없음</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* 모바일 각주 팝업 */}
-      {mobileFootnotePopup && (
-        <div
-          className="md:hidden fixed inset-0 z-[60] flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-          onClick={() => setMobileFootnotePopup(null)}
-        >
-          <div
-            className="bg-white rounded-lg shadow-lg max-w-[90%] max-h-[80%] overflow-y-auto relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* X 버튼 - 왼쪽 상단 */}
-            <button
-              onClick={() => setMobileFootnotePopup(null)}
-              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:opacity-70 transition-opacity z-10"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* 각주 내용 */}
-            <div className="p-6 pt-8">
-              <div className={`${getFootnoteClasses('text')}`}>
-                <span className="">[{mobileFootnotePopup.number}]</span>
-                <div className="mt-2">
-                  {renderTextWithLinks(mobileFootnotePopup.text)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ArticleRightSidebar
+        isDarkMode={isDarkMode}
+        article={article}
+        hasFootnotesInContent={hasFootnotesInContent}
+        footnotesList={footnotesList}
+        expandedFootnotes={expandedFootnotes}
+        toggleFootnote={toggleFootnote}
+        renderTextWithLinks={renderTextWithLinks}
+      />
+      <ArticleMobileBottomNavigation showNavigation={showNavigation} isDarkMode={isDarkMode} article={article} />
+      <MobileFootnotePopup
+        popup={mobileFootnotePopup}
+        onClose={() => setMobileFootnotePopup(null)}
+        renderTextWithLinks={renderTextWithLinks}
+      />
     </div>
   )
 }

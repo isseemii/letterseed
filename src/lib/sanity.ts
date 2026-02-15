@@ -1,15 +1,28 @@
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 
-export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!
+
+const baseConfig = {
+  projectId,
+  dataset,
   apiVersion: '2025-10-17',
-  useCdn: false,
   perspective: 'published',
-  token: process.env.NEXT_PUBLIC_SANITY_TOKEN,
   requestTagPrefix: 'app',
-  ignoreBrowserTokenWarning: true,
+} as const
+
+// Browser-safe client (never includes token)
+export const client = createClient({
+  ...baseConfig,
+  useCdn: true,
+})
+
+// Server-only client (token can read private dataset)
+export const serverClient = createClient({
+  ...baseConfig,
+  useCdn: false,
+  token: process.env.SANITY_API_READ_TOKEN,
 })
 
 // 이미지 URL 생성 함수

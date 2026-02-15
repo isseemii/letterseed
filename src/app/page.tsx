@@ -1,5 +1,5 @@
 import '@/css/globals.css'
-import { client } from '@/lib/sanity'
+import { serverClient } from '@/lib/sanity'
 import { issuesListQuery } from '@/lib/queries'
 import HomeClient from './HomeClient'
 
@@ -8,7 +8,7 @@ export const revalidate = 600
 export default async function HomePage() {
   const startTime = Date.now() // ✨ 시작
   
-  const issues = await client.fetch(issuesListQuery, {}, {
+  const issues = await serverClient.fetch(issuesListQuery, {}, {
     next: { revalidate: 600 }
   })
   

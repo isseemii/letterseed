@@ -2,6 +2,7 @@
 
 import { useDarkMode } from '@/contexts/DarkModeContext'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 import imageUrlBuilder from '@sanity/image-url'
 import { client } from '@/lib/sanity'
@@ -69,7 +70,15 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           {/* 로고 & 다크모드 버튼 */}
           <div className="pt-8 pb-6 flex justify-between items-top">
             <Link href="/">
-              <img src={isDarkMode ? "/img/logo2-i.gif" : "/img/logo2.gif"} alt="글짜씨" className="w-32 cursor-pointer" />
+              <Image
+                src={isDarkMode ? "/img/logo2-i.gif" : "/img/logo2.gif"}
+                alt="글짜씨"
+                width={128}
+                height={48}
+                className="w-32 h-auto cursor-pointer"
+                unoptimized
+                priority
+              />
             </Link>
 
             <button
@@ -111,13 +120,13 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           {/* 상단 소개글 */}
           <div className={`space-y-4 본문폰트 pb-6 ${getTextColor(isDarkMode)}`}>
             <p>
-              2024년 임기를 시작한 제8대 한국타이포그래피학회는 디지털 환경에서의 타이포그래피를 둘러싼 현상과 실천 등을 살펴보며 디지털 타이포그래피의 정체성을 탐구한다. 이에 대한 연장선으로 제8대 한국타이포그래피학회는 글짜씨를 통해 디지털 환경 속의 타이포그래피를 실험하고 이를 웹을 통해 공유하는 프로젝트를 진행한다.
+              2024년 임기를 시작한 제8대 한국타이포그라피학회는 디지털 환경에서의 타이포그래피를 둘러싼 현상과 실천 등을 살펴보며 디지털 타이포그래피의 정체성을 탐구한다. 이에 대한 연장선으로 제8대 한국타이포그래피학회는 글짜씨를 통해 디지털 환경 속의 타이포그래피를 실험하고 이를 웹을 통해 공유하는 프로젝트를 진행한다.
             </p>
             <p>
               『글짜씨』는 2009년에 창간해 지난 15년간 학회 구성원과 국내외 타이포그래피 연구자, 디자이너의 연구 성과를 기록한 학회 학술지다. 학술지는 연구 분야의 연구 및 활동을 공유하는 창으로 기능한다. 이러한 학회와 학술지의 가치는 웹의 기본정신인 공개와 공유와도 맞닿아 있다는 점에서도 『글짜씨』 웹 버전의 의미를 찾을 수 있다.
             </p>
             <p>
-              글짜씨는 웹 브라우저 내에서의 읽기 환경을 고려해 『글짜씨』를 발췌 출판한 실험 사이트이다. 현존하는 디지털 읽기 환경의 아쉬운 점을 보완해 디지털 환경에서의 한글 읽기 경험을 실험하고자 했으며, 『글짜씨』의 일부 내용을 포함하지 않고 있다.
+            《글짜씨》는 웹 브라우저 내에서의 읽기 환경을 고려해 『글짜씨』를 발췌 출판한 실험 사이트이다. 현존하는 디지털 읽기 환경의 아쉬운 점을 보완해 디지털 환경에서의 한글 읽기 경험을 실험하고자 했으며, 『글짜씨』의 일부 내용을 포함하지 않고 있다.
             </p>
           </div>
 
@@ -515,9 +524,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                   후원
                 </h3>
                 <div className="flex flex-col gap-8">
-                  <img src="/img/sp/01_sp/sp-01-ahngraphics.svg" alt="안그라픽스" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/01_sp/sp-02-doosungpaper.svg" alt="두성종이" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/01_sp/sp-03-coloso.svg" alt="콜로소" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/01_sp/sp-01-ahngraphics.svg" alt="안그라픽스" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/01_sp/sp-02-doosungpaper.svg" alt="두성종이" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/01_sp/sp-03-coloso.svg" alt="콜로소" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                 </div>
               </div>
               <div className="col-span-2">
@@ -526,18 +535,18 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
                   {/* 울트라블랙 */}
-                  <img src="/img/sp/02_pt/pt-01-happybean.svg" alt="해피빈" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/02_pt/pt-06-woowa.svg" alt="우아한형제들" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/02_pt/pt-14-adobe.svg" alt="어도비" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/pt-01-happybean.svg" alt="해피빈" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-06-woowa.svg" alt="우아한형제들" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-14-adobe.svg" alt="어도비" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                   {/* 블랙 */}
-                  <img src="/img/sp/02_pt/pt-12-visang.svg" alt="비상" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/pt-12-visang.svg" alt="비상" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                   {/* 볼드 */}
-                  <img src="/img/sp/02_pt/pt-11-samwon.svg" alt="삼원종이" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/02_pt/pt-15-morisawakorea.svg" alt="모리사워코리아" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/pt-11-samwon.svg" alt="삼원종이" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-15-morisawakorea.svg" alt="모리사워코리아" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                   {/* 레귤러 */}
-                  <img src="/img/sp/02_pt/pt-10-innoiz.svg" alt="인노이즈" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/pt-10-innoiz.svg" alt="인노이즈" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                   {/* 공익위반제보 */}
-                  <img src="/img/sp/02_pt/link-01-munhwa.svg" alt="문화체육관광부" className={`w-36 ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/link-01-munhwa.svg" alt="문화체육관광부" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                 </div>
               </div>
             </div>
@@ -552,20 +561,28 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           <div className="grid grid-cols-5 gap-8 ">
             <div className="grid grid-cols-1 col-span-1 pt-12 sticky top-0 self-start">
               <Link href="/">
-                <img src={isDarkMode ? "/img/logo2-i.gif" : "/img/logo2.gif"} alt="글짜씨" className="w-36 lg:w-40 cursor-pointer" />
+                <Image
+                  src={isDarkMode ? "/img/logo2-i.gif" : "/img/logo2.gif"}
+                  alt="글짜씨"
+                  width={160}
+                  height={60}
+                  className="w-36 lg:w-40 h-auto cursor-pointer"
+                  unoptimized
+                  priority
+                />
               </Link>
             </div>
 
             <div className="col-span-3 pt-12">
               <div className={`space-y-4 본문폰트 ${getTextColor(isDarkMode)}`}>
                 <p>
-                  2024년 임기를 시작한 제8대 한국타이포그래피학회는 디지털 환경에서의 타이포그래피를 둘러싼 현상과 실천 등을 살펴보며 디지털 타이포그래피의 정체성을 탐구한다. 이에 대한 연장선으로 제8대 한국타이포그래피학회는 글짜씨를 통해 디지털 환경 속의 타이포그래피를 실험하고 이를 웹을 통해 공유하는 프로젝트를 진행한다.
+                  2024년 임기를 시작한 제8대 한국타이포그라피학회는 디지털 환경에서의 타이포그래피를 둘러싼 현상과 실천 등을 살펴보며 디지털 타이포그래피의 정체성을 탐구한다. 이에 대한 연장선으로 제8대 한국타이포그래피학회는 글짜씨를 통해 디지털 환경 속의 타이포그래피를 실험하고 이를 웹을 통해 공유하는 프로젝트를 진행한다.
                 </p>
                 <p>
                   『글짜씨』는 2009년에 창간해 지난 15년간 학회 구성원과 국내외 타이포그래피 연구자, 디자이너의 연구 성과를 기록한 학회 학술지다. 학술지는 연구 분야의 연구 및 활동을 공유하는 창으로 기능한다. 이러한 학회와 학술지의 가치는 웹의 기본정신인 공개와 공유와도 맞닿아 있다는 점에서도 『글짜씨』 웹 버전의 의미를 찾을 수 있다.
                 </p>
                 <p>
-                  &apos;글짜씨&apos;는 웹 브라우저 내에서의 읽기 환경을 고려해 『글짜씨』를 발췌 출판한 실험 사이트이다. 현존하는 디지털 읽기 환경의 아쉬운 점을 보완해 디지털 환경에서의 한글 읽기 경험을 실험하고자 했으며, 『글짜씨』의 일부 내용을 포함하지 않고 있다.
+                《글짜씨》는 웹 브라우저 내에서의 읽기 환경을 고려해 『글짜씨』를 발췌 출판한 실험 사이트이다. 현존하는 디지털 읽기 환경의 아쉬운 점을 보완해 디지털 환경에서의 한글 읽기 경험을 실험하고자 했으며, 『글짜씨』의 일부 내용을 포함하지 않고 있다.
                 </p>
               </div>
             </div>
@@ -990,9 +1007,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
               <div className="space-y-4">
                 <p>후원</p>
                 <div className="flex flex-col gap-8">
-                  <img src="/img/sp/01_sp/sp-01-ahngraphics.svg" alt="안그라픽스" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/01_sp/sp-02-doosungpaper.svg" alt="두성종이" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/01_sp/sp-03-coloso.svg" alt="콜로소" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/01_sp/sp-01-ahngraphics.svg" alt="안그라픽스" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/01_sp/sp-02-doosungpaper.svg" alt="두성종이" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/01_sp/sp-03-coloso.svg" alt="콜로소" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                 </div>
               </div>
             </div>
@@ -1002,18 +1019,18 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 <p>파트너</p>
                 <div className="grid grid-cols-2 gap-8">
                   {/* 울트라블랙 */}
-                  <img src="/img/sp/02_pt/pt-01-happybean.svg" alt="해피빈" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/02_pt/pt-06-woowa.svg" alt="우아한형제들" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/02_pt/pt-14-adobe.svg" alt="아도비" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/pt-01-happybean.svg" alt="해피빈" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-06-woowa.svg" alt="우아한형제들" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-14-adobe.svg" alt="아도비" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                   {/* 블랙 */}
-                  <img src="/img/sp/02_pt/pt-12-visang.svg" alt="비상" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/pt-12-visang.svg" alt="비상" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                   {/* 볼드 */}
-                  <img src="/img/sp/02_pt/pt-11-samwon.svg" alt="삼원종이" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
-                  <img src="/img/sp/02_pt/pt-15-morisawakorea.svg" alt="모리사워코리아" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/pt-11-samwon.svg" alt="삼원종이" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-15-morisawakorea.svg" alt="모리사워코리아" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                   {/* 레귤러 */}
-                  <img src="/img/sp/02_pt/pt-10-innoiz.svg" alt="인노이즈" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/pt-10-innoiz.svg" alt="인노이즈" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                   {/* 공익위반제보 */}
-                  <img src="/img/sp/02_pt/link-01-munhwa.svg" alt="문화체육관광부" className={`${sponsorImageClassName} ${isDarkMode ? 'brightness-0 invert' : ''}`} loading="eager" />
+                  <Image src="/img/sp/02_pt/link-01-munhwa.svg" alt="문화체육관광부" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
                 </div>
               </div>
             </div>

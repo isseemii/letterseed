@@ -4,6 +4,27 @@
  */
 
 /**
+ * CSS 유틸리티 프리셋 키
+ * globals.css의 본문/각주/캡션 클래스와 1:1로 연결된다.
+ */
+export const TYPOGRAPHY_PRESETS = {
+  bodySerif: '본문폰트',
+  bodySans: '본문폰트-민부리',
+  bodyBold: '본문폰트-볼드',
+  footnoteSans: '각주폰트-민부리',
+  captionSans: '캡션-민부리',
+} as const
+
+export type TypographyPresetKey = keyof typeof TYPOGRAPHY_PRESETS
+
+export const getTypographyPresetClass = (presetKey: TypographyPresetKey): string =>
+  TYPOGRAPHY_PRESETS[presetKey]
+
+export const getPortableBodyClassesByPreset = (
+  presetKey: Extract<TypographyPresetKey, 'bodySerif' | 'bodySans' | 'bodyBold' | 'footnoteSans'>
+): string => `${getTypographyPresetClass(presetKey)} my-[0.6em] md:mt-[0.4em] md:mb-6`
+
+/**
  * 제목 스타일 (h1~h6)
  */
 export const TYPOGRAPHY = {
@@ -156,4 +177,3 @@ export const getFootnoteClasses = (type: 'text' | 'link' = 'text'): string => {
 export const getCaptionClasses = (type: 'image' | 'grid' | 'default' = 'default'): string => {
   return TYPOGRAPHY.caption[type]
 }
-

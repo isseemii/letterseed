@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { PortableTextComponents } from '@portabletext/react'
-import { getTypographyClasses, getBodyClasses, TYPOGRAPHY } from './typography'
+import { getTypographyClasses, getBodyClasses, TYPOGRAPHY, getPortableBodyClassesByPreset } from './typography'
 import { getTextColor, getLinkColor } from './DarkModeUtils'
 
 /**
@@ -15,7 +15,7 @@ import { getTextColor, getLinkColor } from './DarkModeUtils'
 export const TYPOGRAPHY_CONFIG = {
   // 일반 본문 (standard)
   standard: {
-    normal: '본문폰트 my-[0.6em] md:mt-[0.4em] md:mb-6',
+    normal: getPortableBodyClassesByPreset('bodySerif'),
     h2: TYPOGRAPHY.h2.portable,
     h3: TYPOGRAPHY.h3.portable,
     h4: TYPOGRAPHY.h4.portable,
@@ -25,7 +25,7 @@ export const TYPOGRAPHY_CONFIG = {
   },
   // 인터뷰 Q&A 질문
   interviewQAQuestion: {
-    normal: '본문폰트-민부리 my-[0.6em] md:mt-[0.4em] md:mb-6',
+    normal: getPortableBodyClassesByPreset('bodySans'),
     h2: TYPOGRAPHY.h2.portable,
     h3: TYPOGRAPHY.h3.portable,
     h4: TYPOGRAPHY.h4.portable,
@@ -35,7 +35,7 @@ export const TYPOGRAPHY_CONFIG = {
   },
   // 인터뷰 Q&A 답변
   interviewQAAnswer: {
-    normal: '본문폰트-부리 my-[0.6em] md:mt-[0.4em] md:mb-6',
+    normal: getPortableBodyClassesByPreset('bodySerif'),
     h2: TYPOGRAPHY.h2.portable,
     h3: TYPOGRAPHY.h3.portable,
     h4: TYPOGRAPHY.h4.portable,
@@ -45,7 +45,7 @@ export const TYPOGRAPHY_CONFIG = {
   },
   // 추가 섹션 (각주 스타일)
   additionalSection: {
-    normal: '각주폰트-민부리 space-y-4',
+    normal: `${getPortableBodyClassesByPreset('footnoteSans')} space-y-4`,
     h2: TYPOGRAPHY.h2.portable,
     h3: TYPOGRAPHY.h3.portable,
     h4: TYPOGRAPHY.h4.portable,
