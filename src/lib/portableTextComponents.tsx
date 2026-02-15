@@ -7,6 +7,7 @@ import React from 'react'
 import { PortableTextComponents } from '@portabletext/react'
 import { getTypographyClasses, getBodyClasses, TYPOGRAPHY, getPortableBodyClassesByPreset } from './typography'
 import { getTextColor, getLinkColor } from './DarkModeUtils'
+import { ARTICLE_TEXT_SPACING } from './articleStyleTokens'
 
 /**
  * 스키마 타입별 타이포그래피 설정
@@ -45,7 +46,7 @@ export const TYPOGRAPHY_CONFIG = {
   },
   // 추가 섹션 (각주 스타일)
   additionalSection: {
-    normal: `${getPortableBodyClassesByPreset('footnoteSans')} space-y-4`,
+    normal: `${getPortableBodyClassesByPreset('footnoteSans')} ${ARTICLE_TEXT_SPACING.additionalSectionParagraphGap}`,
     h2: TYPOGRAPHY.h2.portable,
     h3: TYPOGRAPHY.h3.portable,
     h4: TYPOGRAPHY.h4.portable,
@@ -146,12 +147,26 @@ const createMarksComponents = (
  */
 const createListComponents = (isDarkMode: boolean) => ({
   bullet: ({ children }: any) => (
-    <ul style={{ marginLeft: '24px', marginTop: '16px', marginBottom: '16px' }} className={getTextColor(isDarkMode)}>
+    <ul
+      style={{
+        marginLeft: ARTICLE_TEXT_SPACING.list.marginLeft,
+        marginTop: ARTICLE_TEXT_SPACING.list.marginTop,
+        marginBottom: ARTICLE_TEXT_SPACING.list.marginBottom,
+      }}
+      className={getTextColor(isDarkMode)}
+    >
       {children}
     </ul>
   ),
   number: ({ children }: any) => (
-    <ol style={{ marginLeft: '24px', marginTop: '16px', marginBottom: '16px' }} className={getTextColor(isDarkMode)}>
+    <ol
+      style={{
+        marginLeft: ARTICLE_TEXT_SPACING.list.marginLeft,
+        marginTop: ARTICLE_TEXT_SPACING.list.marginTop,
+        marginBottom: ARTICLE_TEXT_SPACING.list.marginBottom,
+      }}
+      className={getTextColor(isDarkMode)}
+    >
       {children}
     </ol>
   )
@@ -233,9 +248,9 @@ export function createPortableTextComponents(
         <blockquote
           style={{
             borderLeft: isDarkMode ? '0.2em solid white' : '0.2em solid black',
-            paddingLeft: '1em',
-            marginLeft: '2em',
-            marginBottom: '1em',
+            paddingLeft: ARTICLE_TEXT_SPACING.blockquote.paddingLeft,
+            marginLeft: ARTICLE_TEXT_SPACING.blockquote.marginLeft,
+            marginBottom: ARTICLE_TEXT_SPACING.blockquote.marginBottom,
           }}
           className={`${config.blockquote} ${getTextColor(isDarkMode)}`}
         >

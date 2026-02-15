@@ -1,3 +1,5 @@
+import { ARTICLE_TEXT_SPACING } from '@/lib/articleStyleTokens'
+
 /**
  * 타이포그래피 클래스 상수
  * 모든 타이포그래피 스타일을 한 곳에서 관리
@@ -22,7 +24,7 @@ export const getTypographyPresetClass = (presetKey: TypographyPresetKey): string
 
 export const getPortableBodyClassesByPreset = (
   presetKey: Extract<TypographyPresetKey, 'bodySerif' | 'bodySans' | 'bodyBold' | 'footnoteSans'>
-): string => `${getTypographyPresetClass(presetKey)} my-[0.6em] md:mt-[0.4em] md:mb-6`
+): string => `${getTypographyPresetClass(presetKey)} ${ARTICLE_TEXT_SPACING.portableParagraph}`
 
 /**
  * 제목 스타일 (h1~h6)
@@ -61,9 +63,9 @@ export const TYPOGRAPHY = {
   // 본문 스타일
   body: {
     // 일반 본문 (PortableText normal)
-    normal: '본문폰트 my-[0.6em] md:mt-[0.4em] md:mb-6',
+    normal: `${TYPOGRAPHY_PRESETS.bodySerif} ${ARTICLE_TEXT_SPACING.portableParagraph}`,
     // 직접 렌더링용 본문
-    direct: '본문폰트 my-[0.6em] md:mt-[0.4em] md:mb-6',
+    direct: `${TYPOGRAPHY_PRESETS.bodySerif} ${ARTICLE_TEXT_SPACING.portableParagraph}`,
   },
 
   // 인용구

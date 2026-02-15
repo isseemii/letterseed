@@ -9,6 +9,7 @@ import { client } from '@/lib/sanity'
 import { getTextColor, getBgColor, getBorderColor, getLinkColor } from '@/lib/DarkModeUtils'
 import { LAYOUT, CAPTION_STYLES } from '@/lib/constants'
 import { getTypographyClasses, getHeadingClasses, getBodyClasses, getCaptionClasses, TYPOGRAPHY, getFootnoteClasses } from '@/lib/typography'
+import { ARTICLE_TEXT_SPACING } from '@/lib/articleStyleTokens'
 import { createPortableTextComponents, createAdditionalSectionComponents } from '@/lib/portableTextComponents'
 import { getElementTypeName, isSanityImageSource, toPortableValue } from '@/lib/sanityTypeGuards'
 import Timeline from '@/components/timeline'
@@ -758,7 +759,7 @@ export default function ArticlePage({ params }: PageProps) {
             )}
 
             {/* 본문 블록 렌더링 (contentBlocks + legacy 통합) */}
-            <div className={`mb-8 md:mb-16 space-y-12 ${getTextColor(isDarkMode)}`}>
+            <div className={`mb-8 md:mb-16 ${ARTICLE_TEXT_SPACING.pageContentBlockGap} ${getTextColor(isDarkMode)}`}>
               {normalizedContentBlocks.map((block: ArticleContentBlock, blockIdx: number) => {
                 if (isContentBlockType(block.blockType)) {
                   return (
@@ -781,7 +782,7 @@ export default function ArticlePage({ params }: PageProps) {
 
             {/* 추가 섹션 (참고문헌, 이미지 출처 등) */}
             {article.additionalSections && article.additionalSections.length > 0 && (
-              <div className={`ml-[10%] mt-8 mb-16 md:ml-[40%] md:mt-12 md:mb-24 space-y-8 ${getTextColor(isDarkMode)}`}>
+              <div className={`ml-[10%] mt-8 mb-16 md:ml-[40%] md:mt-12 md:mb-24 ${ARTICLE_TEXT_SPACING.additionalSectionGroupGap} ${getTextColor(isDarkMode)}`}>
                 {article.additionalSections.map((section: ArticleAdditionalSection, idx: number) => (
                   <div key={idx} className={`${getBorderColor(isDarkMode)}`}>
                     {/* 섹션 제목 */}

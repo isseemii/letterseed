@@ -64,6 +64,27 @@
 
   /* 모바일 스크롤바 너비만큼 오른쪽 여백 (스크롤바가 레이아웃을 차지하는 환경 대비) */
   --scrollbar-width: 8px;
+
+  /* article typography tokens */
+  --article-body-serif-size: 1.15em;
+  --article-body-serif-size-mobile: 1.05em;
+  --article-body-serif-leading: 1.7em;
+  --article-body-serif-leading-mobile: 1.76em;
+  --article-body-serif-tracking: -0.01em;
+
+  --article-body-sans-size: 1.1em;
+  --article-body-sans-size-mobile: 1em;
+  --article-body-sans-leading: 1.76em;
+  --article-body-sans-tracking: 0.02em;
+
+  --article-caption-size: 0.85em;
+  --article-caption-size-mobile: 0.8em;
+  --article-caption-leading: 1.76em;
+
+  --article-footnote-size: 0.92em;
+  --article-footnote-size-mobile: 0.85em;
+  --article-footnote-leading: 1.76em;
+  --article-footnote-tracking: 0.03em;
 }
 
 @layer base {
@@ -134,79 +155,79 @@
   /* 본문 */
   .본문폰트 {
     font-weight: 400;
-    font-size: 1.15em;
-    line-height: 1.7em;
-    letter-spacing: -0.01em;
+    font-size: var(--article-body-serif-size);
+    line-height: var(--article-body-serif-leading);
+    letter-spacing: var(--article-body-serif-tracking);
   }
 
   @media (max-width: 768px) {
     .본문폰트 {
       font-weight: 400;
-      font-size: 1.05em;
-      line-height: 1.76em;
-      letter-spacing: -0.01em;
+      font-size: var(--article-body-serif-size-mobile);
+      line-height: var(--article-body-serif-leading-mobile);
+      letter-spacing: var(--article-body-serif-tracking);
     }
   }
 
   /* 본문 볼드 */
   .본문폰트-볼드 {
     font-weight: 700;
-    font-size: 1.15em;
-    line-height: 1.7em;
+    font-size: var(--article-body-serif-size);
+    line-height: var(--article-body-serif-leading);
   }
 
   @media (max-width: 768px) {
     .본문폰트-볼드 {
       font-weight: 700;
-      font-size: 1.05em;
-      line-height: 1.76em;
+      font-size: var(--article-body-serif-size-mobile);
+      line-height: var(--article-body-serif-leading-mobile);
     }
   }
 
   /* 본문 민부리 */
   .본문폰트-민부리 {
     font-family: var(--font-ko-sans);
-    font-size: 1.1em;
-    line-height: 1.76em;
-    letter-spacing: 0.02em;
+    font-size: var(--article-body-sans-size);
+    line-height: var(--article-body-sans-leading);
+    letter-spacing: var(--article-body-sans-tracking);
   }
 
   @media (max-width: 768px) {
     .본문폰트-민부리 {
       font-family: var(--font-ko-sans);
-      font-size: 1em;
-      line-height: 1.76em;
-      letter-spacing: 0.02em;
+      font-size: var(--article-body-sans-size-mobile);
+      line-height: var(--article-body-sans-leading);
+      letter-spacing: var(--article-body-sans-tracking);
     }
   }
 
   /* 이미지, 각주 */
   .캡션-민부리 {
     font-family: var(--font-ko-sans);
-    font-size: 0.85em;
-    line-height: 1.76em;
+    font-size: var(--article-caption-size);
+    line-height: var(--article-caption-leading);
   }
 
   @media (max-width: 768px) {
     .캡션-민부리 {
       font-family: var(--font-ko-sans);
-      font-size: 0.80em;
-      line-height: 1.76em;
+      font-size: var(--article-caption-size-mobile);
+      line-height: var(--article-caption-leading);
     }
   }
 
   .각주폰트-민부리 {
     font-family: var(--font-ko-sans);
-    font-size: 0.92em;
-    line-height: 1.76em;
-    letter-spacing: 0.03em;
+    font-size: var(--article-footnote-size);
+    line-height: var(--article-footnote-leading);
+    letter-spacing: var(--article-footnote-tracking);
   }
 
   @media (max-width: 768px) {
     .각주폰트-민부리 {
       font-family: var(--font-ko-sans);
-      font-size: 0.85em;
-      line-height: 1.76em;
+      font-size: var(--article-footnote-size-mobile);
+      line-height: var(--article-footnote-leading);
     }
   }
 

@@ -1,4 +1,5 @@
 import type { TypographyPresetKey } from '@/lib/typography'
+import { ARTICLE_BLOCK_SPACING_CLASSES } from '@/lib/articleStyleTokens'
 
 export const ARTICLE_CONTENT_BLOCK_TYPES = [
   'standard',
@@ -30,28 +31,28 @@ export const ARTICLE_CONTENT_MATRIX: Record<ArticleContentBlockType, ArticleCont
     label: '응답 모음',
     blockField: 'responsesContent',
     legacyField: 'responses',
-    containerClass: 'space-y-12',
+    containerClass: ARTICLE_BLOCK_SPACING_CLASSES.responses,
     contentPresetKey: 'bodySerif',
   },
   interviewQA: {
     label: '인터뷰 Q&A',
     blockField: 'interviewQAContent',
     legacyField: 'interviewQA',
-    containerClass: 'space-y-12',
+    containerClass: ARTICLE_BLOCK_SPACING_CLASSES.interviewQA,
     contentPresetKey: 'bodySans',
   },
   conversation: {
     label: '대화',
     blockField: 'conversationContent',
     legacyField: 'conversation',
-    containerClass: 'space-y-6',
+    containerClass: ARTICLE_BLOCK_SPACING_CLASSES.conversation,
     contentPresetKey: 'bodySerif',
   },
   qaList: {
     label: 'Q&A',
     blockField: 'qaListContent',
     legacyField: 'qaList',
-    containerClass: 'space-y-8',
+    containerClass: ARTICLE_BLOCK_SPACING_CLASSES.qaList,
     contentPresetKey: 'bodySans',
   },
 }
