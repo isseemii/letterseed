@@ -1,13 +1,12 @@
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!
+import { apiVersion, dataset, projectId } from '../sanity/env'
 
 const baseConfig = {
   projectId,
   dataset,
-  apiVersion: '2025-10-17',
+  apiVersion,
   perspective: 'published',
   requestTagPrefix: 'app',
 } as const
