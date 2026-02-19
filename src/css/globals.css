@@ -231,6 +231,19 @@
     }
   }
 
+  /* PortableText h5 spacing: default vs heading-following case */
+  .ls-portable-h5 {
+    padding-top: 0.7em;
+  }
+
+  .ls-portable-h1 + .ls-portable-h5,
+  .ls-portable-h2 + .ls-portable-h5,
+  .ls-portable-h3 + .ls-portable-h5,
+  .ls-portable-h4 + .ls-portable-h5 {
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+  }
+
   /* 문단 들여쓰기 */
   .indent-p {
     text-indent: 2rem;

@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { PortableText, type PortableTextComponents } from '@portabletext/react'
 import { getTextColor } from '@/lib/DarkModeUtils'
-import { getHeadingClasses, getTypographyClasses, TYPOGRAPHY, getTypographyPresetClass } from '@/lib/typography'
+import { getHeadingClasses, getTypographyClasses, TYPOGRAPHY } from '@/lib/typography'
 import { toPortableValue } from '@/lib/sanityTypeGuards'
 import {
   ARTICLE_CONTENT_MATRIX,
@@ -38,12 +38,11 @@ export function ContentBlockRenderer({
   const matrix = ARTICLE_CONTENT_MATRIX[blockType]
 
   if (!matrix) return null
-  const presetClass = getTypographyPresetClass(matrix.contentPresetKey)
   const blockFieldValue = block[matrix.blockField]
 
   if (blockType === 'standard' && blockFieldValue) {
     return (
-      <div key={blockIdx} className={presetClass}>
+      <div key={blockIdx}>
         <PortableText value={toPortableValue(blockFieldValue)} components={components} />
       </div>
     )
@@ -52,7 +51,7 @@ export function ContentBlockRenderer({
   if (blockType === 'responses' && Array.isArray(blockFieldValue)) {
     const responses = blockFieldValue as ResponseItem[]
     return (
-      <div key={blockIdx} className={`${matrix.containerClass} ${presetClass}`}>
+      <div key={blockIdx} className={matrix.containerClass}>
         {responses.map((response, idx: number) => (
           <div key={idx} className="space-y-4">
             <div className="flex items-baseline gap-4">
@@ -101,7 +100,7 @@ export function ContentBlockRenderer({
   if (blockType === 'interviewQA' && Array.isArray(blockFieldValue)) {
     const questions = blockFieldValue as InterviewQAItem[]
     return (
-      <div key={blockIdx} className={`${matrix.containerClass} ${presetClass}`}>
+      <div key={blockIdx} className={matrix.containerClass}>
         {questions.map((qa, idx: number) => (
           <InterviewQARenderer
             key={idx}
@@ -119,7 +118,7 @@ export function ContentBlockRenderer({
   if (blockType === 'conversation' && Array.isArray(blockFieldValue)) {
     const turns = blockFieldValue as ConversationTurn[]
     return (
-      <div key={blockIdx} className={`${matrix.containerClass} ${presetClass}`}>
+      <div key={blockIdx} className={matrix.containerClass}>
         {turns.map((turn, idx: number) => (
           <ConversationRenderer
             key={idx}
@@ -136,7 +135,7 @@ export function ContentBlockRenderer({
   if (blockType === 'qaList' && Array.isArray(blockFieldValue)) {
     const qaList = blockFieldValue as QAListItem[]
     return (
-      <div key={blockIdx} className={`${matrix.containerClass} ${presetClass}`}>
+      <div key={blockIdx} className={matrix.containerClass}>
         {qaList.map((qa, idx: number) => (
           <QAListRenderer
             key={idx}

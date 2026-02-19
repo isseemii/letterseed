@@ -9,6 +9,24 @@ import { getTypographyClasses, getBodyClasses, TYPOGRAPHY, getPortableBodyClasse
 import { getTextColor, getLinkColor } from './DarkModeUtils'
 import { ARTICLE_TEXT_SPACING } from './articleStyleTokens'
 
+const SIDEBAR_BREAKPOINT_PX = 1510
+
+const getPlainTextFromNode = (node: React.ReactNode): string =>
+  React.Children.toArray(node)
+    .map((child) => {
+      if (typeof child === 'string' || typeof child === 'number') return String(child)
+      if (React.isValidElement(child)) {
+        return getPlainTextFromNode((child.props as { children?: React.ReactNode })?.children)
+      }
+      return ''
+    })
+    .join('')
+
+const isFootnoteReferenceText = (text: string): boolean => {
+  const normalized = text.replace(/\s+/g, '')
+  return /^\[?\d+\]?$/.test(normalized)
+}
+
 /**
  * 스키마 타입별 타이포그래피 설정
  * 여기서 모든 스타일을 한 번에 관리할 수 있습니다
@@ -74,7 +92,7 @@ export type TypographyConfigType = keyof typeof TYPOGRAPHY_CONFIG
 const createMarksComponents = (
   isDarkMode: boolean,
   footnotesList: Array<{ number: number; text: string; markKey?: string }>,
-  setMobileFootnotePopup: (popup: { number: number; text: string } | null) => void,
+  setMobileFootnotePopup: React.Dispatch<React.SetStateAction<{ number: number; text: string } | null>>,
   setExpandedFootnotes: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>,
   renderTextWithLinks?: (text: string) => React.ReactNode
 ) => ({
@@ -104,9 +122,11 @@ const createMarksComponents = (
       e.preventDefault()
 
       if (typeof window !== 'undefined' && footnoteNumber > 0) {
-        const isMobile = window.innerWidth < 768
+        const isMobile = window.innerWidth < SIDEBAR_BREAKPOINT_PX
         if (isMobile && footnote) {
-          setMobileFootnotePopup({ number: footnoteNumber, text: footnote.text })
+          setMobileFootnotePopup((prev) => (
+            prev?.number === footnoteNumber ? null : { number: footnoteNumber, text: footnote.text }
+          ))
         } else {
           setExpandedFootnotes(prev => ({
             ...prev,
@@ -120,13 +140,23 @@ const createMarksComponents = (
       return <span className="text-red-500">{children}</span>
     }
 
+    const childText = getPlainTextFromNode(children).trim()
+    const hideOriginalMarkedText = isFootnoteReferenceText(childText)
+    const badgeColorClasses = isDarkMode
+      ? 'text-blue-200 border-blue-300 hover:bg-blue-300/20'
+      : 'text-blue-700 border-blue-600 hover:bg-blue-100'
+
     return (
-      <span
-        data-footnote-number={footnoteNumber}
-        onClick={handleFootnoteClick}
-        className={`cursor-pointer border-b border-dotted ${isDarkMode ? 'text-blue-300 border-blue-300 hover:text-blue-200' : 'text-blue-600 border-blue-600 hover:text-blue-700'}`}
-      >
-        {children}
+      <span data-footnote-number={footnoteNumber} className="inline">
+        {!hideOriginalMarkedText && children}
+        <button
+          type="button"
+          onClick={handleFootnoteClick}
+          aria-label={`각주 ${footnoteNumber} 열기`}
+          className={`ml-1 inline-flex h-[1.3em] min-w-[1.3em] items-center justify-center rounded-full border px-[0.24em] text-[0.72em] leading-none align-super transition-colors ${badgeColorClasses}`}
+        >
+          {footnoteNumber}
+        </button>
       </span>
     )
   },
@@ -185,7 +215,7 @@ export function createPortableTextComponents(
   configType: TypographyConfigType,
   isDarkMode: boolean,
   footnotesList: Array<{ number: number; text: string; markKey?: string }>,
-  setMobileFootnotePopup: (popup: { number: number; text: string } | null) => void,
+  setMobileFootnotePopup: React.Dispatch<React.SetStateAction<{ number: number; text: string } | null>>,
   setExpandedFootnotes: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>,
   renderTextWithLinks?: (text: string) => React.ReactNode
 ): PortableTextComponents {
@@ -277,6 +307,8 @@ export function createAdditionalSectionComponents(
   processChildrenWithLinks: (children: React.ReactNode) => React.ReactNode
 ): PortableTextComponents {
   const config = TYPOGRAPHY_CONFIG.additionalSection
+  // 추가 섹션의 제목-본문 시작 열을 맞추기 위한 공통 들여쓰기
+  const contentIndentClass = 'pl-[-2em]'
 
   return {
     block: {
@@ -303,7 +335,7 @@ export function createAdditionalSectionComponents(
         const Tag = hasBlockElements ? 'div' : 'p'
         return (
           <Tag
-            className={`${config.normal} ${getTextColor(isDarkMode, 'muted')}`}
+            className={`${config.normal} ${contentIndentClass} ${getTextColor(isDarkMode, 'muted')}`}
           >
             {processedChildren}
           </Tag>
@@ -331,12 +363,12 @@ export function createAdditionalSectionComponents(
     },
     list: {
       bullet: ({ children }: any) => (
-        <ul className={`space-y-2 list-disc ml-6 ${getTextColor(isDarkMode, 'muted')}`}>
+        <ul className={`space-y-2 list-disc ml-0 ${contentIndentClass} ${TYPOGRAPHY.footnote.text} ${getTextColor(isDarkMode, 'muted')}`}>
           {children}
         </ul>
       ),
       number: ({ children }: any) => (
-        <ol className={`space-y-2 list-decimal ml-6 ${getTextColor(isDarkMode, 'muted')}`}>
+        <ol className={`space-y-2 list-decimal ml-0 ${contentIndentClass} ${TYPOGRAPHY.footnote.text} ${getTextColor(isDarkMode, 'muted')}`}>
           {children}
         </ol>
       )

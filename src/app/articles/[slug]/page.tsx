@@ -8,7 +8,7 @@ import imageUrlBuilder from '@sanity/image-url'
 import { client } from '@/lib/sanity'
 import { getTextColor, getBgColor, getBorderColor, getLinkColor } from '@/lib/DarkModeUtils'
 import { LAYOUT, CAPTION_STYLES } from '@/lib/constants'
-import { getTypographyClasses, getHeadingClasses, getBodyClasses, getCaptionClasses, TYPOGRAPHY, getFootnoteClasses } from '@/lib/typography'
+import { getTypographyClasses, getHeadingClasses, getBodyClasses, getCaptionClasses, TYPOGRAPHY } from '@/lib/typography'
 import { ARTICLE_TEXT_SPACING } from '@/lib/articleStyleTokens'
 import { createPortableTextComponents, createAdditionalSectionComponents } from '@/lib/portableTextComponents'
 import { getElementTypeName, isSanityImageSource, toPortableValue } from '@/lib/sanityTypeGuards'
@@ -786,12 +786,12 @@ export default function ArticlePage({ params }: PageProps) {
                 {article.additionalSections.map((section: ArticleAdditionalSection, idx: number) => (
                   <div key={idx} className={`${getBorderColor(isDarkMode)}`}>
                     {/* 섹션 제목 */}
-                    <div className={`mb-4 ${TYPOGRAPHY.ui.speaker} ${getTextColor(isDarkMode)}`}>
+                    <div className={`mb-4 ${TYPOGRAPHY.footnote.text} ${getTextColor(isDarkMode)}`}>
                       {section.title}
                     </div>
 
                     {/* 섹션 내용 */}
-                    <div className={` ${getFootnoteClasses('text')} ${getTextColor(isDarkMode, 'muted')}`}>
+                    <div className={getTextColor(isDarkMode, 'muted')}>
                       <PortableText value={section.content} components={additionalSectionComponents} />
                     </div>
                   </div>
@@ -812,6 +812,7 @@ export default function ArticlePage({ params }: PageProps) {
       <ArticleMobileBottomNavigation showNavigation={showNavigation} isDarkMode={isDarkMode} article={article} />
       <MobileFootnotePopup
         popup={mobileFootnotePopup}
+        isDarkMode={isDarkMode}
         onClose={() => setMobileFootnotePopup(null)}
         renderTextWithLinks={renderTextWithLinks}
       />

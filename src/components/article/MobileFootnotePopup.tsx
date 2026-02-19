@@ -1,43 +1,50 @@
+import { AnimatePresence, motion } from 'framer-motion'
+import { getBgColor, getBorderColor, getTextColor } from '@/lib/DarkModeUtils'
 import { getFootnoteClasses } from '@/lib/typography'
 import type { FootnoteItem } from './types'
 
 type Props = {
   popup: Pick<FootnoteItem, 'number' | 'text'> | null
+  isDarkMode: boolean
   onClose: () => void
   renderTextWithLinks: (text: string) => React.ReactNode
 }
 
-export function MobileFootnotePopup({ popup, onClose, renderTextWithLinks }: Props) {
-  if (!popup) return null
-
+export function MobileFootnotePopup({ popup, isDarkMode, onClose, renderTextWithLinks }: Props) {
   return (
-    <div
-      className="md:hidden fixed inset-0 z-[60] flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-lg shadow-lg max-w-[90%] max-h-[80%] overflow-y-auto relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:opacity-70 transition-opacity z-10"
+    <AnimatePresence>
+      {popup && (
+        <motion.div
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 30, opacity: 0 }}
+          transition={{ duration: 0.28, ease: [0.4, 0.0, 0.2, 1] }}
+          className="sidebar-hidden fixed inset-x-0 bottom-0 z-[60] px-3 pb-[calc(53px+env(safe-area-inset-bottom)+10px)]"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+          <div
+            className={`${getBgColor(isDarkMode)} ${getBorderColor(isDarkMode, 'light')} border rounded-xl shadow-xl max-h-[42vh] overflow-y-auto relative`}
+          >
+            <button
+              onClick={onClose}
+              className={`absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:opacity-70 transition-opacity z-10 ${getTextColor(isDarkMode, 'subtle')}`}
+              aria-label="각주 닫기"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
 
-        <div className="p-6 pt-8">
-          <div className={getFootnoteClasses('text')}>
-            <span>[{popup.number}]</span>
-            <div className="mt-2">
-              {renderTextWithLinks(popup.text)}
+            <div className={`p-5 pr-11 ${getTextColor(isDarkMode, 'muted')}`}>
+              <div className={getFootnoteClasses('text')}>
+                <span className={getTextColor(isDarkMode)}>[{popup.number}]</span>
+                <div className="mt-2 leading-relaxed">
+                  {renderTextWithLinks(popup.text)}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }

@@ -4,7 +4,7 @@
  */
 
 export const ARTICLE_TEXT_SPACING = {
-  portableParagraph: 'my-[0.6em] md:mt-[0.4em] md:mb-6',
+  portableParagraph: 'my-[0.6em] md:mt-[0.4em] md:mb-[0.4em]',
   additionalSectionParagraphGap: 'space-y-4',
   pageContentBlockGap: 'space-y-12',
   additionalSectionGroupGap: 'space-y-8',

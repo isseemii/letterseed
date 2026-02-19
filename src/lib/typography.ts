@@ -35,24 +35,24 @@ export const TYPOGRAPHY = {
     // 직접 렌더링용 (아티클 제목)
     direct: '본문폰트 font-bold md:text-3xl md:leading-[1.5em]',
     // PortableText용
-    portable: '본문폰트 font-bold md:text-3xl md:leading-[1.5em]',
+    portable: '본문폰트 font-bold md:text-3xl md:leading-[1.5em] ls-portable-h1',
   },
   h2: {
     // h2-h6는 direct와 portable 통일 (indent/padding은 필요시 추가)
-    direct: '본문폰트 font-bold py-[0.3em]',
-    portable: '본문폰트 font-bold py-[0.3em]',
+    direct: '본문폰트 font-bold pt-[0.7em] pb-[0.3em]',
+    portable: '본문폰트 font-bold pt-[0.7em] pb-[0.3em] ls-portable-h2',
   },
   h3: {
     direct: '본문폰트 indent-[2em] py-[0.3em]',
-    portable: '본문폰트 indent-[2em] py-[0.3em]',
+    portable: '본문폰트 indent-[2em] py-[0.3em] ls-portable-h3',
   },
   h4: {
     direct: '본문폰트-민부리 indent-[2em] py-[0.3em] font-bold',
-    portable: '본문폰트-민부리 indent-[2em] py-[0.3em] font-bold',
+    portable: '본문폰트-민부리 indent-[2em] py-[0.3em] font-bold ls-portable-h4',
   },
   h5: {
     direct: '본문폰트-민부리 pt-[0.7em]',
-    portable: '본문폰트-민부리 pt-[0.7em]',
+    portable: '본문폰트-민부리 ls-portable-h5',
   },
   // 질문
   h6: {

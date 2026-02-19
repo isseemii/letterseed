@@ -8,7 +8,7 @@ import { PortableText } from '@portabletext/react'
 import Image from 'next/image'
 import { PortableTextComponents } from '@portabletext/react'
 import { getTextColor } from '@/lib/DarkModeUtils'
-import { TYPOGRAPHY, getHeadingClasses, getFootnoteClasses } from '@/lib/typography'
+import { TYPOGRAPHY, getHeadingClasses } from '@/lib/typography'
 import { toPortableValue } from '@/lib/sanityTypeGuards'
 import type { ConversationTurn, InterviewQAItem, QAListItem, ResponseItem, SanityImage, UrlForFn } from './types'
 
@@ -83,7 +83,7 @@ export const ResponseRenderer = ({
             <div className={`mb-4 ${TYPOGRAPHY.ui.referenceTitle} ${getTextColor(isDarkMode)}`}>
               참고문헌
             </div>
-            <div className={`${getFootnoteClasses('text')} ${getTextColor(isDarkMode, 'muted')}`}>
+            <div className={getTextColor(isDarkMode, 'muted')}>
               <PortableText
                 value={toPortableValue(response.references)}
                 components={additionalSectionComponents}
@@ -191,7 +191,7 @@ export const QAListRenderer = ({
   return (
     <div key={idx} className="space-y-4">
       {qa.question && Array.isArray(qa.question) && qa.question.length > 0 && (
-        <div className={`ml-[40%] 본문폰트-민부리 ${getTextColor(isDarkMode)}`}>
+        <div className={`ml-[40%] ${getTextColor(isDarkMode)}`}>
           <PortableText
             value={toPortableValue(qa.question)}
             components={components}
