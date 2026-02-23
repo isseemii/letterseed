@@ -175,7 +175,15 @@ export const articleWithNavigationQuery = `
 
 // 아티클 상세 + 같은 호 전체 아티클(클라이언트 내 계층 정렬용)
 export const articleWithHierarchyNavigationQuery = `
-  *[_type == "article" && slug.current == $slug][0]{
+  *[
+    _type == "article" &&
+    (
+      slug.current == $slug ||
+      lower(slug.current) == lower($slug) ||
+      _id == $slug ||
+      _id == "drafts." + $slug
+    )
+  ][0]{
     _id,
     title,
     author,

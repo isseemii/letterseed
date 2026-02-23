@@ -73,7 +73,7 @@ export function ContentBlockRenderer({
               </div>
             )}
             {response.image && getImageUrl(response.image, urlFor) && (
-              <div className="my-6 w-full">
+              <div className="my-8 w-full">
                 <Image
                   src={getImageUrl(response.image, urlFor) || ''}
                   alt={response.image.alt || ''}
@@ -142,7 +142,8 @@ export function ContentBlockRenderer({
             qa={qa}
             idx={idx}
             isDarkMode={isDarkMode}
-            components={components}
+            questionComponents={interviewQAComponents}
+            answerComponents={answerComponents}
           />
         ))}
       </div>

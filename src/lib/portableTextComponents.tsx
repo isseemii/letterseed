@@ -9,7 +9,7 @@ import { getTypographyClasses, getBodyClasses, TYPOGRAPHY, getPortableBodyClasse
 import { getTextColor, getLinkColor } from './DarkModeUtils'
 import { ARTICLE_TEXT_SPACING } from './articleStyleTokens'
 
-const SIDEBAR_BREAKPOINT_PX = 1510
+const SIDEBAR_BREAKPOINT_PX = 1200
 
 const getPlainTextFromNode = (node: React.ReactNode): string =>
   React.Children.toArray(node)
@@ -93,7 +93,7 @@ const createMarksComponents = (
   isDarkMode: boolean,
   footnotesList: Array<{ number: number; text: string; markKey?: string }>,
   setMobileFootnotePopup: React.Dispatch<React.SetStateAction<{ number: number; text: string } | null>>,
-  setExpandedFootnotes: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>,
+  setActiveDesktopFootnoteNumber: React.Dispatch<React.SetStateAction<number | null>>,
   renderTextWithLinks?: (text: string) => React.ReactNode
 ) => ({
   link: ({ children, value }: any) => {
@@ -128,10 +128,7 @@ const createMarksComponents = (
             prev?.number === footnoteNumber ? null : { number: footnoteNumber, text: footnote.text }
           ))
         } else {
-          setExpandedFootnotes(prev => ({
-            ...prev,
-            [footnoteNumber]: !prev[footnoteNumber]
-          }))
+          setActiveDesktopFootnoteNumber((prev) => (prev === footnoteNumber ? null : footnoteNumber))
         }
       }
     }
@@ -208,7 +205,7 @@ const createListComponents = (isDarkMode: boolean) => ({
  * @param isDarkMode - 다크모드 여부
  * @param footnotesList - 각주 리스트
  * @param setMobileFootnotePopup - 모바일 각주 팝업 설정 함수
- * @param setExpandedFootnotes - 확장된 각주 설정 함수
+ * @param setActiveDesktopFootnoteNumber - 데스크탑 활성 각주 번호 설정 함수
  * @param renderTextWithLinks - 텍스트 내 URL 링크 변환 함수 (선택)
  */
 export function createPortableTextComponents(
@@ -216,7 +213,7 @@ export function createPortableTextComponents(
   isDarkMode: boolean,
   footnotesList: Array<{ number: number; text: string; markKey?: string }>,
   setMobileFootnotePopup: React.Dispatch<React.SetStateAction<{ number: number; text: string } | null>>,
-  setExpandedFootnotes: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>,
+  setActiveDesktopFootnoteNumber: React.Dispatch<React.SetStateAction<number | null>>,
   renderTextWithLinks?: (text: string) => React.ReactNode
 ): PortableTextComponents {
   const config = TYPOGRAPHY_CONFIG[configType]
@@ -292,7 +289,7 @@ export function createPortableTextComponents(
       isDarkMode,
       footnotesList,
       setMobileFootnotePopup,
-      setExpandedFootnotes,
+      setActiveDesktopFootnoteNumber,
       renderTextWithLinks
     ),
     list: createListComponents(isDarkMode),

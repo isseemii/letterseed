@@ -19,7 +19,6 @@ type Props = {
 
 export function ArticleImageSlider({ value, isDarkMode, urlFor, renderTextWithLinks }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [direction, setDirection] = useState<'left' | 'right'>('right')
   const [isTransitioning, setIsTransitioning] = useState(false)
 
   const imageUrls = useMemo(() => {
@@ -40,7 +39,6 @@ export function ArticleImageSlider({ value, isDarkMode, urlFor, renderTextWithLi
     if (!value.autoplay || imageUrls.length < 2) return
 
     const interval = setInterval(() => {
-      setDirection('right')
       setIsTransitioning(true)
       setCurrentIndex((prev) => {
         const newIndex = (prev + 1) % imageUrls.length
@@ -60,7 +58,6 @@ export function ArticleImageSlider({ value, isDarkMode, urlFor, renderTextWithLi
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isTransitioning) return
       if (e.key === 'ArrowLeft') {
-        setDirection('left')
         setIsTransitioning(true)
         setCurrentIndex((prev) => {
           const newIndex = (prev - 1 + imageUrls.length) % imageUrls.length
@@ -68,7 +65,6 @@ export function ArticleImageSlider({ value, isDarkMode, urlFor, renderTextWithLi
           return newIndex
         })
       } else if (e.key === 'ArrowRight') {
-        setDirection('right')
         setIsTransitioning(true)
         setCurrentIndex((prev) => {
           const newIndex = (prev + 1) % imageUrls.length
@@ -88,7 +84,6 @@ export function ArticleImageSlider({ value, isDarkMode, urlFor, renderTextWithLi
 
   const goToNext = () => {
     if (isTransitioning) return
-    setDirection('right')
     setIsTransitioning(true)
     setCurrentIndex((prev) => (prev + 1) % imageUrls.length)
     setTimeout(() => setIsTransitioning(false), 500)
@@ -96,7 +91,6 @@ export function ArticleImageSlider({ value, isDarkMode, urlFor, renderTextWithLi
 
   const goToPrevious = () => {
     if (isTransitioning) return
-    setDirection('left')
     setIsTransitioning(true)
     setCurrentIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length)
     setTimeout(() => setIsTransitioning(false), 500)
@@ -104,36 +98,25 @@ export function ArticleImageSlider({ value, isDarkMode, urlFor, renderTextWithLi
 
   const goToSlide = (index: number) => {
     if (isTransitioning) return
-    setDirection(index > currentIndex ? 'right' : 'left')
     setIsTransitioning(true)
     setCurrentIndex(index)
     setTimeout(() => setIsTransitioning(false), 500)
   }
 
   return (
-    <div className="my-16 md:my-24">
+    <div className="my-8">
       <div className="relative group w-full">
         <div className="relative overflow-hidden w-[80%] mx-auto">
-          <div
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{
-              transform: `translateX(-${currentIndex * 100}%)`,
-            }}
-          >
-            {imageUrls.map((url: string, index: number) => (
-              <div key={index} className="w-full flex-shrink-0">
-                <Image
-                  src={url}
-                  alt={value.images[index]?.alt || `이미지 ${index + 1}`}
-                  width={1200}
-                  height={800}
-                  className="w-full h-auto"
-                  sizes="80vw"
-                  unoptimized
-                />
-              </div>
-            ))}
-          </div>
+          <Image
+            key={currentIndex}
+            src={imageUrls[currentIndex]}
+            alt={value.images[currentIndex]?.alt || `이미지 ${currentIndex + 1}`}
+            width={1200}
+            height={800}
+            className="w-full h-auto transition-opacity duration-300"
+            sizes="80vw"
+            unoptimized
+          />
         </div>
 
         {imageUrls.length > 1 && (

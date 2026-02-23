@@ -1,134 +1,234 @@
 import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { getBgColor, getBorderColor, getHoverTextColor, getTextColor } from '@/lib/DarkModeUtils'
 import { getFootnoteClasses, TYPOGRAPHY } from '@/lib/typography'
 import type { ArticleNavigationData, FootnoteItem } from './types'
 
-type LeftProps = {
-  isDarkMode: boolean
-  article: ArticleNavigationData
+const LEADING_SPECIAL_PATTERN = /^[\p{P}\p{S}]/u
+
+const hasLeadingSpecialChar = (text: string): boolean => {
+  const trimmed = text.replace(/^\s+/u, '')
+  if (!trimmed) return false
+  return LEADING_SPECIAL_PATTERN.test(trimmed[0])
 }
 
-export function ArticleLeftSidebar({ isDarkMode, article }: LeftProps) {
-  return (
-    <div className="sidebar-block fixed left-0 top-0 h-screen w-[365px] px-6 py-10 z-10">
-      <div className="flex flex-col items-end justify-between h-full">
-        <div className="flex justify-end">
-          <Link
-            href="/"
-            className={`flex flex-col items-end gap-1 hover:opacity-80 transition-colors group ${getTextColor(isDarkMode, 'muted')} ${getHoverTextColor(isDarkMode)}`}
-          >
-            <div className="text-right">
-              <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-1`}>돌아가기</div>
-            </div>
-          </Link>
-        </div>
-
-        <div className="flex justify-end">
-          {article?.prevArticle ? (
-            <Link
-              href={`/articles/${article.prevArticle.slug}`}
-              className={`group flex flex-col items-end gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
-            >
-              <svg className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l-7 7 7 7" />
-              </svg>
-              <div className="text-right w-[300px]">
-                <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2 text-right`}>{article.prevArticle.title}</div>
-              </div>
-            </Link>
-          ) : (
-            <div className={`${TYPOGRAPHY.ui.navLink} text-right w-[300px] ${getTextColor(isDarkMode, 'subtle')}`}>
-              <br /> 이전 글 없음
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-type RightProps = {
+type DesktopSidebarProps = {
   isDarkMode: boolean
   article: ArticleNavigationData
   hasFootnotesInContent: boolean
   footnotesList: FootnoteItem[]
-  expandedFootnotes: { [key: number]: boolean }
-  toggleFootnote: (number: number) => void
+  activeFootnoteNumber: number | null
+  setActiveFootnoteNumber: (number: number | null) => void
   renderTextWithLinks: (text: string) => React.ReactNode
 }
 
-export function ArticleRightSidebar({
+export function ArticleDesktopSidebar({
   isDarkMode,
   article,
   hasFootnotesInContent,
   footnotesList,
-  expandedFootnotes,
-  toggleFootnote,
+  activeFootnoteNumber,
+  setActiveFootnoteNumber,
   renderTextWithLinks,
-}: RightProps) {
-  return (
-    <div className="sidebar-block fixed right-0 top-0 h-screen w-[365px] px-6 py-10 z-10">
-      <div className={`flex flex-col items-start h-full ${hasFootnotesInContent && footnotesList.length > 0 ? 'justify-between' : 'justify-end'}`}>
-        {hasFootnotesInContent && footnotesList.length > 0 && (
-          <div className="w-[300px] mb-auto overflow-y-auto pr-2 scrollbar-hide" style={{ maxHeight: 'calc(100vh - 20rem)' }}>
-            <div className={`${getFootnoteClasses('text')} leading-relaxed text-left space-y-2 ${getTextColor(isDarkMode, 'muted')}`}>
-              {footnotesList.map((footnote, idx) => {
-                const isExpanded = expandedFootnotes[footnote.number] || false
-                return (
-                  <div key={idx} className="mb-4 overflow-hidden">
-                    <button
-                      onClick={() => toggleFootnote(footnote.number)}
-                      className={`mr-2 mb-1 cursor-pointer hover:opacity-70 transition-opacity ${getTextColor(isDarkMode, 'muted')}`}
-                    >
-                      [{footnote.number}]
-                    </button>
-                    <AnimatePresence initial={false}>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{
-                            duration: 0.3,
-                            ease: [0.4, 0.0, 0.2, 1]
-                          }}
-                          style={{ overflow: 'hidden' }}
-                        >
-                          <span className="block mt-1">{renderTextWithLinks(footnote.text)}</span>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
+}: DesktopSidebarProps) {
+  const showBottomBars = true
+  const [showAllFootnotes, setShowAllFootnotes] = useState(false)
+  const [showArticleNavigation, setShowArticleNavigation] = useState(false)
+  const [showSingleFootnoteView, setShowSingleFootnoteView] = useState(false)
+  const [lastSelectedFootnoteNumber, setLastSelectedFootnoteNumber] = useState<number | null>(null)
 
-        <div className="flex justify-start">
-          {article?.nextArticle ? (
+  const selectedFootnotes = useMemo(() => {
+    if (!showSingleFootnoteView) return footnotesList
+    const targetNumber = activeFootnoteNumber ?? lastSelectedFootnoteNumber
+    if (targetNumber === null) return footnotesList
+    const selected = footnotesList.find((footnote) => footnote.number === targetNumber)
+    return selected ? [selected] : footnotesList
+  }, [activeFootnoteNumber, footnotesList, lastSelectedFootnoteNumber, showSingleFootnoteView])
+  const currentSelectedFootnote = selectedFootnotes[0] ?? null
+
+  useEffect(() => {
+    if (activeFootnoteNumber !== null) {
+      setLastSelectedFootnoteNumber(activeFootnoteNumber)
+      setShowSingleFootnoteView(true)
+      setShowAllFootnotes(true)
+      return
+    }
+    if (showSingleFootnoteView && showAllFootnotes) {
+      setShowAllFootnotes(false)
+    }
+  }, [activeFootnoteNumber, showAllFootnotes, showSingleFootnoteView])
+
+  useEffect(() => {
+    if (!showAllFootnotes) {
+      setShowSingleFootnoteView(false)
+      setLastSelectedFootnoteNumber(null)
+    }
+  }, [showAllFootnotes])
+
+  const dividerClass = 'border-t border-black'
+
+  return (
+    <aside className="sidebar-block h-full overflow-y-auto px-6 py-10">
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="w-full">
+          <div className="flex w-full items-end justify-between">
+
             <Link
-              href={`/articles/${article.nextArticle.slug}`}
-              className={`group flex flex-col items-start gap-1 transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
+              href="/"
+              className={`inline-flex items-center justify-center ${getTextColor(isDarkMode)}`}
+              aria-label="홈으로 이동"
             >
-              <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5l7 7-7 7" />
-              </svg>
-              <div className="text-left w-[150px]">
-                <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-2`}>{article.nextArticle.title}</div>
-              </div>
+              <p className={`text-s 각주폰트-민부리`}>글짜씨</p>
+              {/* <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M12.79 14.77a.75.75 0 0 1-1.06.02L7.25 10.5l4.48-4.29a.75.75 0 1 1 1.04 1.08L9.38 10.5l3.39 3.21a.75.75 0 0 1 .02 1.06Z" />
+              </svg> */}
             </Link>
-          ) : (
-            <div className={`${TYPOGRAPHY.ui.navLink} w-[300px] ${getTextColor(isDarkMode, 'subtle')}`}>
-              <br /> 다음 글 없음
-            </div>
-          )}
+          </div>
+
+          <AnimatePresence initial={false}>
+            {showBottomBars && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: [0.4, 0.0, 0.2, 1] }}
+                style={{ overflow: 'hidden' }}
+                className="text-left"
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowAllFootnotes((prev) => {
+                      const next = !prev
+                      if (!next) {
+                        setActiveFootnoteNumber(null)
+                      } else {
+                        setShowSingleFootnoteView(false)
+                        setLastSelectedFootnoteNumber(null)
+                      }
+                      return next
+                    })
+                  }
+                  className="w-full py-2 text-left"
+                  aria-label="모든 각주 보기 토글"
+                >
+                  <span className={`block ${dividerClass}`} />
+                </button>
+                <AnimatePresence initial={false}>
+                  {showAllFootnotes && hasFootnotesInContent && footnotesList.length > 0 && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
+                      style={{ overflow: 'hidden' }}
+                      className={`${getFootnoteClasses('text')} px-1 ${getTextColor(isDarkMode, 'muted')}`}
+                    >
+                      <div className="px-1">
+                        <div className="max-h-[60vh] overflow-y-auto space-y-2">
+                          {showSingleFootnoteView && currentSelectedFootnote ? (
+                            <div className="block w-full text-left">
+                              <span className={`block ${getTextColor(isDarkMode)}`}>{currentSelectedFootnote.number}</span>
+                              <span className={`block ${hasLeadingSpecialChar(currentSelectedFootnote.text) ? 'ls-leading-special ls-leading-special-safe' : ''}`}>
+                                {renderTextWithLinks(currentSelectedFootnote.text)}
+                              </span>
+                            </div>
+                          ) : (
+                            selectedFootnotes.map((footnote) => (
+                              <div key={footnote.number} className="block w-full text-left">
+                                <span className={`block ${getTextColor(isDarkMode)}`}>{footnote.number}</span>
+                                <span className={`block ${hasLeadingSpecialChar(footnote.text) ? 'ls-leading-special ls-leading-special-safe' : ''}`}>
+                                  {renderTextWithLinks(footnote.text)}
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowArticleNavigation((prev) => !prev)}
+                    className="w-full py-2 text-left"
+                    aria-label="이전 글 토글"
+                  >
+                    <span className={`block ${dividerClass}`} />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {showArticleNavigation && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
+                        style={{ overflow: 'hidden' }}
+                        className=""
+                      >
+                        {article?.prevArticle ? (
+                          <Link
+                            href={`/articles/${article.prevArticle.slug}`}
+                            className={`group block ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
+                          >
+                            <div className={`${TYPOGRAPHY.ui.navLink} mb-1 font-bold`}>이전 글</div>
+                            <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-3 overflow-hidden ${hasLeadingSpecialChar(article.prevArticle.title) ? 'ls-leading-special ls-leading-special-safe' : ''}`}>
+                              {article.prevArticle.title}
+                            </div>
+                          </Link>
+                        ) : (
+                          <div className={`${TYPOGRAPHY.ui.navLink} ${getTextColor(isDarkMode, 'subtle')}`}>이전 글 없음</div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowArticleNavigation((prev) => !prev)}
+                    className="w-full py-2 text-left"
+                    aria-label="다음 글 토글"
+                  >
+                    <span className={`block ${dividerClass}`} />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {showArticleNavigation && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }}
+                        style={{ overflow: 'hidden' }}
+                        className="pb-2"
+                      >
+                        {article?.nextArticle ? (
+                          <Link
+                            href={`/articles/${article.nextArticle.slug}`}
+                            className={`group block ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
+                          >
+                            <div className={`${TYPOGRAPHY.ui.navLink} mb-1 font-bold`}>다음 글</div>
+                            <div className={`${TYPOGRAPHY.ui.navLink} line-clamp-3 overflow-hidden ${hasLeadingSpecialChar(article.nextArticle.title) ? 'ls-leading-special ls-leading-special-safe' : ''}`}>
+                              {article.nextArticle.title}
+                            </div>
+                          </Link>
+                        ) : (
+                          <div className={`${TYPOGRAPHY.ui.navLink} ${getTextColor(isDarkMode, 'subtle')}`}>다음 글 없음</div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    </div>
+    </aside>
   )
 }
 
@@ -172,7 +272,7 @@ export function ArticleMobileBottomNavigation({ showNavigation, isDarkMode, arti
                   href="/"
                   className={`flex items-center ${TYPOGRAPHY.ui.navLink} transition-colors ${getTextColor(isDarkMode, 'subtle')} ${getHoverTextColor(isDarkMode)}`}
                 >
-                  돌아가기
+                  글짜씨
                 </Link>
               </div>
 

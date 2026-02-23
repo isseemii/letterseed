@@ -17,9 +17,10 @@ import {
   getImageUrl,
 } from '@/components/article/ContentRenderers'
 import { ContentBlockRenderer } from '@/components/article/ContentBlockRenderer'
-import { ARTICLE_CONTENT_BLOCK_TYPES, ARTICLE_CONTENT_MATRIX, isContentBlockType } from '@/components/article/articleContentMatrix'
+import { isContentBlockType } from '@/components/article/articleContentMatrix'
+import { collectFootnoteSourceContent, normalizeArticleContentBlocks } from '@/components/article/contentNormalization'
 import { ArticleImageSlider } from '@/components/article/ArticleImageSlider'
-import { ArticleLeftSidebar, ArticleMobileBottomNavigation, ArticleRightSidebar } from '@/components/article/ArticleNavigation'
+import { ArticleDesktopSidebar, ArticleMobileBottomNavigation } from '@/components/article/ArticleNavigation'
 import { MobileFootnotePopup } from '@/components/article/MobileFootnotePopup'
 import type { ArticleAdditionalSection, ArticleContentBlock, ArticleInIssueRef, ArticlePageData, ArticleSectionPathRef, FootnoteItem } from '@/components/article/types'
 
@@ -28,71 +29,6 @@ const urlFor = (source: unknown) => {
   if (!isSanityImageSource(source)) return builder.image({})
   return builder.image(source as Record<string, unknown>)
 }
-
-const articleWithNavigationQuery = `
-  *[_type == "article" && slug.current == $slug][0]{
-    _id,
-    title,
-    author,
-    authorBio,
-    articleType,
-    introduction,
-    contentBlocks,
-    content,
-    responses,
-    interviewQA,
-    conversation,
-    qaList,
-    additionalSections,
-    order,
-    "issue": issue->{
-      _id,
-      number,
-      title,
-      credits
-    },
-    "section": section->{
-      _id,
-      title,
-      slug,
-      order,
-      "parentSection": parentSection->{
-        _id,
-        title,
-        slug,
-        order,
-        "parentSection": parentSection->{
-          _id,
-          title,
-          slug,
-          order
-        }
-      }
-    },
-    // 같은 호의 모든 아티클을 가져와서 클라이언트에서 정렬
-    "allArticlesInIssue": *[
-      _type == "article" && 
-      issue._ref == ^.issue._ref
-    ] {
-      _id,
-      title,
-      "slug": slug.current,
-      order,
-      "section": section->{
-        _id,
-        order,
-        "parentSection": parentSection->{
-          _id,
-          order,
-          "parentSection": parentSection->{
-            _id,
-            order
-          }
-        }
-      }
-    }
-  }
-`
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -163,29 +99,19 @@ export default function ArticlePage({ params }: PageProps) {
   const [loading, setLoading] = useState(true)
   const [slug, setSlug] = useState<string>('')
   const [showNavigation, setShowNavigation] = useState(false)
-  const [expandedFootnotes, setExpandedFootnotes] = useState<{ [key: number]: boolean }>({})
+  const [activeDesktopFootnoteNumber, setActiveDesktopFootnoteNumber] = useState<number | null>(null)
   const [mobileFootnotePopup, setMobileFootnotePopup] = useState<Pick<FootnoteItem, 'number' | 'text'> | null>(null)
   const { isDarkMode, toggleDarkMode } = useDarkMode()
 
-  // 각주 추출 (introduction, content, responses, interviewQA, conversation, qaList, additionalSections에서)
-  const allContentForFootnotes = useMemo<unknown[]>(
-    () => [
-      ...(article?.introduction || []),
-      ...(article?.content || []),
-      ...(article?.responses?.flatMap((r: { content?: unknown[] }) => r.content || []) || []),
-      ...(article?.responses?.flatMap((r: { references?: unknown[] }) => r.references || []) || []),
-      ...(article?.interviewQA?.flatMap((qa: { question?: unknown[]; answers?: Array<{ answer?: unknown[] }> }) => [
-        ...(qa.question || []),
-        ...(qa.answers?.flatMap((a) => a.answer || []) || [])
-      ]) || []),
-      ...(article?.conversation?.flatMap((c: { text?: unknown[] }) => c.text || []) || []),
-      ...(article?.qaList?.flatMap((qa: { question?: unknown[]; answer?: unknown[] }) => [
-        ...(qa.question || []),
-        ...(qa.answer || [])
-      ]) || []),
-      ...(article?.additionalSections?.flatMap((s: ArticleAdditionalSection) => s.content || []) || []),
-    ],
+  const normalizedContentBlocks = useMemo(
+    () => normalizeArticleContentBlocks(article),
     [article]
+  )
+
+  // 각주 추출: 정규화된 본문 블록 + 공통 섹션을 하나의 경로로 수집
+  const allContentForFootnotes = useMemo<unknown[]>(
+    () => collectFootnoteSourceContent(article, normalizedContentBlocks),
+    [article, normalizedContentBlocks]
   )
   const hasFootnotesInContent = useMemo(
     () => (allContentForFootnotes.length > 0 ? hasFootnotes(allContentForFootnotes) : false),
@@ -196,28 +122,14 @@ export default function ArticlePage({ params }: PageProps) {
     [allContentForFootnotes]
   )
 
-  // 각주 토글 함수
-  const toggleFootnote = (number: number) => {
-    // 펼침/접힘 토글
-    setExpandedFootnotes(prev => ({
-      ...prev,
-      [number]: !prev[number]
-    }))
-
-    // 각주 원텍스트 위치로 스크롤
-    const footnoteElement = document.querySelector(`[data-footnote-number="${number}"]`)
-    if (footnoteElement) {
-      const rect = footnoteElement.getBoundingClientRect()
-      const absoluteTop = window.pageYOffset + rect.top
-      const offset = window.innerHeight / 2 - rect.height / 2 // 화면 중앙
-      
-      window.scrollTo({
-        top: absoluteTop - offset,
-        behavior: 'smooth'
-      })
+  useEffect(() => {
+    if (activeDesktopFootnoteNumber === null) return
+    const exists = footnotesList.some((footnote) => footnote.number === activeDesktopFootnoteNumber)
+    if (!exists) {
+      setActiveDesktopFootnoteNumber(null)
     }
-  }
-  
+  }, [activeDesktopFootnoteNumber, footnotesList])
+
 
   // 텍스트에서 URL을 하이퍼링크로 변환하는 함수 (각주, 캡션 등에 사용)
   const renderTextWithLinks = useMemo(() => {
@@ -423,47 +335,57 @@ export default function ArticlePage({ params }: PageProps) {
   useEffect(() => {
     params.then((resolvedParams) => {
       setSlug(resolvedParams.slug)
-      fetch(`/api/articles/${resolvedParams.slug}`)
+      fetch(`/api/articles/${encodeURIComponent(resolvedParams.slug)}`, {
+        cache: 'no-store',
+      })
         .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch article data')
+          if (!res.ok) {
+            return res.json().then((body) => {
+              const detail = body?.details ? ` (${body.details})` : ''
+              throw new Error(`${body?.error || 'Failed to fetch article data'}${detail}`)
+            })
+          }
           return res.json()
         })
-        .then(({ article: data }: { article: ArticlePageData }) => {
-        if (data && data.allArticlesInIssue) {
-          // 같은 호의 모든 아티클을 섹션 계층 구조로 정렬
-          const sortedArticles = sortArticles(data.allArticlesInIssue)
-        
+        .then((payload: { article?: ArticlePageData | null }) => {
+          const data = payload?.article ?? null
+
+          if (data && Array.isArray(data.allArticlesInIssue) && data.allArticlesInIssue.length > 0) {
+            // 같은 호의 모든 아티클을 섹션 계층 구조로 정렬
+            const sortedArticles = sortArticles(data.allArticlesInIssue)
           
-          // 현재 아티클의 인덱스 찾기
-          const currentIndex = sortedArticles.findIndex((a) => a._id === data._id)
-          
-          // 이전/다음 아티클 찾기
-          if (currentIndex > 0) {
-            data.prevArticle = {
-              title: sortedArticles[currentIndex - 1].title,
-              slug: sortedArticles[currentIndex - 1].slug
+            
+            // 현재 아티클의 인덱스 찾기
+            const currentIndex = sortedArticles.findIndex((a) => a._id === data._id)
+            
+            // 이전/다음 아티클 찾기
+            if (currentIndex > 0) {
+              data.prevArticle = {
+                title: sortedArticles[currentIndex - 1].title,
+                slug: sortedArticles[currentIndex - 1].slug
+              }
+            } else {
+              data.prevArticle = null
             }
-          } else {
-            data.prevArticle = null
-          }
-          
-          if (currentIndex < sortedArticles.length - 1) {
-            data.nextArticle = {
-              title: sortedArticles[currentIndex + 1].title,
-              slug: sortedArticles[currentIndex + 1].slug
+            
+            if (currentIndex < sortedArticles.length - 1) {
+              data.nextArticle = {
+                title: sortedArticles[currentIndex + 1].title,
+                slug: sortedArticles[currentIndex + 1].slug
+              }
+            } else {
+              data.nextArticle = null
             }
-          } else {
-            data.nextArticle = null
           }
-        }
-        
-        setArticle(data)
-        setLoading(false)
-      })
-      .catch(() => {
-        setArticle(null)
-        setLoading(false)
-      })
+
+          setArticle(data)
+          setLoading(false)
+        })
+        .catch((error) => {
+          console.error('Article fetch failed:', error)
+          setArticle(null)
+          setLoading(false)
+        })
     })
   }, [params, sortArticles])
 
@@ -474,7 +396,7 @@ export default function ArticlePage({ params }: PageProps) {
       isDarkMode,
       footnotesList,
       setMobileFootnotePopup,
-      setExpandedFootnotes,
+      setActiveDesktopFootnoteNumber,
       renderTextWithLinks
     )
   }, [isDarkMode, footnotesList, renderTextWithLinks])
@@ -486,7 +408,7 @@ export default function ArticlePage({ params }: PageProps) {
       isDarkMode,
       footnotesList,
       setMobileFootnotePopup,
-      setExpandedFootnotes,
+      setActiveDesktopFootnoteNumber,
       renderTextWithLinks
     )
   }, [isDarkMode, footnotesList, renderTextWithLinks])
@@ -499,7 +421,7 @@ export default function ArticlePage({ params }: PageProps) {
       isDarkMode,
       footnotesList,
       setMobileFootnotePopup,
-      setExpandedFootnotes,
+      setActiveDesktopFootnoteNumber,
       renderTextWithLinks
     )
 
@@ -513,7 +435,7 @@ export default function ArticlePage({ params }: PageProps) {
         isDarkMode,
         footnotesList,
         setMobileFootnotePopup,
-        setExpandedFootnotes,
+        setActiveDesktopFootnoteNumber,
         renderTextWithLinks
       )
 
@@ -677,27 +599,6 @@ export default function ArticlePage({ params }: PageProps) {
     }
   }, [isDarkMode, processChildrenWithLinks])
 
-  const normalizedContentBlocks = useMemo(() => {
-    if (!article) return []
-
-    if (Array.isArray(article.contentBlocks) && article.contentBlocks.length > 0) {
-      return article.contentBlocks
-    }
-
-    const blocks: ArticleContentBlock[] = []
-    ARTICLE_CONTENT_BLOCK_TYPES.forEach((type) => {
-      const matrix = ARTICLE_CONTENT_MATRIX[type]
-      const legacyFieldData = article?.[matrix.legacyField]
-      if (Array.isArray(legacyFieldData) && legacyFieldData.length > 0) {
-        blocks.push({
-          blockType: type,
-          [matrix.blockField]: legacyFieldData,
-        })
-      }
-    })
-    return blocks
-  }, [article])
-
   if (loading) {
     return (
       <div className={`min-h-screen flex items-start md:items-center justify-center pt-[40vh] md:pt-0 ${getBgColor(isDarkMode)}`}>
@@ -708,7 +609,6 @@ export default function ArticlePage({ params }: PageProps) {
           height={72}
           className="w-32 lg:w-48 h-auto"
           unoptimized
-          priority
         />
       </div>
     )
@@ -724,10 +624,36 @@ export default function ArticlePage({ params }: PageProps) {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${getBgColor(isDarkMode)}`}>
-      <ArticleLeftSidebar isDarkMode={isDarkMode} article={article} />
+      <div className="mx-auto w-full max-w-[1600px] min-[1200px]:px-10">
+        <div className="min-[1200px]:grid min-[1200px]:grid-cols-[280px_minmax(0,720px)] min-[1200px]:justify-center min-[1200px]:gap-x-10 min-[1600px]:grid-cols-[minmax(0,720px)]">
+          <div className="hidden min-[1200px]:block min-[1600px]:hidden min-w-0 self-start" />
 
-      {/* 중앙: 아티클 본문 */}
-        <article className="max-w-[720px] mx-auto px-4 xl:px-0 pt-6 pb-6 md:pt-10 md:pb-10">
+          <div className="hidden min-[1200px]:block min-[1600px]:hidden fixed top-0 left-[calc((100vw-1040px)/2)] h-screen w-[280px] z-20">
+            <ArticleDesktopSidebar
+              isDarkMode={isDarkMode}
+              article={article}
+              hasFootnotesInContent={hasFootnotesInContent}
+              footnotesList={footnotesList}
+              activeFootnoteNumber={activeDesktopFootnoteNumber}
+              setActiveFootnoteNumber={setActiveDesktopFootnoteNumber}
+              renderTextWithLinks={renderTextWithLinks}
+            />
+          </div>
+
+          <div className="hidden min-[1600px]:block fixed top-0 left-6 h-screen w-[280px] z-20">
+            <ArticleDesktopSidebar
+              isDarkMode={isDarkMode}
+              article={article}
+              hasFootnotesInContent={hasFootnotesInContent}
+              footnotesList={footnotesList}
+              activeFootnoteNumber={activeDesktopFootnoteNumber}
+              setActiveFootnoteNumber={setActiveDesktopFootnoteNumber}
+              renderTextWithLinks={renderTextWithLinks}
+            />
+          </div>
+
+          {/* 중앙: 아티클 본문 */}
+          <article className="max-w-[720px] mx-auto w-full px-4 xl:px-0 pt-6 pb-6 md:pt-10 md:pb-10 min-[1200px]:max-w-none min-[1200px]:mx-0 min-[1200px]:px-0 min-[1600px]:max-w-[720px] min-[1600px]:mx-auto">
             {/* 호수, 섹션 */}
             <div className={`text-center mb-1 md:text-left md:indent-[0.2em] ${TYPOGRAPHY.meta.issueSection} ${getTextColor(isDarkMode)}`}>
               {article.issue.number} · {article.section.title}
@@ -799,16 +725,8 @@ export default function ArticlePage({ params }: PageProps) {
               </div>
             )}
           </article>
-
-      <ArticleRightSidebar
-        isDarkMode={isDarkMode}
-        article={article}
-        hasFootnotesInContent={hasFootnotesInContent}
-        footnotesList={footnotesList}
-        expandedFootnotes={expandedFootnotes}
-        toggleFootnote={toggleFootnote}
-        renderTextWithLinks={renderTextWithLinks}
-      />
+        </div>
+      </div>
       <ArticleMobileBottomNavigation showNavigation={showNavigation} isDarkMode={isDarkMode} article={article} />
       <MobileFootnotePopup
         popup={mobileFootnotePopup}

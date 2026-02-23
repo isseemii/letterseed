@@ -16,6 +16,6 @@ test('typography presets include required css utility classes', () => {
 })
 
 test('portable body class helper still applies spacing contract', () => {
-  assert.ok(tokenSrc.includes("portableParagraph: 'my-[0.6em] md:mt-[0.4em] md:mb-6'"))
+  assert.ok(tokenSrc.includes("portableParagraph: 'my-[0.6em] md:mt-[0.4em] md:mb-[0.4em]'"))
   assert.ok(src.includes('ARTICLE_TEXT_SPACING.portableParagraph'))
 })

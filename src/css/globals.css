@@ -54,7 +54,7 @@
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
-  --breakpoint-sidebar: 1510px;
+  --breakpoint-sidebar: 1200px;
   --breakpoint-2xl: 1448px;
 
   --spacing-grid52: clamp(2rem, 4vw, 5rem);
@@ -249,9 +249,27 @@
     text-indent: 2rem;
   }
 
+  /* 문단 시작 글자가 특수문자일 때 미세 아웃덴트 */
+  .ls-leading-special {
+    text-indent: -4px;
+  }
+
+  /* overflow:hidden 컨테이너(각주 애니메이션)에서 첫 글자 클리핑 방지 */
+  .ls-leading-special.ls-leading-special-safe {
+    padding-left: 4px;
+  }
+
+  .indent-p.ls-leading-special {
+    text-indent: calc(2rem - 4px);
+  }
+
   @media (max-width: 768px) {
     .indent-p {
       text-indent: 1rem;
+    }
+
+    .indent-p.ls-leading-special {
+      text-indent: calc(1rem - 4px);
     }
   }
 }
@@ -339,7 +357,7 @@
     background: #718096;
   }
 
-  /* 1510px breakpoint 유틸리티 클래스 */
+  /* 1200px breakpoint 유틸리티 클래스 */
   .sidebar-block {
     display: none;
   }
@@ -348,7 +366,7 @@
     display: block;
   }
 
-  @media (min-width: 1510px) {
+  @media (min-width: 1200px) {
     .sidebar-block {
       display: block !important;
     }

@@ -3,6 +3,14 @@ import { getBgColor, getBorderColor, getTextColor } from '@/lib/DarkModeUtils'
 import { getFootnoteClasses } from '@/lib/typography'
 import type { FootnoteItem } from './types'
 
+const LEADING_SPECIAL_PATTERN = /^[\p{P}\p{S}]/u
+
+const hasLeadingSpecialChar = (text: string): boolean => {
+  const trimmed = text.replace(/^\s+/u, '')
+  if (!trimmed) return false
+  return LEADING_SPECIAL_PATTERN.test(trimmed[0])
+}
+
 type Props = {
   popup: Pick<FootnoteItem, 'number' | 'text'> | null
   isDarkMode: boolean
@@ -37,7 +45,7 @@ export function MobileFootnotePopup({ popup, isDarkMode, onClose, renderTextWith
             <div className={`p-5 pr-11 ${getTextColor(isDarkMode, 'muted')}`}>
               <div className={getFootnoteClasses('text')}>
                 <span className={getTextColor(isDarkMode)}>[{popup.number}]</span>
-                <div className="mt-2 leading-relaxed">
+                <div className={`mt-2 leading-relaxed ${hasLeadingSpecialChar(popup.text) ? 'ls-leading-special ls-leading-special-safe' : ''}`}>
                   {renderTextWithLinks(popup.text)}
                 </div>
               </div>

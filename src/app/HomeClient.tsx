@@ -21,9 +21,6 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
   const issues = initialIssues
 
-  // 후원/파트너 이미지 크기 클래스명
-  const sponsorImageClassName = "w-36 lg:w-40"
-
   // 크레딧 토글 함수 - 한 번에 하나만 열리도록
   const toggleCredits = (issueId: string) => {
     setExpandedCredits(prev => {
@@ -75,7 +72,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 alt="글짜씨"
                 width={128}
                 height={48}
-                className="w-32 h-auto cursor-pointer"
+                className="h-auto cursor-pointer"
                 unoptimized
                 priority
               />
@@ -118,7 +115,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           </div>
 
           {/* 상단 소개글 */}
-          <div className={`space-y-4 본문폰트 pb-6 ${getTextColor(isDarkMode)}`}>
+          <div className={`space-y-4 본문폰트 pb-4 ${getTextColor(isDarkMode)}`}>
             <p>
               2024년 임기를 시작한 제8대 한국타이포그라피학회는 디지털 환경에서의 타이포그래피를 둘러싼 현상과 실천 등을 살펴보며 디지털 타이포그래피의 정체성을 탐구한다. 이에 대한 연장선으로 제8대 한국타이포그래피학회는 글짜씨를 통해 디지털 환경 속의 타이포그래피를 실험하고 이를 웹을 통해 공유하는 프로젝트를 진행한다.
             </p>
@@ -138,7 +135,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
               <div key={issue._id}>
                 <button
                   onClick={() => toggleIssue(issue._id)}
-                  className={`w-full py-3 flex justify-between items-center text-left ${getTextColor(isDarkMode)}`}
+                  className={`w-full pt-2.5 pb-3 flex justify-between items-center text-left ${getTextColor(isDarkMode)}`}
                 >
                   <div>
                     <span className="본문폰트-민부리 font-bold mr-2">{issue.number}호</span>
@@ -154,15 +151,15 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 >
                   <div className="pb-4 pl-11 space-y-6">
                     {issue.sections && issue.sections.length > 0 ? (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {issue.sections.map((section: any, sectionIdx: number) => (
-                          <div key={`${issue._id}-${section._id || sectionIdx}`} className="pt-2 space-y-2">
+                          <div key={`${issue._id}-${section._id || sectionIdx}`} className="space-y-1.5 md:space-y-2">
                             {/* 섹션 제목 */}
                             <p className={`각주폰트-민부리 font-bold ${getTextColor(isDarkMode)}`}>
                               {section.title}
                             </p>
 
-                            <div className="space-y-2">
+                            <div className="space-y-1.5 md:space-y-2">
                               {/* 26호는 아티클 먼저, 다른 호는 하위섹션 먼저 */}
                               {issue.number === 26 ? (
                                 <>
@@ -193,7 +190,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                   {section.subsections && section.subsections.length > 0 && (
                                     <>
                                       {section.subsections.map((subsection: any, subIdx: number) => (
-                                        <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
+                                        <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-1.5 md:space-y-2">
                                           {/* Subsection 제목 (토글 없음, 항상 펼침) */}
                                           <p className={`본문폰트-민부리 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                             {/* <span className="text-lg mr-1.5">·</span> */}
@@ -201,7 +198,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                           </p>
 
                                           {/* Subsection 내용 (항상 표시) */}
-                                          <div className="space-y-2 pl-4">
+                                          <div className="space-y-1.5 md:space-y-2 pl-4">
                                             {/* ✨ 하하위 섹션 (3단계) - 토글 가능 */}
                                             {subsection.subsections && subsection.subsections.length > 0 && (
                                               <>
@@ -212,12 +209,11 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                     {/* 하하위 섹션 제목 + 토글 버튼 */}
                                                     <button
                                                       onClick={() => toggleSubsection(subsubsection._id)}
-                                                      className={`w-full flex items-center justify-between text-left 각주폰트-민부리 font-bold transition-colors ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
+                                                      className={`w-full flex items-start text-left 각주폰트-민부리 font-bold transition-colors ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
                                                         }`}
                                                     >
-                                                      <span>{subsubsection.title}</span>
                                                       <svg
-                                                        className={`w-3 h-3 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
+                                                        className={`w-3 h-3 mt-1 shrink-0 -ml-4 mr-2 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
                                                           }`}
                                                         fill="none"
                                                         stroke="currentColor"
@@ -225,6 +221,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                       >
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                                       </svg>
+                                                      <span>{subsubsection.title}</span>
                                                     </button>
 
                                                     {/* 하하위 섹션의 articles */}
@@ -295,7 +292,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                   {section.subsections && section.subsections.length > 0 && (
                                     <>
                                       {section.subsections.map((subsection: any, subIdx: number) => (
-                                        <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
+                                        <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-1.5 md:space-y-2">
                                           {/* Subsection 제목 (토글 없음, 항상 펼침) */}
                                           <p className={`본문폰트-민부리 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                             {/* <span className="mr-1.5">·</span> */}
@@ -303,7 +300,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                           </p>
 
                                           {/* Subsection 내용 (항상 표시) */}
-                                          <div className="space-y-2 pl-4">
+                                          <div className="space-y-1.5 md:space-y-2 pl-4">
                                             {/* ✨ 하하위 섹션 (3단계) - 토글 가능 */}
                                             {subsection.subsections && subsection.subsections.length > 0 && (
                                               <>
@@ -314,12 +311,11 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                     {/* 하하위 섹션 제목 + 토글 버튼 */}
                                                     <button
                                                       onClick={() => toggleSubsection(subsubsection._id)}
-                                                      className={`w-full flex items-start justify-between text-left 본문폰트 transition-colors ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
+                                                      className={`w-full flex items-start text-left 본문폰트 transition-colors ${isDarkMode ? 'text-white lg:text-gray-400 lg:hover:text-white' : 'text-black lg:text-gray-600 lg:hover:text-black'
                                                         }`}
                                                     >
-                                                      <span>{subsubsection.title}</span>
                                                       <svg
-                                                        className={`w-4 h-4 mt-2 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
+                                                        className={`w-4.5 h-4.5 mt-1.25 shrink-0 -ml-6 mr-2 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
                                                           }`}
                                                         fill="none"
                                                         stroke="currentColor"
@@ -327,6 +323,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                       >
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
                                                       </svg>
+                                                      <span>{subsubsection.title}</span>
                                                     </button>
 
                                                     {/* 하하위 섹션의 articles */}
@@ -427,7 +424,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
                     {/* ✨ 호별 크레딧 */}
                     {issue.credits && issue.credits.length > 0 && (
-                      <div className={`space-y-2 ${getBorderColor(isDarkMode)}`}>
+                      <div className={`space-y-1.5 md:space-y-2 ${getBorderColor(isDarkMode)}`}>
                         <button
                           onClick={() => toggleCredits(issue._id)}
                           className={`flex items-center gap-0 각주폰트-민부리 transition-colors ${isDarkMode ? 'text-white hover:text-gray-300' : 'text-black hover:text-gray-600'}`}
@@ -466,7 +463,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
           <hr className={`border-t ${getBorderColor(isDarkMode)}`} />
 
           {/* 크레딧 섹션 (기존 코드) */}
-          <div className="pt-6 pb-8 space-y-8">
+          <div className="pt-5 pb-8 space-y-8">
             {/* <div>
               <p className={`본문폰트 ${getTextColor(isDarkMode)}`}>
                 한국타이포그라피학회는 글자와 타이포그래피를 연구하기 위해 2008년 창립되었다. 『글짜씨』는 학회에서 2009년 12월부터 발간한 타이포그래피 학술지다.
@@ -477,10 +474,10 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
             {/* 한국타이포그라피학회 */}
             <div>
-              <h3 className={`font-bold mb-5 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
+              <h3 className={`font-bold mb-4 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
                 한국타이포그라피학회
               </h3>
-              <div className={`space-y-5 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
+              <div className={`space-y-4 각주폰트-민부리 ${getTextColor(isDarkMode)}`}>
                 <div className="space-y-[0.25em]">
                   <span className="block">회장: 심우진</span>
                   <span className="block">부회장: 김수은, 민구홍</span>
@@ -524,9 +521,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                   후원
                 </h3>
                 <div className="flex flex-col gap-8">
-                  <Image src="/img/sp/01_sp/sp-01-ahngraphics.svg" alt="안그라픽스" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/01_sp/sp-02-doosungpaper.svg" alt="두성종이" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/01_sp/sp-03-coloso.svg" alt="콜로소" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/01_sp/sp-01-ahngraphics.svg" alt="안그라픽스" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/01_sp/sp-02-doosungpaper.svg" alt="두성종이" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/01_sp/sp-03-coloso.svg" alt="콜로소" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                 </div>
               </div>
               <div className="col-span-2">
@@ -535,18 +532,18 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
                   {/* 울트라블랙 */}
-                  <Image src="/img/sp/02_pt/pt-01-happybean.svg" alt="해피빈" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/02_pt/pt-06-woowa.svg" alt="우아한형제들" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/02_pt/pt-14-adobe.svg" alt="어도비" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-01-happybean.svg" alt="해피빈" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/02_pt/pt-06-woowa.svg" alt="우아한형제들" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/02_pt/pt-14-adobe.svg" alt="어도비" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 블랙 */}
-                  <Image src="/img/sp/02_pt/pt-12-visang.svg" alt="비상" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-12-visang.svg" alt="비상" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 볼드 */}
-                  <Image src="/img/sp/02_pt/pt-11-samwon.svg" alt="삼원종이" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/02_pt/pt-15-morisawakorea.svg" alt="모리사워코리아" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-11-samwon.svg" alt="삼원종이" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/02_pt/pt-15-morisawakorea.svg" alt="모리사워코리아" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 레귤러 */}
-                  <Image src="/img/sp/02_pt/pt-10-innoiz.svg" alt="인노이즈" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-10-innoiz.svg" alt="인노이즈" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 공익위반제보 */}
-                  <Image src="/img/sp/02_pt/link-01-munhwa.svg" alt="문화체육관광부" width={144} height={56} className={`w-36 h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/link-01-munhwa.svg" alt="문화체육관광부" width={144} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                 </div>
               </div>
             </div>
@@ -566,7 +563,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                   alt="글짜씨"
                   width={160}
                   height={60}
-                  className="w-36 lg:w-40 h-auto cursor-pointer"
+                  className="h-auto cursor-pointer"
                   unoptimized
                   priority
                 />
@@ -678,7 +675,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                             <>
                               {/* ✨ 26호: Section의 직속 articles 먼저 */}
                               {section.articles && section.articles.length > 0 && (
-                                <div className="space-y-1.5">
+                                <div className="space-y-1.5 md:space-y-2">
                                   {section.articles.map((article: any, idx: number) => (
                                     <div key={`${article._id || idx}`} className="group">
                                       {section.title === '인터뷰' ? (
@@ -712,28 +709,27 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                               {section.subsections && section.subsections.length > 0 && (
                                 <>
                                   {section.subsections.map((subsection: any, subIdx: number) => (
-                                    <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
+                                    <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-1.5 md:space-y-2">
                                       {/* Subsection 제목 (토글 없음, 항상 펼침) */}
                                       <p className={`본문폰트-민부리 ${getTextColor(isDarkMode)}`}>
                                         {subsection.title}
                                       </p>
 
                                       {/* Subsection 내용 (항상 표시) */}
-                                      <div className="space-y-2 ml-8">
+                                      <div className="space-y-1.5 md:space-y-2 ml-8">
                                         {/* ✨ 하하위 섹션 (3단계) - 토글 가능 */}
                                         {subsection.subsections && subsection.subsections.length > 0 && (
                                           <>
                                             {subsection.subsections.map((subsubsection: any, subsubIdx: number) => (
-                                              <div key={`${subsection._id}-${subsubsection._id || subsubIdx}`} className="space-y-2">
+                                              <div key={`${subsection._id}-${subsubsection._id || subsubIdx}`} className="space-y-1.5 md:space-y-2">
                                                 {/* 하하위 섹션 제목 + 토글 버튼 */}
                                                 <button
                                                   onClick={() => toggleSubsection(subsubsection._id)}
-                                                  className={`w-full flex items-center justify-between text-left 각주폰트-민부리 font-bold transition-colors ${getTextColor(isDarkMode)
+                                                  className={`w-full flex items-start text-left 각주폰트-민부리 font-bold transition-colors ${getTextColor(isDarkMode)
                                                     }`}
                                                 >
-                                                  <span>{subsubsection.title}</span>
                                                   <svg
-                                                    className={`w-3 h-3 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
+                                                    className={`w-2 h-2 mt-1 shrink-0 -ml-4 mr-2 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
                                                       }`}
                                                     fill="none"
                                                     stroke="currentColor"
@@ -741,6 +737,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                   >
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                                   </svg>
+                                                  <span>{subsubsection.title}</span>
                                                 </button>
 
                                                 {/* 하하위 섹션의 articles */}
@@ -751,7 +748,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                       : 'max-h-0 opacity-0'
                                                       }`}
                                                   >
-                                                    <div className="space-y-1.5">
+                                                    <div className="space-y-1.5 md:space-y-2">
                                                       {subsubsection.articles.map((article: any, artIdx: number) => (
                                                         <div key={`${article._id || artIdx}`} className="group">
                                                           <Link
@@ -779,7 +776,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
                                         {/* Subsection의 직속 articles */}
                                         {subsection.articles && subsection.articles.length > 0 && (
-                                          <div className="space-y-1.5">
+                                          <div className="space-y-1.5 md:space-y-2">
                                             {subsection.articles.map((article: any, artIdx: number) => (
                                               <div key={`${article._id || artIdx}`} className="group">
                                                 <Link
@@ -812,27 +809,26 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                               {section.subsections && section.subsections.length > 0 && (
                                 <>
                                   {section.subsections.map((subsection: any, subIdx: number) => (
-                                    <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-2">
+                                    <div key={`${section._id}-${subsection._id || subIdx}`} className="space-y-1.5 md:space-y-2">
                                       {/* Subsection 제목 (토글 없음, 항상 펼침) */}
                                       <p className={`본문폰트-민부리 mt-2 ${isDarkMode ? 'text-white' : 'text-black'}`}>
                                         {subsection.title}
                                       </p>
 
                                       {/* Subsection 내용 (항상 표시) */}
-                                      <div className="space-y-2">
+                                      <div className="space-y-1.5 md:space-y-2">
                                         {/* ✨ 하하위 섹션 (3단계) - 토글 가능 */}
                                         {subsection.subsections && subsection.subsections.length > 0 && (
                                           <>
                                             {subsection.subsections.map((subsubsection: any, subsubIdx: number) => (
-                                              <div key={`${subsection._id}-${subsubsection._id || subsubIdx}`} className="space-y-2">
+                                              <div key={`${subsection._id}-${subsubsection._id || subsubIdx}`} className="space-y-1.5 md:space-y-2 ml-8">
                                                 {/* 하하위 섹션 제목 + 토글 버튼 */}
                                                 <button
                                                   onClick={() => toggleSubsection(subsubsection._id)}
-                                                  className={`w-full flex items-start justify-between text-left 본문폰트 transition-colors ${getTextColor(isDarkMode)}`}
+                                                  className={`w-full flex items-start text-left 본문폰트 transition-colors ${getTextColor(isDarkMode)}`}
                                                 >
-                                                  <span>{subsubsection.title}</span>
                                                   <svg
-                                                    className={`w-6 h-6 mt-1 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
+                                                    className={`w-4.5 h-4.5 mt-1.5 shrink-0 -ml-6 mr-2 transition-transform ${expandedSubsections[subsubsection._id] ? 'rotate-45' : ''
                                                       }`}
                                                     fill="none"
                                                     stroke="currentColor"
@@ -840,11 +836,12 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                                                   >
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
                                                   </svg>
+                                                  <span>{subsubsection.title}</span>
                                                 </button>
 
                                                 {/* 하하위 섹션의 articles */}
                                                 {expandedSubsections[subsubsection._id] && subsubsection.articles && subsubsection.articles.length > 0 && (
-                                                  <div className="space-y-1.5">
+                                                  <div className="space-y-1.5 md:space-y-2">
                                                     {subsubsection.articles.map((article: any, artIdx: number) => (
                                                       <div key={`${article._id || artIdx}`} className="group">
                                                         <Link
@@ -872,7 +869,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
                                         {/* Subsection의 직속 articles */}
                                         {subsection.articles && subsection.articles.length > 0 && (
-                                          <div className="space-y-1.5 ml-8">
+                                          <div className="space-y-1.5 md:space-y-2 ml-8">
                                             {subsection.articles.map((article: any, artIdx: number) => (
                                               <div key={`${article._id || artIdx}`} className="group">
                                                 <Link
@@ -901,7 +898,7 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
 
                               {/* ✨ 다른 호: Section의 직속 articles (토글 없이 일반 링크) */}
                               {section.articles && section.articles.length > 0 && (
-                                <div className="space-y-2">
+                                <div className="space-y-1.5 md:space-y-2">
                                   {section.articles.map((article: any, idx: number) => (
                                     <div key={`${article._id || idx}`} className="group">
                                       {section.title === '인터뷰' ? (
@@ -1007,9 +1004,9 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
               <div className="space-y-4">
                 <p>후원</p>
                 <div className="flex flex-col gap-8">
-                  <Image src="/img/sp/01_sp/sp-01-ahngraphics.svg" alt="안그라픽스" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/01_sp/sp-02-doosungpaper.svg" alt="두성종이" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/01_sp/sp-03-coloso.svg" alt="콜로소" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/01_sp/sp-01-ahngraphics.svg" alt="안그라픽스" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/01_sp/sp-02-doosungpaper.svg" alt="두성종이" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/01_sp/sp-03-coloso.svg" alt="콜로소" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                 </div>
               </div>
             </div>
@@ -1019,18 +1016,18 @@ export default function HomeClient({ initialIssues }: { initialIssues: any[] }) 
                 <p>파트너</p>
                 <div className="grid grid-cols-2 gap-8">
                   {/* 울트라블랙 */}
-                  <Image src="/img/sp/02_pt/pt-01-happybean.svg" alt="해피빈" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/02_pt/pt-06-woowa.svg" alt="우아한형제들" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/02_pt/pt-14-adobe.svg" alt="아도비" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-01-happybean.svg" alt="해피빈" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/02_pt/pt-06-woowa.svg" alt="우아한형제들" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/02_pt/pt-14-adobe.svg" alt="아도비" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 블랙 */}
-                  <Image src="/img/sp/02_pt/pt-12-visang.svg" alt="비상" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-12-visang.svg" alt="비상" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 볼드 */}
-                  <Image src="/img/sp/02_pt/pt-11-samwon.svg" alt="삼원종이" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
-                  <Image src="/img/sp/02_pt/pt-15-morisawakorea.svg" alt="모리사워코리아" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-11-samwon.svg" alt="삼원종이" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
+                  <Image src="/img/sp/02_pt/pt-15-morisawakorea.svg" alt="모리사워코리아" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 레귤러 */}
-                  <Image src="/img/sp/02_pt/pt-10-innoiz.svg" alt="인노이즈" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/pt-10-innoiz.svg" alt="인노이즈" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                   {/* 공익위반제보 */}
-                  <Image src="/img/sp/02_pt/link-01-munhwa.svg" alt="문화체육관광부" width={160} height={56} className={`${sponsorImageClassName} h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} priority />
+                  <Image src="/img/sp/02_pt/link-01-munhwa.svg" alt="문화체육관광부" width={160} height={56} className={`h-auto ${isDarkMode ? 'brightness-0 invert' : ''}`} />
                 </div>
               </div>
             </div>

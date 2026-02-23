@@ -26,6 +26,8 @@ export const getPortableBodyClassesByPreset = (
   presetKey: Extract<TypographyPresetKey, 'bodySerif' | 'bodySans' | 'bodyBold' | 'footnoteSans'>
 ): string => `${getTypographyPresetClass(presetKey)} ${ARTICLE_TEXT_SPACING.portableParagraph}`
 
+export const QUESTION_OFFSET_CLASSES = 'pl-[30%] md:pl-[40%]'
+
 /**
  * 제목 스타일 (h1~h6)
  */
@@ -39,8 +41,8 @@ export const TYPOGRAPHY = {
   },
   h2: {
     // h2-h6는 direct와 portable 통일 (indent/padding은 필요시 추가)
-    direct: '본문폰트 font-bold pt-[0.7em] pb-[0.3em]',
-    portable: '본문폰트 font-bold pt-[0.7em] pb-[0.3em] ls-portable-h2',
+    direct: '본문폰트 font-bold py-[0.3em]',
+    portable: '본문폰트 font-bold py-[0.3em] ls-portable-h2',
   },
   h3: {
     direct: '본문폰트 indent-[2em] py-[0.3em]',
@@ -56,8 +58,8 @@ export const TYPOGRAPHY = {
   },
   // 질문
   h6: {
-    direct: '본문폰트-민부리 pl-[30%] md:pl-[40%]',
-    portable: '본문폰트-민부리 pl-[30%] md:pl-[40%]',
+    direct: `${TYPOGRAPHY_PRESETS.bodySans} ${QUESTION_OFFSET_CLASSES} ${ARTICLE_TEXT_SPACING.portableParagraph}`,
+    portable: `${TYPOGRAPHY_PRESETS.bodySans} ${QUESTION_OFFSET_CLASSES} ${ARTICLE_TEXT_SPACING.portableParagraph}`,
   },
 
   // 본문 스타일
@@ -179,3 +181,5 @@ export const getFootnoteClasses = (type: 'text' | 'link' = 'text'): string => {
 export const getCaptionClasses = (type: 'image' | 'grid' | 'default' = 'default'): string => {
   return TYPOGRAPHY.caption[type]
 }
+
+export const getQuestionOffsetClasses = (): string => QUESTION_OFFSET_CLASSES
