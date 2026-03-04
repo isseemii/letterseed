@@ -26,6 +26,7 @@ export const getPortableBodyClassesByPreset = (
   presetKey: Extract<TypographyPresetKey, 'bodySerif' | 'bodySans' | 'bodyBold' | 'footnoteSans'>
 ): string => `${getTypographyPresetClass(presetKey)} ${ARTICLE_TEXT_SPACING.portableParagraph}`
 
+export const QUESTION_TEXT_CLASSES = `${TYPOGRAPHY_PRESETS.bodySans} ${ARTICLE_TEXT_SPACING.portableParagraph}`
 export const QUESTION_OFFSET_CLASSES = 'pl-[30%] md:pl-[40%]'
 
 /**
@@ -58,8 +59,8 @@ export const TYPOGRAPHY = {
   },
   // 질문
   h6: {
-    direct: `${TYPOGRAPHY_PRESETS.bodySans} ${QUESTION_OFFSET_CLASSES} ${ARTICLE_TEXT_SPACING.portableParagraph}`,
-    portable: `${TYPOGRAPHY_PRESETS.bodySans} ${QUESTION_OFFSET_CLASSES} ${ARTICLE_TEXT_SPACING.portableParagraph}`,
+    direct: `${QUESTION_TEXT_CLASSES} ${QUESTION_OFFSET_CLASSES}`,
+    portable: `${QUESTION_TEXT_CLASSES} ${QUESTION_OFFSET_CLASSES}`,
   },
 
   // 본문 스타일

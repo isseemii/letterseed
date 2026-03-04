@@ -5,9 +5,9 @@
 
 import React from 'react'
 import { PortableTextComponents } from '@portabletext/react'
-import { getTypographyClasses, getBodyClasses, TYPOGRAPHY, getPortableBodyClassesByPreset } from './typography'
+import { getBodyClasses, TYPOGRAPHY, getPortableBodyClassesByPreset, QUESTION_TEXT_CLASSES, getTypographyPresetClass } from './typography'
 import { getTextColor, getLinkColor } from './DarkModeUtils'
-import { ARTICLE_TEXT_SPACING } from './articleStyleTokens'
+import { ARTICLE_RICH_TEXT_LAYOUT_CLASSES, ARTICLE_TEXT_SPACING } from './articleStyleTokens'
 
 const SIDEBAR_BREAKPOINT_PX = 1200
 
@@ -44,7 +44,8 @@ export const TYPOGRAPHY_CONFIG = {
   },
   // 인터뷰 Q&A 질문
   interviewQAQuestion: {
-    normal: getPortableBodyClassesByPreset('bodySans'),
+    // h6 질문과 동일한 본문 톤/간격을 공유
+    normal: QUESTION_TEXT_CLASSES,
     h2: TYPOGRAPHY.h2.portable,
     h3: TYPOGRAPHY.h3.portable,
     h4: TYPOGRAPHY.h4.portable,
@@ -54,7 +55,8 @@ export const TYPOGRAPHY_CONFIG = {
   },
   // 인터뷰 Q&A 답변
   interviewQAAnswer: {
-    normal: getPortableBodyClassesByPreset('bodySerif'),
+    // 인터뷰 답변 문단 간격은 별도 레이아웃에서 제어하기 위해 본문 마진 제거
+    normal: `${getTypographyPresetClass('bodySerif')} my-0`,
     h2: TYPOGRAPHY.h2.portable,
     h3: TYPOGRAPHY.h3.portable,
     h4: TYPOGRAPHY.h4.portable,
@@ -271,19 +273,19 @@ export function createPortableTextComponents(
           {children}
         </h6>
       ),
-      blockquote: ({ children }: any) => (
-        <blockquote
-          style={{
-            borderLeft: isDarkMode ? '0.2em solid white' : '0.2em solid black',
-            paddingLeft: ARTICLE_TEXT_SPACING.blockquote.paddingLeft,
-            marginLeft: ARTICLE_TEXT_SPACING.blockquote.marginLeft,
-            marginBottom: ARTICLE_TEXT_SPACING.blockquote.marginBottom,
-          }}
-          className={`${config.blockquote} ${getTextColor(isDarkMode)}`}
-        >
-          {children}
-        </blockquote>
-      ),
+      blockquote: ({ children, value }: any) => {
+        const mergedQuoteCount =
+          typeof value?.__lsMergedQuoteCount === 'number' ? value.__lsMergedQuoteCount : 1
+        const alignClass = mergedQuoteCount > 1 ? 'text-left whitespace-pre-line' : 'text-center'
+
+        return (
+          <blockquote
+            className={`${config.blockquote} ${ARTICLE_RICH_TEXT_LAYOUT_CLASSES.blockquoteCard} ${alignClass} ${isDarkMode ? 'border-neutral-600 bg-neutral-900' : 'border-neutral-300 bg-neutral-100'} ${getTextColor(isDarkMode)}`}
+          >
+            {children}
+          </blockquote>
+        )
+      },
     },
     marks: createMarksComponents(
       isDarkMode,

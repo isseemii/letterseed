@@ -22,6 +22,7 @@ import { collectFootnoteSourceContent, normalizeArticleContentBlocks } from '@/c
 import { ArticleImageSlider } from '@/components/article/ArticleImageSlider'
 import { ArticleDesktopSidebar, ArticleMobileBottomNavigation } from '@/components/article/ArticleNavigation'
 import { MobileFootnotePopup } from '@/components/article/MobileFootnotePopup'
+import { ChronologyTable } from '@/components/article/ChronologyTable'
 import type { ArticleAdditionalSection, ArticleContentBlock, ArticleInIssueRef, ArticlePageData, ArticleSectionPathRef, FootnoteItem } from '@/components/article/types'
 
 const builder = imageUrlBuilder(client)
@@ -475,6 +476,9 @@ export default function ArticlePage({ params }: PageProps) {
             </div>
           )
         },
+        chronologyTableBlock: ({ value }: { value: unknown }) => {
+          return <ChronologyTable value={value as Record<string, unknown>} isDarkMode={isDarkMode} />
+        },
         tableBlock: ({ value }: { value: { rows?: Array<{ cells?: string[] }> } }) => {
           if (!value?.rows || !Array.isArray(value.rows)) return null
 
@@ -695,6 +699,7 @@ export default function ArticlePage({ params }: PageProps) {
                       blockIdx={blockIdx}
                       isDarkMode={isDarkMode}
                       components={components}
+                      additionalSectionComponents={additionalSectionComponents}
                       interviewQAComponents={interviewQAComponents}
                       answerComponents={answerComponents}
                       urlFor={urlFor}

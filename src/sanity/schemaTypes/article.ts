@@ -225,6 +225,7 @@ export default defineType({
               type: 'array',
               of: [
                 createBlockDefinition('withQuestion', 'full', true),
+                {type: 'chronologyTableBlock'},
                 {
                   type: 'image',
                   title: '이미지',
@@ -860,6 +861,8 @@ export default defineType({
         createBlockDefinition('withQuestion', 'full', true),
         // 타이포그래피 연표
         {type: 'timelineBlock'},
+        // 연표 표
+        {type: 'chronologyTableBlock'},
         // 표
         {type: 'tableBlock'},
         // 단일 이미지

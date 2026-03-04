@@ -19,21 +19,34 @@ const asArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : [
 export const normalizeArticleContentBlocks = (article: ArticlePageData | null): ArticleContentBlock[] => {
   if (!article) return []
 
-  if (Array.isArray(article.contentBlocks) && article.contentBlocks.length > 0) {
-    return article.contentBlocks
-  }
+  const blocks: ArticleContentBlock[] = Array.isArray(article.contentBlocks)
+    ? [...article.contentBlocks]
+    : []
 
-  const blocks: ArticleContentBlock[] = []
-
+  // contentBlocks가 일부 타입만 채워진 문서를 위해 legacy 필드를 타입 단위로 보완한다.
   ARTICLE_CONTENT_BLOCK_TYPES.forEach((type) => {
     const matrix = ARTICLE_CONTENT_MATRIX[type]
     const legacyFieldData = article[matrix.legacyField]
 
-    if (Array.isArray(legacyFieldData) && legacyFieldData.length > 0) {
+    if (!Array.isArray(legacyFieldData) || legacyFieldData.length === 0) return
+
+    const existingIndex = blocks.findIndex((block) => block.blockType === type)
+
+    if (existingIndex < 0) {
       blocks.push({
         blockType: type,
         [matrix.blockField]: legacyFieldData,
       })
+      return
+    }
+
+    const existingBlock = blocks[existingIndex]
+    const existingContent = existingBlock?.[matrix.blockField]
+    if (!Array.isArray(existingContent) || existingContent.length === 0) {
+      blocks[existingIndex] = {
+        ...existingBlock,
+        [matrix.blockField]: legacyFieldData,
+      }
     }
   })
 

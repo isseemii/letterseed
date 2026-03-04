@@ -1,7 +1,8 @@
 import Image from 'next/image'
 import { PortableText, type PortableTextComponents } from '@portabletext/react'
+import { ARTICLE_META_LAYOUT_CLASSES } from '@/lib/articleStyleTokens'
 import { getTextColor } from '@/lib/DarkModeUtils'
-import { getHeadingClasses, getTypographyClasses, TYPOGRAPHY } from '@/lib/typography'
+import { TYPOGRAPHY } from '@/lib/typography'
 import { toPortableValue } from '@/lib/sanityTypeGuards'
 import {
   ARTICLE_CONTENT_MATRIX,
@@ -9,7 +10,7 @@ import {
 } from './articleContentMatrix'
 import type { ArticleContentBlock, ConversationTurn, InterviewQAItem, QAListItem, ResponseItem, UrlForFn } from './types'
 import {
-  ConversationRenderer,
+  ConversationBlockRenderer,
   InterviewQARenderer,
   QAListRenderer,
   getImageUrl,
@@ -20,6 +21,7 @@ type Props = {
   blockIdx: number
   isDarkMode: boolean
   components: PortableTextComponents
+  additionalSectionComponents: PortableTextComponents
   interviewQAComponents: PortableTextComponents
   answerComponents: PortableTextComponents
   urlFor: UrlForFn
@@ -30,6 +32,7 @@ export function ContentBlockRenderer({
   blockIdx,
   isDarkMode,
   components,
+  additionalSectionComponents,
   interviewQAComponents,
   answerComponents,
   urlFor,
@@ -53,23 +56,28 @@ export function ContentBlockRenderer({
     return (
       <div key={blockIdx} className={matrix.containerClass}>
         {responses.map((response, idx: number) => (
-          <div key={idx} className="space-y-4">
-            <div className="flex items-baseline gap-4">
-              <span className={`${getTypographyClasses('h3', 'portable')} ${getTextColor(isDarkMode, 'muted')}`}>
+          <div key={idx} className="space-y-1">
+            <div className={ARTICLE_META_LAYOUT_CLASSES.responseRow}>
+              <span
+                className={`${ARTICLE_META_LAYOUT_CLASSES.labelTopAlign} justify-self-start text-left whitespace-nowrap 본문폰트 font-bold ${getTextColor(isDarkMode)}`}
+              >
                 {response.year}
               </span>
-              <div className={`${getHeadingClasses(3)} ${getTextColor(isDarkMode)}`}>
-                {response.title}
+              <div className={`${ARTICLE_META_LAYOUT_CLASSES.labelTopAlign} ${getTextColor(isDarkMode)}`}>
+                <span className="본문폰트 font-bold">{response.title}</span>
+                {response.author && (
+                  <span className="본문폰트">
+                    {' '}· {response.author}
+                  </span>
+                )}
               </div>
-              {response.author && (
-                <span className={`${getTypographyClasses('h3', 'portable')} ${getTextColor(isDarkMode, 'subtle')}`}>
-                  {response.author}
-                </span>
-              )}
             </div>
             {response.content && Array.isArray(response.content) && response.content.length > 0 && (
-              <div className={getTextColor(isDarkMode)}>
-                <PortableText value={toPortableValue(response.content)} components={components} />
+              <div className={ARTICLE_META_LAYOUT_CLASSES.responseRow}>
+                <span aria-hidden="true" />
+                <div className={getTextColor(isDarkMode)}>
+                  <PortableText value={toPortableValue(response.content)} components={components} />
+                </div>
               </div>
             )}
             {response.image && getImageUrl(response.image, urlFor) && (
@@ -86,9 +94,16 @@ export function ContentBlockRenderer({
               </div>
             )}
             {response.references && Array.isArray(response.references) && response.references.length > 0 && (
-              <div className={`${TYPOGRAPHY.ui.referenceTitle} mt-4 ${getTextColor(isDarkMode, 'subtle')}`}>
-                <div className=" mb-1">참고문헌</div>
-                <PortableText value={toPortableValue(response.references)} components={components} />
+              <div className={`ml-[10%] mt-4 mb-8 md:ml-[40%] md:mt-4 md:mb-8 ${getTextColor(isDarkMode)}`}>
+                <div className={`mb-2 ${TYPOGRAPHY.footnote.text} ${getTextColor(isDarkMode)}`}>
+                  참고문헌
+                </div>
+                <div className={getTextColor(isDarkMode, 'subtle')}>
+                  <PortableText
+                    value={toPortableValue(response.references)}
+                    components={additionalSectionComponents}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -119,15 +134,11 @@ export function ContentBlockRenderer({
     const turns = blockFieldValue as ConversationTurn[]
     return (
       <div key={blockIdx} className={matrix.containerClass}>
-        {turns.map((turn, idx: number) => (
-          <ConversationRenderer
-            key={idx}
-            turn={turn}
-            idx={idx}
-            isDarkMode={isDarkMode}
-            components={components}
-          />
-        ))}
+        <ConversationBlockRenderer
+          turns={turns}
+          isDarkMode={isDarkMode}
+          components={components}
+        />
       </div>
     )
   }
@@ -143,7 +154,7 @@ export function ContentBlockRenderer({
             idx={idx}
             isDarkMode={isDarkMode}
             questionComponents={interviewQAComponents}
-            answerComponents={answerComponents}
+            answerComponents={components}
           />
         ))}
       </div>
